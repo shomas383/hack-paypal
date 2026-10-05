@@ -67,7 +67,7 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 - Items need name, quantity, unit_amount; `items[].tax` is per-line tax (name + rate); `amount.breakdown.shipping.amount`
   (+ optional `shipping.tax`); a `custom` amount (label + amount) exists in the breakdown. 
 - Decision (pending spike): duty as `amount.breakdown.custom` labeled "US import duty (est.) – HTS xxxx.xx.xxxx", so the exact
-  computed amount and label show to the buyer (percent-based item tax could round differently). VERIFY IN WEEK 1: exact
+  computed amount and label show to the buyer (percent-based item tax could round differently). Schema + spike (b) 2026-10-05: custom is a single `{label, amount}` object (array → 400). Was VERIFY: exact
   `custom` schema, whether only one custom field is allowed, and buyer-facing rendering.
 
 ## Webhooks
@@ -130,8 +130,14 @@ spike run — items below are schema/doc facts only.
   `tool_choice` → use auto + name the tool in the prompt.
 - 2026-10-05 Orders: `POST /v2/checkout/orders` with `intent: AUTHORIZE`, one PHYSICAL_GOODS item with `items[].tax`, and
   breakdown `item_total + tax_total + shipping` → 201 `CREATED`.
-- 2026-10-05 spike (b): `POST /v2/invoicing/invoices` → 403 `NOT_AUTHORIZED` — sandbox app did not have Invoicing enabled. Rerun pending.
+- 2026-10-05 spike (b): first run → 403 `NOT_AUTHORIZED` until **Invoicing** was ticked in the sandbox app's Features and saved (took effect immediately).
 - 2026-10-05 spike (a) PASS (12/12) — two AUTHORIZE orders ($250.00 item + $31.25 duty as `items[].tax`/`tax_total` + $25.00
   shipping = $306.25) approved via v6; PayPal echoed all totals to the cent; authorization id at
   `purchase_units[0].payments.authorizations[0].id`; capture → 201 `COMPLETED`; void → **204** then `GET` authorization → `VOIDED`;
   1-cent `tax_total` mismatch → 422 `TAX_TOTAL_MISMATCH`; capture replay with same `PayPal-Request-Id` → same capture id.
+- 2026-10-05 spike (b) PASS (5/5) — **Create invoice returns 201 with ONLY a link** `{ rel: 'self', href: 'https://api.sandbox.paypal.com/v2/invoicing/invoices/<id>', method: 'GET' }`
+  (contradicts schema.json, which shows the full invoice). Take the id from the href's last segment and GET via our own client; never
+  follow the href host (`api.sandbox`, not `api-m.sandbox`). Draft → `DRAFT`; send `{ send_to_recipient: true }` → 200; status → `SENT`;
+  total $306.25 = goods + shipping + `breakdown.custom` duty; custom label and amount ($31.25) preserved exactly.
+  Two custom entries (array) → 400 `INVALID_REQUEST` — only ONE custom amount per invoice. Buyer view link at
+  `detail.metadata.recipient_view_url`. VERIFY: buyer-facing rendering of the custom line (open recipient_view_url as the Personal account).

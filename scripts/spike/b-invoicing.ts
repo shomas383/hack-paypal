@@ -38,11 +38,19 @@ export async function run(): Promise<void> {
   if (!email) throw new Error('PAYPAL_SANDBOX_BUYER_EMAIL is empty — set it to your sandbox personal account email');
 
   const customDuty = { label: DUTY_LABEL, amount: toPayPalAmount(DUTY) };
-  const created = await paypalRequest<Invoice>('POST', '/v2/invoicing/invoices', { body: invoiceBody(email, customDuty) });
-  checks.push(check('create draft invoice (201, DRAFT)', created.status === 201 && created.body.status === 'DRAFT',
-    `HTTP ${created.status} status=${created.body?.status ?? issuesOf(created.body)}`));
-  if (!ok(created.status)) return report('spike (b) invoicing', checks);
-  const id = created.body.id;
+  // Observed 2026-10-05 (sandbox): create → 201 with ONLY a link {rel:'self', href:'https://api.sandbox.paypal.com/v2/invoicing/invoices/<id>', method:'GET'},
+  // not the full invoice the schema describes. Take the id from the href; never follow the href host directly.
+  const created = await paypalRequest<Partial<Invoice> & { href?: string }>('POST', '/v2/invoicing/invoices', {
+    body: invoiceBody(email, customDuty),
+  });
+  const id = created.body?.id ?? created.body?.href?.split('/').pop();
+  if (!ok(created.status) || !id) {
+    checks.push(check('create draft invoice (201)', false, `HTTP ${created.status} ${issuesOf(created.body)}`));
+    return report('spike (b) invoicing', checks);
+  }
+  const draft = await paypalRequest<Invoice>('GET', `/v2/invoicing/invoices/${id}`);
+  checks.push(check('create draft invoice (201, then GET → DRAFT)', created.status === 201 && draft.body.status === 'DRAFT',
+    `HTTP ${created.status} id=${id} status=${draft.body.status}`));
 
   const sent = await paypalRequest('POST', `/v2/invoicing/invoices/${id}/send`, {
     body: { send_to_recipient: true, send_to_invoicer: false },
