@@ -1,0 +1,21 @@
+# Local Postgres only. Credentials match DATABASE_URL in .env.example (local dev, not secrets).
+# VERIFY: Render Postgres default major version, keep local in step with prod.
+services:
+  db:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_USER: landed
+      POSTGRES_PASSWORD: landed
+      POSTGRES_DB: landed
+    ports:
+      - "5432:5432"
+    volumes:
+      - landed-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U landed -d landed"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  landed-pg:

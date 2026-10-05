@@ -1,0 +1,51 @@
+{
+  "name": "landed",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "test:e2e": "node scripts/stub.mjs test:e2e \"Playwright demo-path test (deferred until the checkout exists)\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node scripts/stub.mjs db:seed \"listings + data/rates import\"",
+    "rates:validate": "node scripts/stub.mjs rates:validate \"rate data schema + source checks\"",
+    "eval:classifier": "node scripts/stub.mjs eval:classifier \"classifier eval on data/eval/products.json\"",
+    "spike:paypal": "tsx --env-file=.env scripts/spike/run.ts",
+    "spike:a": "tsx --env-file=.env scripts/spike/run.ts a",
+    "spike:b": "tsx --env-file=.env scripts/spike/run.ts b",
+    "spike:c": "tsx --env-file=.env scripts/spike/run.ts c",
+    "spike:d": "tsx --env-file=.env scripts/spike/run.ts d"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "4.0.71",
+    "@paypal/agent-toolkit": "1.11.0",
+    "ai": "7.0.127",
+    "drizzle-orm": "0.45.3",
+    "next": "16.3.8",
+    "postgres": "3.4.9",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "drizzle-kit": "0.31.11",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.3.8",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
+  }
+}

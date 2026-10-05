@@ -1,0 +1,23 @@
+# secrets — .env.example is the contract and IS committed
+.env
+.env.*
+!.env.example
+
+# deps / build
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# test output
+coverage/
+playwright-report/
+test-results/
+
+# misc
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
