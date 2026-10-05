@@ -111,3 +111,13 @@ spike run — items below are schema/doc facts only.
   `createPayPalOneTimePaymentSession({ onApprove, onCancel, onError })`, `onApprove(data)` gives `data.orderId`;
   `session.start({ presentationMode: 'auto' }, createOrderPromise)` where the promise resolves to `{ orderId }` (do not await it
   before `start` — transient activation). The quick start shows only CAPTURE; AUTHORIZE with a server-created order is still VERIFY (spike a).
+
+## Week 1 spike results (sandbox runs)
+- 2026-10-05 spike (d) PASS — `@paypal/agent-toolkit@1.11.0` with `actions: { orders: { get: true } }` → `getTools()` = `["get_order"]` only;
+  `get_order.execute({ id })` returns the order JSON. **Toolkit tools passed raw into AI SDK v7 `generateText` do NOT work** (Claude
+  could not complete the call — v4 `parameters` vs v7 `inputSchema`). **Decision: wrap toolkit `execute` in our own v7 `tool()`**
+  (`inputSchema: z.object({ id })`); verified with `claude-opus-5-5` (tool called, order returned). Opus 5.5 rejects forced
+  `tool_choice` → use auto + name the tool in the prompt.
+- 2026-10-05 Orders: `POST /v2/checkout/orders` with `intent: AUTHORIZE`, one PHYSICAL_GOODS item with `items[].tax`, and
+  breakdown `item_total + tax_total + shipping` → 201 `CREATED`.
+- 2026-10-05 spike (b): `POST /v2/invoicing/invoices` → 403 `NOT_AUTHORIZED` — sandbox app did not have Invoicing enabled. Rerun pending.
