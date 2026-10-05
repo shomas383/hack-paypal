@@ -73,9 +73,9 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 ## Webhooks
 - Verify via postback `POST /v1/notifications/verify-webhook-signature` (headers PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL,
   PAYPAL-TRANSMISSION-ID, PAYPAL-TRANSMISSION-SIG, PAYPAL-TRANSMISSION-TIME + `webhook_id` + event body),
-  or self-verify via cert. Postback does NOT work for simulator/mock events. 
+  or self-verify via cert. Postback does NOT work for simulator/mock events (docs claim) — **but 2026-10-05 spike (c): a `simulate-event` delivery to our registered webhook verified `SUCCESS`.** Don't rely on either; treat simulator results as non-evidence.
 - Simulator: `POST /v1/notifications/simulate-event` or dashboard simulator. 
-- Events to subscribe (VERIFY IN WEEK 1 against the event-names page): `CHECKOUT.ORDER.APPROVED`,
+- Events to subscribe (2026-10-05: `CHECKOUT.ORDER.APPROVED` received for real + verified; `PAYMENT.AUTHORIZATION.CREATED` accepted by simulate-event; others still VERIFY against the event-names page): `CHECKOUT.ORDER.APPROVED`,
   `PAYMENT.AUTHORIZATION.CREATED`, `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `INVOICING.INVOICE.PAID`.
 - Webhooks are for reconciliation; the demo path must not depend on webhook delivery timing (poll `GET order` as fallback).
 - Store events idempotently by event id.
@@ -143,3 +143,9 @@ spike run — items below are schema/doc facts only.
   `detail.metadata.recipient_view_url`. **Buyer view confirmed 2026-10-05:** lines = item (qty × price), `Subtotal`, `Shipping`,
   **our custom label verbatim** ("US import duty (est.) – HTS …", not truncated) + amount, `Total`. Unlike Orders (shown as generic
   "Tax"), the invoice path displays our duty wording to the buyer.
+- 2026-10-05 spike (c) PASS (3/3) — cloudflared quick tunnel → `localhost:8787`, webhook registered in the sandbox app (all events).
+  Real `CHECKOUT.ORDER.APPROVED` delivered within seconds of buyer approval; `verify-webhook-signature` with the **re-serialized parsed
+  JSON** body as `webhook_event` → `SUCCESS` (headers read lowercase: `paypal-auth-algo`, `paypal-cert-url`, `paypal-transmission-id`,
+  `paypal-transmission-sig`, `paypal-transmission-time`). Simulated `PAYMENT.AUTHORIZATION.CREATED` also → `SUCCESS` (see above).
+  In-process replay of a delivery was ignored by event-id dedupe. Not observed yet as real deliveries: authorization created/voided,
+  capture completed, invoice paid (spike stopped at first verified event). Quick-tunnel URLs change on restart → re-register the webhook.
