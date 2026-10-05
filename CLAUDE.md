@@ -28,7 +28,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - `pnpm db:migrate` · `pnpm db:seed` — seeds listings + imports `data/rates/*.json`
 - `pnpm rates:validate` — schema + source/effective-date checks on rate data
 - `pnpm eval:classifier` — runs classifier on `data/eval/products.json`, prints accuracy table
-- `pnpm spike:paypal` — Week 1 sandbox spike scripts in `scripts/spike/`
+- `pnpm spike:paypal <a|b|c|d>` (aliases `pnpm spike:a` … `spike:d`) — Week 1 sandbox spike scripts in `scripts/spike/`
+- Not yet implemented (stubs exit 1): `test:e2e`, `db:seed`, `rates:validate`, `eval:classifier`
 
 ## Architecture map
 - `src/app/` — Next.js routes: `(buyer)/`, `(seller)/`, `api/`
