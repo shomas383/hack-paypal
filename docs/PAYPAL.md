@@ -80,6 +80,34 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   on capture; #96 `@paypal/mcp` depends on `"@paypal/agent-toolkit": "latest"`; #98 PayPal-Request-Id not set per call (no idempotency). 
   → Policy: toolkit tools are read-only allowlist; all money movement goes through `src/server/paypal` + `policy/`. Pin exact versions;
   if using `@paypal/mcp`, pin via lockfile/overrides.
+- Pinned `@paypal/agent-toolkit@1.11.0` (published 2026-09-01). Read from the installed package 2026-10-05: tools are built with
+  AI SDK **v4** `tool({ description, parameters, execute })` and the package depends on `ai@^4` + `zod@^3` (installed alongside our
+  `ai@7`/`zod@4`). AI SDK v7 tools use `inputSchema`, so raw toolkit tools may not work in v7 `generateText` — spike (d) probes this
+  and tests a v7 `tool()` wrapper around the toolkit's `execute`. `get_order` ← `actions.orders.get`, input `{ id }`;
+  `pay_order` ← `actions.orders.capture` (never enable).
 - Do NOT depend on: Store Sync / Cart API (`/merchant-cart`) — access-gated, US customers/USD/physical goods only; 
   remote MCP commerce tools (`search_product`, `create_cart`, `checkout_cart`) — announced for gift cards, behind
   `x-feature-flags: commerce:true`.  Ask PayPal Discord about Cart API access in Week 1 (nice-to-have, not a dependency).
+## Week 1 findings — from primary sources (2026-10-05)
+Sources: OpenAPI specs at `https://developer.paypal.com/api/{orders,payments,invoicing}/v2/schema.json` and
+`https://developer.paypal.com/api/webhooks/v1/schema.json`; v6 quick start at
+`https://developer.paypal.com/docsai/payments/methods/paypal/sdk/js/v6/paypal-checkout`. Runtime behavior still needs the
+spike run — items below are schema/doc facts only.
+- Orders: `order_status` enum = `CREATED|SAVED|APPROVED|VOIDED|COMPLETED|PAYER_ACTION_REQUIRED`. `items[].tax` is a money
+  object. The schema does **not** list issue codes like `ITEM_TOTAL_MISMATCH` or a tax-total mismatch code — spike (a) records the
+  real error for a 1-cent `tax_total` mismatch.
+- Payments: capture authorization body `{ amount?, invoice_id?, final_capture?, note_to_payer?, soft_descriptor? }` → 200/201,
+  `status` ∈ `COMPLETED|DECLINED|PARTIALLY_REFUNDED|PENDING|REFUNDED|FAILED`. Void → **200 (body) or 204 (no body)**.
+  `GET /v2/payments/authorizations/{id}` `status` ∈ `CREATED|CAPTURED|DENIED|PARTIALLY_CAPTURED|VOIDED|PENDING`.
+  `PayPal-Request-Id` and `Prefer` headers are documented on capture and void.
+- Invoicing: `detail.currency_code` is required; recipient = `primary_recipients[].billing_info.email_address`;
+  items require `name`, `quantity` (string), `unit_amount`; invoice item `tax` is `{ name, percent, amount? }` (percent-based).
+  `amount.breakdown.custom` is a **single object** `{ label (required), amount }` — not an array, so only one custom amount.
+  Create → 201 with the full invoice; send body `{ subject?, note?, send_to_invoicer?, send_to_recipient?, additional_recipients? }`
+  → 200/202 with a link.
+- Webhooks: verify request `{ auth_algo, cert_url, transmission_id, transmission_sig, transmission_time, webhook_id, webhook_event }`
+  (all required) → `{ verification_status: SUCCESS|FAILURE }`. Simulate request `{ webhook_id?, url?, event_type (required), resource_version? }` → 202.
+- JS SDK v6: `createInstance({ clientId, components: ['paypal-payments'] })`; `findEligibleMethods()` → `isEligible('paypal')`;
+  `createPayPalOneTimePaymentSession({ onApprove, onCancel, onError })`, `onApprove(data)` gives `data.orderId`;
+  `session.start({ presentationMode: 'auto' }, createOrderPromise)` where the promise resolves to `{ orderId }` (do not await it
+  before `start` — transient activation). The quick start shows only CAPTURE; AUTHORIZE with a server-created order is still VERIFY (spike a).
