@@ -15,7 +15,8 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 - Rule (verbatim): "the amount equals item_total plus tax_total plus shipping plus handling plus insurance minus
   shipping_discount minus discount." Mismatch → 422. Validate locally first. 
 - `item_total` must equal Σ(unit_amount × quantity) (error ITEM_TOTAL_MISMATCH). 
-- If `items[].tax` is specified, `tax_total` is required.  VERIFY IN WEEK 1: exact rule tax_total = Σ(items[].tax × quantity) (likely; error TAX_TOTAL_MISMATCH unconfirmed).
+- If `items[].tax` is specified, `tax_total` is required. **Confirmed 2026-10-05 (spike a, sandbox):** `tax_total` ≠ Σ(items[].tax × quantity)
+  (off by $0.01) → HTTP 422 `UNPROCESSABLE_ENTITY`, issue `TAX_TOTAL_MISMATCH`.
 - `items[]` fields: `name` (required; >127 chars truncated), `quantity` (string, whole number), `unit_amount` (required), `tax`,
   `description` (>2048 chars truncated), `sku` (≤127), `category`, `url`, `image_url`, `upc`. 
 - `category` enum: `PHYSICAL_GOODS`, `DIGITAL_GOODS`, `DONATION` (DONATION needs account permission). We use PHYSICAL_GOODS. 
@@ -26,8 +27,11 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   keeps `item_total` = goods only; avoids mislabeling as `handling` (a merchant fee) or as a fake item.
 - Put HTS + rate version in `purchase_units[].custom_id` / `description` (≤127 effective chars) for traceability.
 - Our own UI is the source of truth for the "US import duty (est.)" label.
-- VERIFY IN WEEK 1: how the PayPal approval UI labels tax_total (likely "Tax"/"Sales tax"); if misleading, evaluate
-  alternative = separate items[] line "US import duty (est.)" with category PHYSICAL_GOODS — document trade-off before switching.
+- **Confirmed 2026-10-05 (spike a, sandbox approval popup → Order details):** lines shown are item name + qty, `Subtotal`, `Shipping`,
+  **`Tax`** (= our duty), `Total`. Accurate (duty is a tax) but generic — a US buyer may read it as sales tax.
+  Decision: keep duty-as-tax; our checkout shows "US import duty (est.)" + HTS + source BEFORE the PayPal button, so the buyer
+  has seen the itemized duty when PayPal shows "Tax". Rejected alternative: separate items[] line "US import duty (est.)" — it
+  would inflate `item_total` (goods) with a tax and misstate the breakdown.
 
 ### Money formatting
 - `value` is a string: integer for JPY (zero-decimal currency; decimals cause an error), 2 decimals for USD. 
@@ -43,14 +47,20 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 
 ## Idempotency
 - Send `PayPal-Request-Id: <uuid>` on every POST (shown in PayPal docs for create order and capture authorization). 
-  Persist the id with the operation; reuse it on retry. VERIFY IN WEEK 1: retention window of the id on PayPal's side.
+  Persist the id with the operation; reuse it on retry. **Confirmed 2026-10-05 (spike a):** replaying a capture with the same
+  `PayPal-Request-Id` seconds later → HTTP 200 (first call was 201) with the **same capture id** — no second capture.
+  VERIFY: retention window of the id on PayPal's side (not testable quickly; don't rely on retries days later).
 
 ## JS SDK v6 (buyer approval)
 - Package `@paypal/paypal-js`, import `loadCoreSdkScript` from `@paypal/paypal-js/sdk-v6`; `environment: 'sandbox'` selects env (clientId does not). 
 - `window.paypal.createInstance({ clientId, components: ['paypal-payments'] })` — client ID auth is recommended (client token only required for Fastlane). 
 - Use `findEligibleMethods`, `<paypal-button>` web component, and `createPayPalOneTimePaymentSession` with onApprove → our server authorize. 
 - Sandbox core script: `https://www.sandbox.paypal.com/web-sdk/v6/core`. 
-- VERIFY IN WEEK 1: v6 flow with an order created server-side with intent AUTHORIZE (v5 needed `intent=authorize` in script URL).
+- **Confirmed 2026-10-05 (spike a):** v6 works with an order created server-side with `intent: AUTHORIZE` — no intent option on the
+  SDK; `createInstance({ clientId, components: ['paypal-payments'] })` + `session.start(..., Promise.resolve({ orderId }))`;
+  `onApprove` gave `data.orderId`; `GET order` → `APPROVED`; then server `authorize`. Popup ran from `http://localhost:5173`.
+  Gotcha: logging in with the sandbox **Business** account (the app's own merchant) is refused ("This PayPal account is
+  associated with the merchant you're trying to pay") — approve with the sandbox **Personal** account.
 
 ## Invoicing v2 (DDP path)
 - `POST /v2/invoicing/invoices` creates a DRAFT; `POST /v2/invoicing/invoices/{id}/send` delivers it. 
@@ -71,7 +81,7 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 - Store events idempotently by event id.
 
 ## Agent Toolkit / MCP
-- npm `@paypal/agent-toolkit` (jsDelivr lists 1.10.0; VERIFY exact latest at install and pin). Python: `paypal-agent-toolkit`. 
+- npm `@paypal/agent-toolkit` — pinned 1.11.0 (latest on npm 2026-10-04). Python: `paypal-agent-toolkit`. 
 - Frameworks: OpenAI Agents SDK, Vercel AI SDK, LangChain, CrewAI, MCP, Amazon Bedrock. 
 - TS usage: `import { PayPalAgentToolkit } from '@paypal/agent-toolkit/ai-sdk'`; `new PayPalAgentToolkit({ clientId, clientSecret,
   configuration: { actions: { orders: { get: true } }, context: { sandbox: true } } })`; `toolkit.getTools()`. 
@@ -110,7 +120,7 @@ spike run — items below are schema/doc facts only.
 - JS SDK v6: `createInstance({ clientId, components: ['paypal-payments'] })`; `findEligibleMethods()` → `isEligible('paypal')`;
   `createPayPalOneTimePaymentSession({ onApprove, onCancel, onError })`, `onApprove(data)` gives `data.orderId`;
   `session.start({ presentationMode: 'auto' }, createOrderPromise)` where the promise resolves to `{ orderId }` (do not await it
-  before `start` — transient activation). The quick start shows only CAPTURE; AUTHORIZE with a server-created order is still VERIFY (spike a).
+  before `start` — transient activation). AUTHORIZE with a server-created order confirmed in spike (a) — see JS SDK v6 section.
 
 ## Week 1 spike results (sandbox runs)
 - 2026-10-05 spike (d) PASS — `@paypal/agent-toolkit@1.11.0` with `actions: { orders: { get: true } }` → `getTools()` = `["get_order"]` only;
@@ -121,3 +131,7 @@ spike run — items below are schema/doc facts only.
 - 2026-10-05 Orders: `POST /v2/checkout/orders` with `intent: AUTHORIZE`, one PHYSICAL_GOODS item with `items[].tax`, and
   breakdown `item_total + tax_total + shipping` → 201 `CREATED`.
 - 2026-10-05 spike (b): `POST /v2/invoicing/invoices` → 403 `NOT_AUTHORIZED` — sandbox app did not have Invoicing enabled. Rerun pending.
+- 2026-10-05 spike (a) PASS (12/12) — two AUTHORIZE orders ($250.00 item + $31.25 duty as `items[].tax`/`tax_total` + $25.00
+  shipping = $306.25) approved via v6; PayPal echoed all totals to the cent; authorization id at
+  `purchase_units[0].payments.authorizations[0].id`; capture → 201 `COMPLETED`; void → **204** then `GET` authorization → `VOIDED`;
+  1-cent `tax_total` mismatch → 422 `TAX_TOTAL_MISMATCH`; capture replay with same `PayPal-Request-Id` → same capture id.
