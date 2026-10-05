@@ -67,7 +67,7 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 - Items need name, quantity, unit_amount; `items[].tax` is per-line tax (name + rate); `amount.breakdown.shipping.amount`
   (+ optional `shipping.tax`); a `custom` amount (label + amount) exists in the breakdown. 
 - Decision (pending spike): duty as `amount.breakdown.custom` labeled "US import duty (est.) – HTS xxxx.xx.xxxx", so the exact
-  computed amount and label show to the buyer (percent-based item tax could round differently). Schema + spike (b) 2026-10-05: custom is a single `{label, amount}` object (array → 400). Was VERIFY: exact
+  computed amount and label show to the buyer (percent-based item tax could round differently). Schema + spike (b) 2026-10-05: custom is a single `{label, amount}` object (array → 400). Buyer rendering confirmed (label shown verbatim). Was VERIFY: exact
   `custom` schema, whether only one custom field is allowed, and buyer-facing rendering.
 
 ## Webhooks
@@ -140,4 +140,6 @@ spike run — items below are schema/doc facts only.
   follow the href host (`api.sandbox`, not `api-m.sandbox`). Draft → `DRAFT`; send `{ send_to_recipient: true }` → 200; status → `SENT`;
   total $306.25 = goods + shipping + `breakdown.custom` duty; custom label and amount ($31.25) preserved exactly.
   Two custom entries (array) → 400 `INVALID_REQUEST` — only ONE custom amount per invoice. Buyer view link at
-  `detail.metadata.recipient_view_url`. VERIFY: buyer-facing rendering of the custom line (open recipient_view_url as the Personal account).
+  `detail.metadata.recipient_view_url`. **Buyer view confirmed 2026-10-05:** lines = item (qty × price), `Subtotal`, `Shipping`,
+  **our custom label verbatim** ("US import duty (est.) – HTS …", not truncated) + amount, `Total`. Unlike Orders (shown as generic
+  "Tax"), the invoice path displays our duty wording to the buyer.
