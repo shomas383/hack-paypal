@@ -71,8 +71,20 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - README updated if setup/commands changed
 
 ## Current milestone — update weekly
-Week 1 (Oct 5–11): sandbox spike. Prove with scripts in `scripts/spike/`: (a) Orders v2 AUTHORIZE with itemized
-items + tax_total duty, buyer approval via JS SDK v6, authorize → capture → void; (b) Invoicing draft → send with
-duty itemized; (c) webhook receipt + verification; (d) Agent Toolkit read-only tools in AI SDK. Write results
-into `docs/PAYPAL.md` and clear the matching VERIFY items.
+Week 2 (Oct 12–18): rate engine + rate data (docs/SPEC.md §4.2). Tests first.
+- `data/rates/<version>.json` schema (zod) + `pnpm rates:validate` (source_refs, hts_revision, effective_from, verified_on required).
+- Pure engine in `src/domain/rates/`: origin + HTS10 + customs value + entry date → itemized lines with sourceRef, or `UNSUPPORTED`.
+- Property tests (duty ≥ 0; JP ≤ max(MFN, 12.5%); EU ≤ max(MFN, 10%); unknown → UNSUPPORTED) + golden tests for the 12 sheet rows
+  + "trust moment" fixture (stale 15% Japan answer flagged).
+- Import the developer's verified 12-product sheet (I provide it); re-verify every row against HTS Rev. 20. Never invent rows.
+- `fast-check` 4.10.2 was deferred in Week 1 — ask before installing.
+
+Week 1 (Oct 5–11): DONE — all four sandbox spikes PASS; results in `docs/PAYPAL.md`.
+Carried over from Week 1:
+- Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery; confirm the rest once the real checkout exists.
+- PayPal-Request-Id retention window unknown — never rely on retries days later.
+- `pnpm db:migrate` not yet run (needs Docker Desktop → `docker compose up -d`).
+- Sandbox webhook points at a dead cloudflared quick-tunnel URL — update to a new tunnel or the Render URL.
+- `docs/HACKATHON.md` is empty — fill in rules, judging, submission checklist and timeline.
+
 Feature freeze: **Wed Nov 4, 2026, end of day.**
