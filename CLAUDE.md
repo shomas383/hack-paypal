@@ -28,10 +28,13 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - `pnpm test:e2e` — Playwright demo-path test against sandbox
 - `pnpm typecheck` · `pnpm lint`
 - `pnpm db:migrate` · `pnpm db:seed` — seeds listings + imports `data/rates/*.json`
+- `pnpm rates:import` — regenerates `data/rates/` + `data/eval/` from the gitignored verified sheet (`data/source/`); stages the output
 - `pnpm rates:validate` — schema + source/effective-date checks on rate data
 - `pnpm eval:classifier` — runs classifier on `data/eval/products.json`, prints accuracy table
 - `pnpm spike:paypal <a|b|c|d>` (aliases `pnpm spike:a` … `spike:d`) — Week 1 sandbox spike scripts in `scripts/spike/`
-- Not yet implemented (stubs exit 1): `test:e2e`, `db:seed`, `rates:validate`, `eval:classifier`
+- Not yet implemented (stubs exit 1): `test:e2e`, `db:seed`, `eval:classifier`
+- `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
+  denied, except exactly `pnpm rates:import` / `pnpm rates:validate`. Read it with the Read tool.
 
 ## Architecture map
 - `src/app/` — Next.js routes: `(buyer)/`, `(seller)/`, `api/`

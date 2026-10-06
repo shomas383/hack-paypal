@@ -31,7 +31,9 @@ pnpm dev                    # http://localhost:3000
 | `pnpm typecheck` · `pnpm lint` | TypeScript (strict) · ESLint |
 | `pnpm db:migrate` | Apply Drizzle migrations |
 | `pnpm spike:a` … `pnpm spike:d` | PayPal sandbox spikes (see below); `pnpm spike:paypal <a\|b\|c\|d>` also works |
-| `pnpm test:e2e` · `pnpm db:seed` · `pnpm rates:validate` · `pnpm eval:classifier` | Not implemented yet (exit 1) |
+| `pnpm rates:import` | Regenerate rate data + eval fixtures from the human-verified sheet (kept locally in `data/source/`, not committed) |
+| `pnpm rates:validate` | Schema + verification-metadata checks on `data/rates/*.json` |
+| `pnpm test:e2e` · `pnpm db:seed` · `pnpm eval:classifier` | Not implemented yet (exit 1) |
 
 ## Sandbox spikes (`scripts/spike/`)
 Each prints a PASS/FAIL table and exits non-zero on failure.
