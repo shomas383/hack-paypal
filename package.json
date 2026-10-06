@@ -18,7 +18,7 @@
     "lint": "eslint .",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "node scripts/stub.mjs db:seed \"listings + data/rates import\"",
-    "rates:validate": "node scripts/stub.mjs rates:validate \"rate data schema + source checks\"",
+    "rates:validate": "tsx scripts/validate-rates.ts",
     "eval:classifier": "node scripts/stub.mjs eval:classifier \"classifier eval on data/eval/products.json\"",
     "spike:paypal": "tsx --env-file=.env scripts/spike/run.ts",
     "spike:a": "tsx --env-file=.env scripts/spike/run.ts a",
