@@ -37,15 +37,24 @@ describe('trust moment: offline LLM vs verified engine', () => {
     expect(results.filter((r) => !r.flagged).map((r) => r.id)).toEqual(['P08']);
   });
 
+  // The engine's effective rate is computed from the cent-rounded duty, so it is 12.5% within rounding
+  // (e.g. $95 → $11.88 = 12.5053%) — compared with the same 0.05 pp tolerance as the mismatch rule.
+  const near = (ppm: number, target: number): boolean => Math.abs(ppm - target) < MISMATCH_PPM;
+
   it('Japan rows: the LLM said 15% (stale IEEPA-era), the engine says 12.5%', () => {
     for (const id of ['P01', 'P02', 'P03', 'P04', 'P06', 'P10']) {
-      expect(results.find((r) => r.id === id)).toMatchObject({ llm: 150_000, engine: 125_000, flagged: true });
+      const r = results.find((x) => x.id === id)!;
+      expect(r).toMatchObject({ llm: 150_000, flagged: true });
+      expect(near(r.engine, 125_000)).toBe(true);
     }
   });
 
   it('China rows: P05 claimed 27.5% and P09 15%; the engine says 12.5% (9903.05.31, List 4B suspended)', () => {
-    expect(results.find((r) => r.id === 'P05')).toMatchObject({ llm: 275_000, engine: 125_000, flagged: true });
-    expect(results.find((r) => r.id === 'P09')).toMatchObject({ llm: 150_000, engine: 125_000, flagged: true });
+    const p05 = results.find((r) => r.id === 'P05')!;
+    const p09 = results.find((r) => r.id === 'P09')!;
+    expect(p05).toMatchObject({ llm: 275_000, flagged: true });
+    expect(p09).toMatchObject({ llm: 150_000, flagged: true });
+    expect(near(p05.engine, 125_000) && near(p09.engine, 125_000)).toBe(true);
   });
 
   it('Section 232 knife and informational-materials exemption are flagged too', () => {

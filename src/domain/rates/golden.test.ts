@@ -91,8 +91,9 @@ describe('golden: verified sheet rows (HTS 2026 Rev. 20)', () => {
 
   it('P11 / P12 refuse to quote without the listing facts their rows depend on', () => {
     for (const id of ['P11', 'P12']) {
-      const { facts: _omit, ...noFacts } = golden.cases.find((c) => c.id === id)!;
-      expect(quoteDuty(table, toInput(noFacts as GoldenCase)).kind).toBe('UNSUPPORTED');
+      const noFacts: GoldenCase = { ...golden.cases.find((c) => c.id === id)! };
+      delete noFacts.facts;
+      expect(quoteDuty(table, toInput(noFacts)).kind).toBe('UNSUPPORTED');
     }
   });
 
