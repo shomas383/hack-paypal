@@ -80,9 +80,12 @@ AC:
 - [ ] Sandbox order shows item, shipping, duty-as-tax totals matching our quote to the cent.
 - [ ] Capture without approval row → denied (test). Amount > cap → denied (test). Stale rateVersion → re-quote.
 - [ ] Void path works for an authorized, uncaptured order.
+- [ ] Checkout shows "US import duty (est.)" + HTS + source before the PayPal button (the PayPal popup labels the duty only
+      "Tax" — confirmed in spike (a), see docs/PAYPAL.md).
 
 ### 4.4 Buyer agent
-- Prompt example: "vintage Seiko under $400 delivered" (use generic names in the video — see HACKATHON.md).
+- Prompt example: "vintage automatic diver watch under $400 delivered" (use generic names in the video — see HACKATHON.md).
+- Claude Opus 5.5 rejects forced `tool_choice` (`any`/`tool` → 400); use `auto` and name the tools in the system prompt.
 - Tools (ours): `search_listings`, `get_landed_cost_quote(listingId)`, `compare_origins`, `request_purchase_approval(quoteId)`
   (creates pending approval + returns link; agent cannot approve), `get_order_status`.
 - PayPal Agent Toolkit: only read-only actions enabled (e.g., `orders.get`). Unit test asserts tool list contains

@@ -1,4 +1,4 @@
-# PayPal integration notes (verified items cite source; VERIFY items must be confirmed in Week 1 spike)
+# PayPal integration notes (verified items cite source; remaining VERIFY items are carried over — Week 1 spikes done 2026-10-05, all PASS)
 
 ## Environment
 - Sandbox REST base: `https://api-m.sandbox.paypal.com` (live is `https://api-m.paypal.com` — never used).
@@ -49,7 +49,7 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 - Send `PayPal-Request-Id: <uuid>` on every POST (shown in PayPal docs for create order and capture authorization). 
   Persist the id with the operation; reuse it on retry. **Confirmed 2026-10-05 (spike a):** replaying a capture with the same
   `PayPal-Request-Id` seconds later → HTTP 200 (first call was 201) with the **same capture id** — no second capture.
-  VERIFY: retention window of the id on PayPal's side (not testable quickly; don't rely on retries days later).
+  Carried over — VERIFY: retention window of the id on PayPal's side (not testable quickly; don't rely on retries days later).
 
 ## JS SDK v6 (buyer approval)
 - Package `@paypal/paypal-js`, import `loadCoreSdkScript` from `@paypal/paypal-js/sdk-v6`; `environment: 'sandbox'` selects env (clientId does not). 
@@ -66,16 +66,18 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
 - `POST /v2/invoicing/invoices` creates a DRAFT; `POST /v2/invoicing/invoices/{id}/send` delivers it. 
 - Items need name, quantity, unit_amount; `items[].tax` is per-line tax (name + rate); `amount.breakdown.shipping.amount`
   (+ optional `shipping.tax`); a `custom` amount (label + amount) exists in the breakdown. 
-- Decision (pending spike): duty as `amount.breakdown.custom` labeled "US import duty (est.) – HTS xxxx.xx.xxxx", so the exact
-  computed amount and label show to the buyer (percent-based item tax could round differently). Schema + spike (b) 2026-10-05: custom is a single `{label, amount}` object (array → 400). Buyer rendering confirmed (label shown verbatim). Was VERIFY: exact
-  `custom` schema, whether only one custom field is allowed, and buyer-facing rendering.
+- Decision (confirmed by spike (b), 2026-10-05): duty as `amount.breakdown.custom` labeled "US import duty (est.) – HTS xxxx.xx.xxxx",
+  so the exact computed amount and label show to the buyer (percent-based item tax could round differently). Evidence: custom is a
+  single `{label, amount}` object (schema; array → 400 in sandbox); the buyer view shows the label verbatim. Was VERIFY: exact
+  `custom` schema, whether only one custom field is allowed, and buyer-facing rendering — all resolved.
 
 ## Webhooks
 - Verify via postback `POST /v1/notifications/verify-webhook-signature` (headers PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL,
   PAYPAL-TRANSMISSION-ID, PAYPAL-TRANSMISSION-SIG, PAYPAL-TRANSMISSION-TIME + `webhook_id` + event body),
   or self-verify via cert. Postback does NOT work for simulator/mock events (docs claim) — **but 2026-10-05 spike (c): a `simulate-event` delivery to our registered webhook verified `SUCCESS`.** Don't rely on either; treat simulator results as non-evidence.
 - Simulator: `POST /v1/notifications/simulate-event` or dashboard simulator. 
-- Events to subscribe (2026-10-05: `CHECKOUT.ORDER.APPROVED` received for real + verified; `PAYMENT.AUTHORIZATION.CREATED` accepted by simulate-event; others still VERIFY against the event-names page): `CHECKOUT.ORDER.APPROVED`,
+- Events to subscribe (2026-10-05: `CHECKOUT.ORDER.APPROVED` received for real + verified; `PAYMENT.AUTHORIZATION.CREATED` accepted by
+  simulate-event; carried over — VERIFY the rest as real deliveries once the real checkout has a webhook endpoint): `CHECKOUT.ORDER.APPROVED`,
   `PAYMENT.AUTHORIZATION.CREATED`, `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `INVOICING.INVOICE.PAID`.
 - Webhooks are for reconciliation; the demo path must not depend on webhook delivery timing (poll `GET order` as fallback).
 - Store events idempotently by event id.
@@ -92,20 +94,21 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   if using `@paypal/mcp`, pin via lockfile/overrides.
 - Pinned `@paypal/agent-toolkit@1.11.0` (published 2026-09-01). Read from the installed package 2026-10-05: tools are built with
   AI SDK **v4** `tool({ description, parameters, execute })` and the package depends on `ai@^4` + `zod@^3` (installed alongside our
-  `ai@7`/`zod@4`). AI SDK v7 tools use `inputSchema`, so raw toolkit tools may not work in v7 `generateText` — spike (d) probes this
-  and tests a v7 `tool()` wrapper around the toolkit's `execute`. `get_order` ← `actions.orders.get`, input `{ id }`;
+  `ai@7`/`zod@4`). AI SDK v7 tools use `inputSchema`; spike (d) confirmed raw toolkit tools do NOT work in v7 `generateText`.
+  **Decision: wrap the toolkit's `execute` in our own v7 `tool()`** (see spike results). `get_order` ← `actions.orders.get`, input `{ id }`;
   `pay_order` ← `actions.orders.capture` (never enable).
 - Do NOT depend on: Store Sync / Cart API (`/merchant-cart`) — access-gated, US customers/USD/physical goods only; 
   remote MCP commerce tools (`search_product`, `create_cart`, `checkout_cart`) — announced for gift cards, behind
-  `x-feature-flags: commerce:true`.  Ask PayPal Discord about Cart API access in Week 1 (nice-to-have, not a dependency).
+  `x-feature-flags: commerce:true`. Carried over: ask PayPal Discord about Cart API access (nice-to-have, not a dependency; not done in Week 1).
+
 ## Week 1 findings — from primary sources (2026-10-05)
 Sources: OpenAPI specs at `https://developer.paypal.com/api/{orders,payments,invoicing}/v2/schema.json` and
 `https://developer.paypal.com/api/webhooks/v1/schema.json`; v6 quick start at
-`https://developer.paypal.com/docsai/payments/methods/paypal/sdk/js/v6/paypal-checkout`. Runtime behavior still needs the
-spike run — items below are schema/doc facts only.
+`https://developer.paypal.com/docsai/payments/methods/paypal/sdk/js/v6/paypal-checkout`. Items below are schema/doc facts;
+where sandbox behavior differed, "Week 1 spike results" below wins and the item is marked SUPERSEDED.
 - Orders: `order_status` enum = `CREATED|SAVED|APPROVED|VOIDED|COMPLETED|PAYER_ACTION_REQUIRED`. `items[].tax` is a money
-  object. The schema does **not** list issue codes like `ITEM_TOTAL_MISMATCH` or a tax-total mismatch code — spike (a) records the
-  real error for a 1-cent `tax_total` mismatch.
+  object. The schema does **not** list issue codes like `ITEM_TOTAL_MISMATCH` or a tax-total mismatch code — spike (a) observed
+  422 `TAX_TOTAL_MISMATCH` for a 1-cent `tax_total` mismatch.
 - Payments: capture authorization body `{ amount?, invoice_id?, final_capture?, note_to_payer?, soft_descriptor? }` → 200/201,
   `status` ∈ `COMPLETED|DECLINED|PARTIALLY_REFUNDED|PENDING|REFUNDED|FAILED`. Void → **200 (body) or 204 (no body)**.
   `GET /v2/payments/authorizations/{id}` `status` ∈ `CREATED|CAPTURED|DENIED|PARTIALLY_CAPTURED|VOIDED|PENDING`.
@@ -113,7 +116,8 @@ spike run — items below are schema/doc facts only.
 - Invoicing: `detail.currency_code` is required; recipient = `primary_recipients[].billing_info.email_address`;
   items require `name`, `quantity` (string), `unit_amount`; invoice item `tax` is `{ name, percent, amount? }` (percent-based).
   `amount.breakdown.custom` is a **single object** `{ label (required), amount }` — not an array, so only one custom amount.
-  Create → 201 with the full invoice; send body `{ subject?, note?, send_to_invoicer?, send_to_recipient?, additional_recipients? }`
+  ~~Create → 201 with the full invoice~~ **SUPERSEDED by spike (b): sandbox returns 201 with only a link `{rel, href, method}`;**
+  send body `{ subject?, note?, send_to_invoicer?, send_to_recipient?, additional_recipients? }`
   → 200/202 with a link.
 - Webhooks: verify request `{ auth_algo, cert_url, transmission_id, transmission_sig, transmission_time, webhook_id, webhook_event }`
   (all required) → `{ verification_status: SUCCESS|FAILURE }`. Simulate request `{ webhook_id?, url?, event_type (required), resource_version? }` → 202.
