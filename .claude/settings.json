@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "deny": ["Read(./.env)", "PowerShell(Get-Content .env*)", "Bash(cat .env*)"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/protect-rates.mjs"]
+          }
+        ]
+      }
+    ]
+  }
+}
