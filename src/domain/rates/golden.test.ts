@@ -40,7 +40,7 @@ describe('golden: verified sheet rows (HTS 2026 Rev. 20)', () => {
     },
   );
 
-  it.each(golden.cases.filter((c) => c.expected === 'UNSUPPORTED').map((c) => [c.id, c] as const))(
+  it.each(golden.cases.filter((c) => c.expected === 'UNSUPPORTED').map((c) => [`${c.id} (${c.origin})`, c] as const))(
     '%s is UNSUPPORTED',
     (_id, c) => {
       expect(quoteDuty(table, toInput(c)).kind).toBe('UNSUPPORTED');

@@ -139,13 +139,14 @@ const GENERICIZE: [RegExp, string][] = [
   [/Seiko 5 \/ 4R35/g, 'a comparable automatic watch'],
   [/AE-1 Program /g, ''],
   [/Nendoroid/g, 'Articulated PVC figure'],
+  [/GBA SP handheld console/g, 'Handheld console'],
   [/GBA SP /g, ''],
   [/TekyGo! /g, ''],
   [/VG10 steel/g, 'stainless steel'],
 ];
 /** Fails the import if any of these survive genericization. */
 const BRAND_DENYLIST =
-  /pok[eé]mon|\bPSA\b|seiko|SKX|7S26|4R35|presage|canon|AE-1|nendoroid|shimano|stella|levi|momotaro|nintendo|game boy|\bGBA\b|AGS-001|honma|VG-?10|tekygo|scarlet & violet/i;
+  /pok[eé]mon|\bPSA\b|seiko|SKX|7S26|4R35|presage|canon|AE-1|nendoroid|shimano|stella|levi|momotaro|nintendo|game boy|\bGBA\b|AGS-001|honma|VG-?10|tekygo|scarlet & violet|daiwa|mizuno|evisu|good smile/i;
 
 function genericize(s: string): string {
   return GENERICIZE.reduce((acc, [re, to]) => acc.replace(re, to), s);
@@ -185,6 +186,8 @@ const GOLDEN_OVERRIDE: Record<string, { price_minor: number; value_split: { case
 };
 
 const ORIGIN: Record<string, string> = { Japan: 'JP', China: 'CN' };
+/** Origins that only appear on rows that aren't verified (used for UNSUPPORTED golden cases, never for rate rows). */
+const NOT_VERIFIED_ORIGIN: Record<string, string> = { USA: 'US' };
 
 // ───────────────────────── helpers ─────────────────────────
 /** Sheet decimal (e.g. 0.16600000000000001) → integer ppm; refuses values that aren't whole ppm. */
@@ -274,7 +277,11 @@ function main(): void {
 
     if (status !== 'VERIFIED') {
       skipped.push({ id, status, reason: genericize(cells.get('W') ?? '(no note)') });
-      golden.push({ id, origin: ORIGIN[cells.get('C') ?? ''] ?? 'JP', hts10: cells.get('D') ?? null, expected: 'UNSUPPORTED' });
+      // Not-verified rows must be UNSUPPORTED for every origin the sheet names (P07: "USA / Japan").
+      const named = (cells.get('C') ?? '').split('/').map((s) => s.trim());
+      const origins = named.map((c) => ORIGIN[c] ?? NOT_VERIFIED_ORIGIN[c]).filter((o): o is string => Boolean(o));
+      assert(origins.length > 0, `${id}: no recognizable origin in "${cells.get('C')}"`);
+      for (const origin of origins) golden.push({ id, origin, hts10: cells.get('D') ?? null, expected: 'UNSUPPORTED' });
       continue;
     }
 
