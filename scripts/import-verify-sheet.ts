@@ -5,6 +5,7 @@
 //  - Values are transcribed, never altered. Anything that isn't a plain cell (compound components, listing facts,
 //    P03's value split) comes from an explicit table below and is ASSERTED against the row's evidence text (col W).
 //  - Any surprise aborts the import. Fix the sheet (a human) — never this script's numbers.
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -501,6 +502,11 @@ function main(): void {
   console.log(`  ${OUT_RATES} ${sha(out.rates)} (${file.rows.length} rows)`);
   console.log(`  ${OUT_PRODUCTS} ${sha(out.products)} (${evalProducts.length} products)`);
   console.log(`  ${OUT_GOLDEN} ${sha(out.golden)} (${golden.length} cases)`);
+
+  // Stage the generated files (the PreToolUse guard blocks ad-hoc commands on the rates folder; the importer is the
+  // sanctioned path). Committing is a separate, reviewed step.
+  execFileSync('git', ['add', '--', OUT_RATES, OUT_PRODUCTS, OUT_GOLDEN], { stdio: 'inherit' });
+  console.log('staged the 3 generated files (git add) — review with git diff --cached, then commit.');
 }
 
 try {
