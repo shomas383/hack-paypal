@@ -68,6 +68,12 @@
     },
     {
       "id": "P07",
+      "origin": "US",
+      "hts10": "9801.00.1098",
+      "expected": "UNSUPPORTED"
+    },
+    {
+      "id": "P07",
       "origin": "JP",
       "hts10": "9801.00.1098",
       "expected": "UNSUPPORTED"
