@@ -1,0 +1,133 @@
+{
+  "rate_version": "2026-rev20-v1",
+  "note": "Expected values from the Verify tab (column R/O); prices from Products E unless overridden.",
+  "cases": [
+    {
+      "id": "P01",
+      "origin": "JP",
+      "hts10": "9504.40.0000",
+      "price_minor": 9500,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.49",
+      "expected": "OK"
+    },
+    {
+      "id": "P02",
+      "origin": "JP",
+      "hts10": "9504.40.0000",
+      "price_minor": 25000,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.49",
+      "expected": "OK"
+    },
+    {
+      "id": "P03",
+      "origin": "JP",
+      "hts10": "9102.21.7000",
+      "price_minor": 30000,
+      "quantity": 1,
+      "value_split": {
+        "case_minor": 25000,
+        "band_minor": 5000
+      },
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.49",
+      "expected": "OK"
+    },
+    {
+      "id": "P04",
+      "origin": "JP",
+      "hts10": "9006.53.0205",
+      "price_minor": 18000,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.49",
+      "expected": "OK"
+    },
+    {
+      "id": "P05",
+      "origin": "CN",
+      "hts10": "9503.00.0090",
+      "price_minor": 6500,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.31",
+      "expected": "OK"
+    },
+    {
+      "id": "P06",
+      "origin": "JP",
+      "hts10": "9507.30.6000",
+      "price_minor": 35000,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.49",
+      "expected": "OK"
+    },
+    {
+      "id": "P07",
+      "origin": "JP",
+      "hts10": "9801.00.1098",
+      "expected": "UNSUPPORTED"
+    },
+    {
+      "id": "P08",
+      "origin": "JP",
+      "hts10": "6203.42.4511",
+      "price_minor": 20000,
+      "quantity": 1,
+      "expected_total_ppm": 166000,
+      "expected_chapter99": "9903.05.48",
+      "expected": "OK"
+    },
+    {
+      "id": "P09",
+      "origin": "CN",
+      "hts10": "9504.50.0000",
+      "price_minor": 12000,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.31",
+      "expected": "OK"
+    },
+    {
+      "id": "P10",
+      "origin": "JP",
+      "hts10": "9506.31.0000",
+      "price_minor": 30000,
+      "quantity": 1,
+      "expected_total_ppm": 125000,
+      "expected_chapter99": "9903.05.49",
+      "expected": "OK"
+    },
+    {
+      "id": "P11",
+      "origin": "JP",
+      "hts10": "8211.92.9030",
+      "price_minor": 14000,
+      "quantity": 1,
+      "facts": {
+        "steel_weight_share_ge_15pct": true,
+        "steel_us_melted_poured_ge_85pct": false
+      },
+      "expected_total_ppm": 311000,
+      "expected_chapter99": "9903.82.09",
+      "expected": "OK"
+    },
+    {
+      "id": "P12",
+      "origin": "JP",
+      "hts10": "8523.49.4000",
+      "price_minor": 18000,
+      "quantity": 1,
+      "facts": {
+        "informational_material": true
+      },
+      "expected_total_ppm": 0,
+      "expected_chapter99": "9903.05.92",
+      "expected": "OK"
+    }
+  ]
+}

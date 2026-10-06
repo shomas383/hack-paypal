@@ -1,0 +1,230 @@
+[
+  {
+    "id": "P01",
+    "title": "Japanese-language trading card game booster box (sealed)",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9504.40.0000",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9504.40.0000",
+      "base_ppm": 0,
+      "addon_ppm": 150000,
+      "total_ppm": 150000,
+      "confidence": "HIGH",
+      "notes": "HIGH on code / MED on rate. Sealed TCG = playing cards, 9504.40, MFN Free; CBP has ruled TCG cards here repeatedly. Japan reciprocal tariff tops a sub-15% MFN rate up to 15%, so the whole duty is policy, not classification."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P02",
+    "title": "Graded collectible trading card in a sealed slab (Japanese)",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9504.40.0000",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9504.40.0000",
+      "base_ppm": 0,
+      "addon_ppm": 150000,
+      "total_ppm": 150000,
+      "confidence": "HIGH",
+      "notes": "HIGH. Grading/slabbing does not change classification - it is still the card. 4911.99.6000 (other printed matter, Free) is the plausible alternative and lands on the same 15% after the Japan top-up, so this row should NOT produce a duty gap even if the code mismatches."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P03",
+    "title": "1990s Japanese automatic diver watch, 21 jewels, stainless case, steel bracelet",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9102.21.7000",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9102.21.5000",
+      "base_ppm": 30000,
+      "addon_ppm": 120000,
+      "total_ppm": 150000,
+      "confidence": "LOW",
+      "notes": "LOW on code, MED on total. Ch.91 duty is COMPOUND ($ per watch + % on case + % on strap), not a flat %, and splits by jewel count - a a comparable automatic watch has >17 jewels. 3.0% is an ad-valorem-equivalent guess at $220, not a real rate. Verify the 8- and 10-digit breakout by hand. Note the ceiling rule hides the error: any AVE under 15% still totals 15%."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P04",
+    "title": "Vintage 35mm SLR film camera with 50mm lens",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9006.53.0205",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9006.53.0000",
+      "base_ppm": 0,
+      "addon_ppm": 150000,
+      "total_ppm": 150000,
+      "confidence": "MED-HIGH",
+      "notes": "MED-HIGH. 35mm roll-film camera, MFN Free. Body+lens sold together = a set under GRI 3(b), essential character the camera. A lens shipped alone would be 9002.11 and is NOT free. Confirm the body is Japan-built, not Taiwan."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P05",
+    "title": "Articulated PVC collectible figure, ages 15+",
+    "origin": "CN",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9503.00.0090",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9503.00.0090",
+      "base_ppm": 0,
+      "addon_ppm": 275000,
+      "total_ppm": 275000,
+      "confidence": "LOW",
+      "notes": "LOW - the widest error bar on the sheet. Code is fine (collectible figures = toys, Free). The rate is a China stack: Sec.301 List 4A 7.5% + IEEPA fentanyl 10% + IEEPA reciprocal 10%. Every one of those has moved within the last year. If CBP instead calls it an ornamental plastic article (3926.40, 5.3% base, List 3 at 25%) the total is closer to 40%. Research this row first."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P06",
+    "title": "High-end spinning fishing reel (valued over $8.45)",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9507.30.6000",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9507.30.6000",
+      "base_ppm": 39000,
+      "addon_ppm": 111000,
+      "total_ppm": 150000,
+      "confidence": "MED-HIGH",
+      "notes": "MED-HIGH on code (fishing reels over $8.45 each = 9507.30.6000, 3.9%). Figures shown are the JAPAN case: 3.9% MFN topped up to the 15% ceiling. If the reel is Malaysia-built the reciprocal rate is ~19% and does NOT absorb the MFN, so total is ~22.9% - a ~8pt swing off the country field alone."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P07",
+    "title": "Vintage denim jeans of uncertain (US or Japan) manufacture",
+    "origin": null,
+    "expected": {
+      "status": "EXCLUDED",
+      "hts10": null,
+      "total_ppm": null
+    },
+    "llm": {
+      "hts10": "6203.42.4511",
+      "base_ppm": 166000,
+      "addon_ppm": 0,
+      "total_ppm": 166000,
+      "confidence": "MED",
+      "notes": "MED. Men's cotton blue-denim trousers, 16.6% MFN. Because MFN already exceeds 15%, the Japan reciprocal adds NOTHING - the top-up is a ceiling, not a surcharge, and this is the single most common LLM error on apparel. Two traps: 6309.00 worn clothing (Free) does not cover one collector pair sold at retail, and USA origin needs 9801.00.10 documentation to claim duty-free return."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P08",
+    "title": "Men's selvedge blue denim jeans, 100% cotton",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "6203.42.4511",
+      "total_ppm": 166000
+    },
+    "llm": {
+      "hts10": "6203.42.4511",
+      "base_ppm": 166000,
+      "addon_ppm": 0,
+      "total_ppm": 166000,
+      "confidence": "MED",
+      "notes": "MED. Same line and same 16.6% as P07 with no origin ambiguity. Use as the control: if a model gives P07 and P08 different base rates without a fiber-content or origin reason, it is guessing. Women's cut would be 6204.62.4011, also 16.6%."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P09",
+    "title": "Handheld video game console (early 2000s)",
+    "origin": "CN",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9504.50.0000",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9504.50.0000",
+      "base_ppm": 0,
+      "addon_ppm": 150000,
+      "total_ppm": 150000,
+      "confidence": "MED",
+      "notes": "MED. Handheld consoles do sit in 9504.50 (Free), not in Ch.85 electronics. Figures are the JAPAN case. units were built in both Japan and China by run - a China-origin unit stacks to roughly 27.5%, so this row is really an origin test, not a classification test. Check the label on the actual console."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P10",
+    "title": "Complete golf driver",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "9506.31.0000",
+      "total_ppm": 125000
+    },
+    "llm": {
+      "hts10": "9506.31.0000",
+      "base_ppm": 0,
+      "addon_ppm": 150000,
+      "total_ppm": 150000,
+      "confidence": "HIGH",
+      "notes": "HIGH on code (complete golf clubs, Free), MED on rate. Duty is the small problem here: at 7,000 JPY, shipping plus the 2,800 JPY clearance fee costs more than the tariff. This row should show that fixed costs, not duty, decide margin on heavy items."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P11",
+    "title": "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "8211.92.9030",
+      "total_ppm": 311000
+    },
+    "llm": {
+      "hts10": "8211.92.4060",
+      "base_ppm": 46000,
+      "addon_ppm": 104000,
+      "total_ppm": 150000,
+      "confidence": "LOW",
+      "notes": "LOW. Kitchen knives with fixed blades are 0.8c each + 4.6%, so 4.6% is an AVE at $140. The real risk is Section 232: steel derivative lists expanded through 2025 and a covered knife is charged on steel CONTENT at the 232 rate instead of the reciprocal - potentially 50%+ rather than 15%. Confirm whether this HTS line appears in the 232 derivative annex before quoting any buyer."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  },
+  {
+    "id": "P12",
+    "title": "Anime series Blu-ray box set, Japanese release (commercially recorded)",
+    "origin": "JP",
+    "expected": {
+      "status": "VERIFIED",
+      "hts10": "8523.49.4000",
+      "total_ppm": 0
+    },
+    "llm": {
+      "hts10": "8523.49.4000",
+      "base_ppm": 0,
+      "addon_ppm": 150000,
+      "total_ppm": 150000,
+      "confidence": "MED",
+      "notes": "MED. Recorded optical media, MFN Free - the correct answer here is boring, which is the point. If a model invents a duty for this row it is over-classifying. Region coding and licensing are not customs questions."
+    },
+    "source": "offline LLM test, 2026-09-13 (HTS Rev. 18 era)"
+  }
+]
