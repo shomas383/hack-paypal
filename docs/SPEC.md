@@ -84,11 +84,13 @@ Seeding:
 - The USITC API (`https://hts.usitc.gov/reststop/search?keyword=…`) returns the schedule (general/special rates), not
   origin-specific Chapter 99 stacking — that layer is ours.
 AC:
-- [ ] Property tests: duty ≥ 0; JP non-exempt, non-232 total = max(MFN or AVE, 12.5%); CN total = MFN + 12.5%; unknown → UNSUPPORTED.
-      EU never exceeds max(MFN, 10%) — open until EU rows are verified.
-- [ ] Golden tests: every VERIFIED sheet row reproduces the sheet's total (column R) and Ch.99 heading exactly at the sheet price.
-- [ ] "Trust moment" fixture: stale pure-LLM answers (15% on Japan rows; 27.5% on P05, 15% on P09 China rows) are flagged
-      as mismatches against the engine.
+- [x] Property tests: duty ≥ 0; JP non-exempt, non-232 total = max(MFN or AVE, 12.5%); CN total = MFN + 12.5%; unknown → UNSUPPORTED.
+      (`src/domain/rates/property.test.ts`, 2026-10-06)
+- [ ] Property test: EU never exceeds max(MFN, 10%) — open until EU rows are verified.
+- [x] Golden tests: every VERIFIED sheet row reproduces the sheet's total (column R) and Ch.99 heading exactly at the sheet price.
+      (`src/domain/rates/golden.test.ts`: 11/11 + P07 UNSUPPORTED for JP and US, 2026-10-06)
+- [x] "Trust moment" fixture: stale pure-LLM answers (15% on Japan rows; 27.5% on P05, 15% on P09 China rows) are flagged
+      as mismatches against the engine. (`src/domain/rates/trust.test.ts`: 10/11 flagged, P08 correct, 2026-10-06)
 
 ### 4.3 Duty-aware checkout (PayPal Orders v2)
 - Server builds the order from a stored Quote (never from client/LLM-supplied amounts). See docs/PAYPAL.md.
