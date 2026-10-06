@@ -10,6 +10,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - `docs/PAYPAL.md` — verified PayPal API notes + gotchas. Read before touching `src/server/paypal/**`.
 - `docs/HACKATHON.md` — rules, judging, submission checklist, timeline. Read before README/video/deploy work.
 - `docs/DEMO.md` — the <3-minute demo script. The demo path is the product; build toward it.
+- `docs/HTS_VERIFICATION_SPEC.md` — how a duty row is verified (HTS + Chapter 99, Rev. 20 regime facts). Read before
+  touching `data/rates/` or `src/domain/rates/`.
 
 ## Stack (decided — do not change without asking)
 - TypeScript (strict) · Next.js App Router · pnpm · Node 24 LTS (Active LTS until 2026-10-20 per the nodejs/release schedule; Node 26 enters Active LTS 2026-10-28; Agent Toolkit needs ≥18)

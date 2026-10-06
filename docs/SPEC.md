@@ -39,36 +39,56 @@ AC:
 - [ ] Japanese listing classified end-to-end in the UI with confidence displayed; one seeded listing lands in review queue.
 
 ### 4.2 Rate engine (deterministic)
-Input: `{ origin: ISO-3166 alpha-2 (EU members map to 'EU' program), hts10, customsValue: Money(USD), entryDate }`.
-Output: `{ lines: [{ kind: 'MFN'|'S301_FORCED_LABOR'|'S301_CHINA'|'S232'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, rateVersion }` or `UNSUPPORTED{reason}`.
-Data file schema (`data/rates/<version>.json`), one row per (hts10, origin-program):
-- `hts10`, `description`, `hts_revision` (e.g., "2026 Rev. 20"), `mfn`: `{ type: 'free'|'ad_valorem'|'specific'|'compound', ad_valorem_ppm?, specific_components?, ave_ppm? }`
-- `additional[]`: `{ program, chapter99, rule: 'additive'|'combined_cap', rate_ppm, exemptions_checked: boolean }`
-- `effective_from`, `effective_to|null`, `source_refs[]` (CSMS #, FR cite, HTS URL), `verified_by`, `verified_on`
-Rules (current regime; each must be backed by a source_ref in data):
-- Section 301 forced-labor action, effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983. 
-  - JP: combined cap 12.5% — if MFN (or AVE) < 12.5%, additional = 12.5% − MFN; if MFN ≥ 12.5%, additional = 0. 
-  - EU members: combined cap 10% (same mechanics). 
-  - GB: additive 10%. 
-  - CN: additive 12.5%, IN ADDITION to existing China Section 301 list duties (7.5%–25% depending on list). CSMS #69326983 (9903.05.31) states "articles the product of China will be assessed an additional ad valorem rate of duty of 12.5%"; one law-firm table's "13%" figure is superseded by the CSMS text.
-  - Chapter 99 headings (CSMS #69326983 text, broker reprint): CN 9903.05.31 (additional 12.5%); EU 9903.05.38 (MFN ≥10%, no added duty) / 9903.05.39 (combined 10%); GB 9903.05.81 (additional 10%); JP 9903.05.48 (MFN ≥12.5%, none) / 9903.05.49 (combined 12.5%).
-  - CSMS lists general and country-specific exemptions — every row must record `exemptions_checked: true` with ref. 
-- Section 122 10% surcharge expired July 24, 2026 — must NOT appear in current rows. 
-- CSMS #69326983 general exemption 9903.05.90 covers "Articles of aluminum, of steel, or of copper or derivative aluminum or steel articles" (exempt from the forced-labor 301 duty); such rows (e.g., steel hand tools) need a separate Section 232 check — if unknown for a row, engine returns UNSUPPORTED.
-- Customs value: US uses transaction value, which generally excludes international freight/insurance — duty computed on goods value, not goods+shipping. VERIFY against the developer's sheet methodology before coding.
-- Rounding: compute in integer ppm × minor units; round half-up to the cent per duty line; document. (Estimate, not a CBP liquidation figure.)
+Method and rules for verifying a row: `docs/HTS_VERIFICATION_SPEC.md` (overrides this section where more precise).
+Input: `{ origin: ISO-3166 alpha-2 (EU members map to 'EU' program), hts10, entryDate, customsValue: Money(USD, goods only),
+quantity, valueSplit?: { case, band } (compound watch rates), facts?: Record<string, boolean> (row conditions, e.g.
+steel ≥15% of weight, informational material) }`. A missing split or fact the row needs → `UNSUPPORTED`.
+Output: `{ lines: [{ kind: 'MFN'|'S301_FORCED_LABOR'|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
+Data file schema (`data/rates/<version>.json`, e.g. `2026-rev20-v1`), one row per (hts10, origin); generated only by
+`scripts/import-verify-sheet.ts` from the human-verified sheet, never hand-edited. Integers only: rates in ppm, specific
+amounts in USD micros.
+- `hts10`, `origin`, `listings[]`, generic `description`, `hts_revision` ("2026 Rev. 20"), `mfn`: `free` | `ad_valorem` |
+  `specific` | `compound` with `components[]` (specific per unit, or ad valorem on full value / case / band) + verbatim `text`.
+  **Never store a compound rate as a flat %**; the AVE is computed per listing price.
+- `additional[]`: `{ program, chapter99, rule: 'combined_cap'|'additive'|'exempt', rate_ppm, basis: 'full_value', conditions[] }`;
+  `not_applied[]` (e.g. suspended lists); `exemptions_checked` with refs.
+- `effective_from`, `effective_to|null`, `source_refs[]` (HTS line, Ch.99 heading, U.S. note, CSMS), `ruling`
+  (number + supports/analogy/none), `verified_by`, `verified_on`.
+Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
+- Base rate: the **General** column. Special-program rates (e.g. JP agreement → Free if claimed) are recorded in notes only;
+  a DDP estimate doesn't assume anyone files an FTA claim.
+- Customs value = transaction value of the goods; **itemized international shipping is excluded** (HTS_VERIFICATION_SPEC §3
+  Step 3.4). This clears the earlier VERIFY on customs value.
+- Section 301 forced-labor action (U.S. note 52), effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983.
+  - JP: **9903.05.49** if the col. 1 rate **or its AVE** (compound rates) is < 12.5% → total becomes 12.5% (add-on = 12.5% − base);
+    **9903.05.48** if ≥ 12.5% → no add-on. It is a cap/top-up, not an additive surcharge.
+  - CN: **9903.05.31** = base **+ 12.5% (additive)**, plus any *active* legacy China 301 list (note 20). List 4B
+    (9903.88.16) is **suspended** — don't add it. CSMS #69326983 states "articles the product of China will be assessed an
+    additional ad valorem rate of duty of 12.5%"; one law-firm table's "13%" figure is superseded by the CSMS text.
+  - EU members (9903.05.38 ≥10% no change / .39 combined 10%) and GB (9903.05.81 +10%): **not yet read from the HTS** —
+    no rows until a human verifies them (HTS_VERIFICATION_SPEC §3 Step 4b).
+  - Exemptions **9903.05.85–.92** must each be checked (`exemptions_checked`), including **.92 informational materials**
+    (publications, films, recordings, CDs… "including but not limited to") — description-based, no HTS list.
+- Section 232 (steel/aluminum/copper): find the code's **note 16** subdivision; derivative steel (c)(vi)–(viii), (xi) →
+  **9903.82.09 = + 25% on the FULL customs value**; for articles outside ch. 72/73/74/76 only if the metal is **≥ 15% of
+  the article's weight**. A 232 article is **exempt from the 12.5%** via 9903.05.90 / note 52(f). Unknown subdivision → UNSUPPORTED.
+- **IEEPA** tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but **terminated** (CBP stopped collecting for
+  entries on/after Feb 24, 2026) — never add them. Section 122 10% surcharge expired July 24, 2026 — must NOT appear.
+- Rounding: compute in integers (ppm, micros); round half-up to the cent per duty line. For `combined_cap` the add-on line =
+  round(cap × value) − round(MFN line), so the total is exactly round(12.5% × value). (Estimate, not a CBP liquidation figure.)
 - Engine is versioned: every quote stores `rateVersion`; capture re-checks that version is still current.
 Seeding:
-- Import the developer's verified 12-product sheet (HTS 2026 Rev. 18 + CBP CSMS) into `data/rates/` and
-  `data/eval/`. IMPORTANT: HTS Rev. 20 was published Sept 28, 2026 — re-verify every row against the current
-  revision (USITC HTS REST API base `https://hts.usitc.gov/reststop`, e.g. `/search?keyword=…`,
-  `/exportList?from=…&to=…&format=JSON`) and update `hts_revision`/`verified_on`.  Do NOT invent rows for
-  origins/codes not in the sheet; mark them UNSUPPORTED until verified by a human.
-- The USITC API returns the schedule (general/special rates), not origin-specific Chapter 99 stacking — that layer is ours. 
+- Import the developer's verified sheet (Verify tab; HTS 2026 Rev. 20, verified 2026-10-05) into `data/rates/` and
+  `data/eval/`; only rows with Status = VERIFIED. P07 (US goods returned, 9801.00.10) is EXCLUDED → UNSUPPORTED.
+  Do NOT invent rows for origins/codes not in the sheet; mark them UNSUPPORTED until verified by a human.
+- The USITC API (`https://hts.usitc.gov/reststop/search?keyword=…`) returns the schedule (general/special rates), not
+  origin-specific Chapter 99 stacking — that layer is ours.
 AC:
-- [ ] Property tests: duty ≥ 0; JP total effective rate never exceeds max(MFN, 12.5%); EU never exceeds max(MFN,10%); unknown → UNSUPPORTED.
-- [ ] Golden tests: all 12 sheet rows reproduce sheet values exactly (after Rev. 20 re-verification).
-- [ ] "Trust moment" fixture: stale pure-LLM answer (15% on Japan rows) is flagged as mismatch against engine.
+- [ ] Property tests: duty ≥ 0; JP non-exempt, non-232 total = max(MFN or AVE, 12.5%); CN total = MFN + 12.5%; unknown → UNSUPPORTED.
+      EU never exceeds max(MFN, 10%) — open until EU rows are verified.
+- [ ] Golden tests: every VERIFIED sheet row reproduces the sheet's total (column R) and Ch.99 heading exactly at the sheet price.
+- [ ] "Trust moment" fixture: stale pure-LLM answers (15% on Japan rows; 27.5% on P05, 15% on P09 China rows) are flagged
+      as mismatches against the engine.
 
 ### 4.3 Duty-aware checkout (PayPal Orders v2)
 - Server builds the order from a stored Quote (never from client/LLM-supplied amounts). See docs/PAYPAL.md.
