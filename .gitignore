@@ -3,6 +3,11 @@
 .env.*
 !.env.example
 
+# raw source data (human-verified sheet, HTS PDFs) — never committed; data/rates is generated from it
+data/source/
+# Office lock files (e.g. ~$sheet.xlsx while the workbook is open)
+~$*
+
 # deps / build
 node_modules/
 .next/
