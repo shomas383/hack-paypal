@@ -15,6 +15,7 @@ export async function ensureSessionId(): Promise<string> {
   const existing = await readSessionId();
   if (existing) return existing;
   const id = randomUUID();
-  (await cookies()).set(NAME, id, { httpOnly: true, sameSite: 'lax', path: '/' });
+  // Render serves HTTPS; locally `next dev` is plain http, so `secure` only in production.
+  (await cookies()).set(NAME, id, { httpOnly: true, sameSite: 'lax', path: '/', secure: process.env.NODE_ENV === 'production' });
   return id;
 }
