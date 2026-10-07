@@ -55,6 +55,14 @@ describe('decideCapture', () => {
     expect(decideCapture({ ...base(), sessionCapturedMinor: 43_750n }).decision).toBe('CAPTURE');
   });
 
+  it('captures a quote whose rates are old, as long as the rate version is still the active one (no age-based staleness)', () => {
+    // Created in October (rates verified 2026-10-05), not yet expired, captured during judging: age alone never voids.
+    const oldQuote = { ...quote, createdAt: new Date('2026-10-06T12:00:00Z'), expiresAt: new Date('2026-12-10T12:15:00Z') };
+    const d = decideCapture({ ...base(), quote: oldQuote, now: new Date('2026-12-10T12:00:00Z') });
+    expect(d.decision).toBe('CAPTURE');
+    expect(d.reasons).toEqual([]);
+  });
+
   it('reports every failing check, not just the first', () => {
     const d = decideCapture({ ...base(), approval: null, currentRateVersion: 'v2', now: new Date('2027-01-01T00:00:00Z') });
     expect(d.reasons).toEqual(expect.arrayContaining(['NO_APPROVAL', 'RATE_VERSION_STALE', 'QUOTE_EXPIRED']));

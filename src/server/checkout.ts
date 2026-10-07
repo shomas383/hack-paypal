@@ -5,6 +5,7 @@ import { and, eq, sql as dsql } from 'drizzle-orm';
 import { fromPayPalValue } from '@/domain/money/format';
 import { approvalHash, decideCapture } from '@/domain/policy/decideCapture';
 import { buildQuote, type QuoteRecord } from '@/domain/quote/buildQuote';
+import { quoteUnusableMessage, quoteUsable } from '@/domain/quote/quoteUsable';
 import { db } from './db/client';
 import { approvals, auditLog, invoices, listings, orders, quotes } from './db/schema';
 import { serverEnv } from './env';
@@ -87,6 +88,12 @@ async function quoteForSession(quoteId: string, sessionId: string | undefined): 
   return toRecord(row);
 }
 
+/** 409 "rates changed / quote expired — get a new quote" unless the quote is fresh and on the active rate version. */
+function assertQuoteUsable(q: QuoteRecord): void {
+  const u = quoteUsable(q, new Date(), currentRateTable().version);
+  if (!u.ok) throw new CheckoutError(409, quoteUnusableMessage(u.reasons));
+}
+
 async function sessionCapturedMinor(sessionId: string): Promise<bigint> {
   const [r] = await db
     .select({ total: dsql<string | null>`coalesce(sum(${quotes.totalMinor}), 0)` })
@@ -116,8 +123,7 @@ export async function getCheckoutView(quoteId: string, sessionId: string | undef
 export async function approveQuote(quoteId: string, sessionId: string) {
   const q = await quoteForSession(quoteId, sessionId);
   const env = serverEnv();
-  if (Date.now() >= q.expiresAt.getTime()) throw new CheckoutError(409, 'quote expired — get a new quote');
-  if (q.rateVersion !== currentRateTable().version) throw new CheckoutError(409, 'rates changed — get a new quote');
+  assertQuoteUsable(q);
   if (q.totalMinor > env.spendCapPerOrderMinor) throw new CheckoutError(403, 'over the per-order spend cap');
   if ((await sessionCapturedMinor(sessionId)) + q.totalMinor > env.spendCapPerSessionMinor) {
     throw new CheckoutError(403, 'over the per-session spend cap');
@@ -135,7 +141,7 @@ export async function startPayPalOrder(quoteId: string, sessionId: string): Prom
   const q = await quoteForSession(quoteId, sessionId);
   const [approval] = await db.select().from(approvals).where(eq(approvals.quoteId, q.id));
   if (!approval) throw new CheckoutError(403, 'approve the purchase first');
-  if (Date.now() >= q.expiresAt.getTime()) throw new CheckoutError(409, 'quote expired — get a new quote');
+  assertQuoteUsable(q);
 
   let [row] = await db.select().from(orders).where(eq(orders.quoteId, q.id));
   if (row?.paypalOrderId) return { orderId: row.paypalOrderId };
@@ -212,6 +218,7 @@ export async function completePayPalOrder(paypalOrderId: string, sessionId: stri
 /** DDP path: invoice from the stored quote, duty as a labelled custom amount (SPEC §4.6). */
 export async function sendDdpInvoice(quoteId: string, sessionId: string, email?: string) {
   const q = await quoteForSession(quoteId, sessionId);
+  assertQuoteUsable(q);
   const recipient = email?.trim() || serverEnv().sandboxBuyerEmail;
   if (!recipient) throw new CheckoutError(400, 'no recipient email (set PAYPAL_SANDBOX_BUYER_EMAIL or pass one)');
   const [inv] = await db.insert(invoices).values({ quoteId: q.id, status: 'CREATING', recipientEmail: recipient, createRequestId: randomUUID() }).returning();
