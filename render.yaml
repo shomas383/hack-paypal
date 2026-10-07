@@ -1,5 +1,6 @@
 # Render Blueprint — Landed (PayPal SANDBOX only). Field names per https://render.com/docs/blueprint-spec (read 2026-10-07).
-# Plans: smallest paid tiers, kept through judging (Dec 15). Confirm names + prices in the dashboard before applying.
+# Plans: smallest paid tiers, kept through judging (Dec 15). Confirmed at Apply 2026-10-07 (Hobby workspace):
+# web 0.5c-512mb (Starter, about $7/mo), Postgres 0.1c-256mb (about $6/mo).
 databases:
   - name: landed-db
     plan: 0.1c-256mb
@@ -7,6 +8,9 @@ databases:
     postgresMajorVersion: "17" # match local postgres:17.11-alpine (Render's default for new DBs is 18)
     databaseName: landed
     user: landed
+    # No external access: the web service uses the internal connection string. Omitting this would allow all IPs
+    # on a NEW database (blueprint-spec); 0.0.0.0/0 was removed in the dashboard on 2026-10-07.
+    ipAllowList: []
 
 services:
   - type: web

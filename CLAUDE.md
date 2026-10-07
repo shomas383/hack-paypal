@@ -97,7 +97,7 @@ Carried over:
 - PayPal-Request-Id retention window unknown — never rely on retries days later. Invoicing create IGNORES it (spike f): never retry
   an invoice create. A stuck CREATING invoice row → 409; recovery via a quote-derived `invoice_number` is possible (spike g), not built.
 - Sandbox webhook points at a dead cloudflared quick-tunnel URL — re-register at the Render URL after deploy.
-- VERIFY plan names/prices. Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
+- Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 

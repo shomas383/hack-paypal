@@ -211,6 +211,12 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   **Re-checked after 5c8e561 (2026-10-07):** XFF `"6.6.6.6,73.55.190.127, 172.71.146.245"` → `countedIp` 73.55.190.127, equal to
   `cf-connecting-ip` and `true-client-ip`. The Cloudflare edge IP varies per request (.201, then .245), so it must never be used
   as a rate-limit key. `DEBUG_CLIENT_IP` removed from Render afterwards.
+- **Plans confirmed at Apply (2026-10-07, Hobby workspace):** web `0.5c-512mb` (Starter, about $7/mo), Postgres `0.1c-256mb`
+  (about $6/mo).
+- **Database network access:** the inbound IP rule `0.0.0.0/0` was removed in the dashboard (2026-10-07), so there is no external
+  DB access. The web service uses the internal connection string, and `/api/health` still returns ok. `render.yaml` sets
+  `ipAllowList: []` so a recreated database is closed too (blueprint-spec: an omitted list allows all IPs on a NEW database
+  and keeps the current rules on an existing one).
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).
