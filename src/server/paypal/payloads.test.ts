@@ -93,9 +93,9 @@ describe('buildInvoiceRequest (Invoicing v2 DDP)', () => {
     expect(dutyLabel({ hts10: '9102.21.7000' })).toBe('US import duty (est.) – HTS 9102.21.70');
   });
 
-  it('omits the custom line when there is no duty (exempt), and says so in the note', () => {
+  it('shows an explicit $0.00 duty line when the item is exempt (PayPal accepts it — spike e, 2026-10-07)', () => {
     const body = buildInvoiceRequest({ ...quote, dutyMinor: 0n, totalMinor: 32_500n, lines: [{ ...quote.lines[0]!, amountMinor: '0' }] }, 'b@example.com');
-    expect(body.amount.breakdown).not.toHaveProperty('custom');
+    expect(body.amount.breakdown.custom).toEqual({ label: 'US import duty (est.) – HTS 0000.00.00', amount: { currency_code: 'USD', value: '0.00' } });
     expect(body.detail.note).toMatch(/no US import duty/i);
   });
 
