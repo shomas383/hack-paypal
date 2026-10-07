@@ -105,8 +105,8 @@ AC:
 - [x] Capture without approval row → denied (test). Amount > cap → denied (test). Stale rateVersion → re-quote.
       (`decideCapture` unit tests: NO_APPROVAL, OVER_ORDER_CAP, OVER_SESSION_CAP, RATE_VERSION_STALE, QUOTE_EXPIRED → VOID;
       approve endpoint refuses a stale/expired quote with "get a new quote".)
-- [ ] Void path works for an authorized, uncaptured order. (PayPal void proven in spike (a); the app's void branch is
-      implemented and policy-tested but not yet exercised end to end.)
+- [x] Void path works for an authorized, uncaptured order. (Two manual sandbox runs, 2026-10-07 UTC: QUOTE_EXPIRED → order
+      7TX25118NJ956015E voided; OVER_ORDER_CAP → order 7AU08241A9982080A voided. No capture; see docs/PAYPAL.md.)
 - [x] Checkout shows "US import duty (est.)" + HTS + source before the PayPal button (the PayPal popup labels the duty only
       "Tax" — confirmed in spike (a), see docs/PAYPAL.md). (e2e asserts the duty line precedes the PayPal button in the DOM
       and that the button renders only after the recorded Approve click, 2026-10-07.)

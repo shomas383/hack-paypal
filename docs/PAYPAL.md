@@ -173,3 +173,10 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
 - **Flakes seen:** (1) an overlay "Don't see the secure PayPal browser? … Click to Continue" inside our page; (2) one run where the
   popup never opened after the order was created (cause unknown). Unapproved orders are left `CREATED` and expire on PayPal's side.
   Decision (2026-10-07): stop automating; record the demo with a human assisting the PayPal login when asked.
+- **App void branch, end to end** (manual sandbox runs, watch $362.50; times from the DB, 2026-10-07 UTC):
+  - Test A — `QUOTE_TTL_SECONDS=60`, buyer waited in the popup past expiry: order 7TX25118NJ956015E, authorization
+    3V9043177K645411H → policy `VOID [QUOTE_EXPIRED]` → voided (03:23). UI: "Payment VOIDED, Policy: QUOTE_EXPIRED".
+  - Test B — order cap lowered to 30000 while the popup was open (server restarted): order 7AU08241A9982080A, authorization
+    58X98432TK234561S → policy `VOID [OVER_ORDER_CAP]` → voided (03:30).
+  - Both: `orders.status = VOIDED`, no `capture_id`; audit log `paypal.authorized` → `policy.decided` → `paypal.voided` with the
+    reason. PayPal dashboard: Authorization $362.50 "Voided", Void "Completed", no capture. Env restored to TTL 900 / cap 40000.

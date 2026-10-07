@@ -88,7 +88,6 @@ Week 2 rate engine + data: DONE (2026-10-06) — 10 verified Rev. 20 rows, golde
 Week 1 sandbox spikes: DONE (2026-10-05).
 
 Carried over:
-- App void branch not yet exercised end to end (SPEC §4.3 AC open); PayPal void itself proven in spike (a).
 - PayPal popup automation is flaky (two login variants, "Click to Continue" overlay, one run with no popup) — e2e keeps a manual fallback.
 - Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery; reconciliation webhook not built yet.
 - PayPal-Request-Id retention window unknown — never rely on retries days later.
