@@ -99,11 +99,17 @@ AC:
 - Flow: quote → buyer reviews landed cost → explicit Approve click (recorded) → PayPal approval (JS SDK v6) →
   server authorize → policy gate → capture (or void on failure/expiry).
 AC:
-- [ ] Sandbox order shows item, shipping, duty-as-tax totals matching our quote to the cent.
-- [ ] Capture without approval row → denied (test). Amount > cap → denied (test). Stale rateVersion → re-quote.
-- [ ] Void path works for an authorized, uncaptured order.
-- [ ] Checkout shows "US import duty (est.)" + HTS + source before the PayPal button (the PayPal popup labels the duty only
-      "Tax" — confirmed in spike (a), see docs/PAYPAL.md).
+- [x] Sandbox order shows item, shipping, duty-as-tax totals matching our quote to the cent. (Order built only from the stored
+      quote; `/complete` re-reads the PayPal order and refuses unless custom_id and amount equal the quote. Watch $362.50
+      captured in headed e2e runs, 2026-10-07.)
+- [x] Capture without approval row → denied (test). Amount > cap → denied (test). Stale rateVersion → re-quote.
+      (`decideCapture` unit tests: NO_APPROVAL, OVER_ORDER_CAP, OVER_SESSION_CAP, RATE_VERSION_STALE, QUOTE_EXPIRED → VOID;
+      approve endpoint refuses a stale/expired quote with "get a new quote".)
+- [ ] Void path works for an authorized, uncaptured order. (PayPal void proven in spike (a); the app's void branch is
+      implemented and policy-tested but not yet exercised end to end.)
+- [x] Checkout shows "US import duty (est.)" + HTS + source before the PayPal button (the PayPal popup labels the duty only
+      "Tax" — confirmed in spike (a), see docs/PAYPAL.md). (e2e asserts the duty line precedes the PayPal button in the DOM
+      and that the button renders only after the recorded Approve click, 2026-10-07.)
 
 ### 4.4 Buyer agent
 - Prompt example: "vintage automatic diver watch under $400 delivered" (use generic names in the video — see HACKATHON.md).
@@ -126,7 +132,8 @@ AC:
 ### 4.6 DDP invoice path (PayPal Invoicing v2)
 - Draft invoice → send, with duty itemized (see docs/PAYPAL.md for field choice). For direct/repeat buyers.
 AC:
-- [ ] Sandbox invoice shows goods, shipping, and a clearly labeled duty amount equal to our quote.
+- [x] Sandbox invoice shows goods, shipping, and a clearly labeled duty amount equal to our quote. (e2e: watch invoice SENT with
+      "US import duty (est.) – HTS 9102.21.70: $37.50", 2026-10-07; exempt items show an explicit $0.00 line — spike (e).)
 
 ## 5. Data model (initial)
 listings, classifications (+review status), rate_versions, quotes (immutable: lines, totals, rateVersion, expiresAt),

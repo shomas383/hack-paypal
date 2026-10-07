@@ -70,6 +70,9 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   so the exact computed amount and label show to the buyer (percent-based item tax could round differently). Evidence: custom is a
   single `{label, amount}` object (schema; array → 400 in sandbox); the buyer view shows the label verbatim. Was VERIFY: exact
   `custom` schema, whether only one custom field is allowed, and buyer-facing rendering — all resolved.
+- **$0.00 custom amount accepted (spike (e), 2026-10-07):** draft with `custom { label, amount: 0.00 }` → 201; GET returns the
+  label verbatim and `amount 0.00` (INV2-ARRX-PH8V-8VSV-MKRA, draft, not sent). Decision: exempt items (e.g. 9903.05.92) show an
+  explicit "US import duty (est.) – HTS … $0.00" line. Buyer-view rendering of a $0.00 line not yet checked.
 
 ## Webhooks
 - Verify via postback `POST /v1/notifications/verify-webhook-signature` (headers PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL,
@@ -153,3 +156,18 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   `paypal-transmission-sig`, `paypal-transmission-time`). Simulated `PAYMENT.AUTHORIZATION.CREATED` also → `SUCCESS` (see above).
   In-process replay of a delivery was ignored by event-id dedupe. Not observed yet as real deliveries: authorization created/voided,
   capture completed, invoice paid (spike stopped at first verified event). Quick-tunnel URLs change on restart → re-register the webhook.
+
+## Week 3 checkout findings (app + headed Playwright runs, 2026-10-07)
+- **End to end in the app:** listing → quote (engine) → recorded Approve → `POST /v2/checkout/orders` (AUTHORIZE, built from the
+  stored quote) → v6 popup approval → `GET order` (status `APPROVED`, `custom_id` = quote id, amount = quote) → authorize →
+  `decideCapture()` → capture. Watch $362.50 captured in four runs (e.g. 5HB497297B0298612, 09J03450KN706650Y); a $0-duty
+  Blu-ray order ($205.00) captured the same way (9HR91302BB8179944). DDP invoice SENT with the duty label (INV2-FBEK-T3W8-KQSP-GXGX).
+- **v6 SDK (`@paypal/paypal-js@11.2.1`):** `loadCoreSdkScript({ environment: 'sandbox' })` → `createInstance({ clientId,
+  components: ['paypal-payments'] })` → `session.start({ presentationMode: 'auto' }, Promise<{ orderId }>)`; `onApprove` gets
+  `{ orderId }`. Works from `http://localhost:3000`.
+- **Sandbox login popup has two variants** (field logs, ids only): (a) `#email` → Next (`#btnNext`) → `#password` → `#btnLogin`;
+  (b) `input#email[name=login_email]` + `input#password[name=login_password]` on one page with an id-less `button[type=submit]`.
+  Review page main CTA: `button#one-time-cta[type=submit]`. All undocumented — the e2e keeps a manual fallback (VERIFY).
+- **Flakes seen:** (1) an overlay "Don't see the secure PayPal browser? … Click to Continue" inside our page; (2) one run where the
+  popup never opened after the order was created (cause unknown). Unapproved orders are left `CREATED` and expire on PayPal's side.
+  Decision (2026-10-07): stop automating; record the demo with a human assisting the PayPal login when asked.
