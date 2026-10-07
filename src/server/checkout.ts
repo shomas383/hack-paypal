@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { and, eq, sql as dsql } from 'drizzle-orm';
 import { fromPayPalValue } from '@/domain/money/format';
 import { approvalHash, decideCapture } from '@/domain/policy/decideCapture';
+import { invoiceRecipient } from '@/domain/policy/invoiceRecipient';
 import { buildQuote, type QuoteRecord } from '@/domain/quote/buildQuote';
 import { quoteUnusableMessage, quoteUsable } from '@/domain/quote/quoteUsable';
 import { db } from './db/client';
@@ -219,8 +220,13 @@ export async function completePayPalOrder(paypalOrderId: string, sessionId: stri
 export async function sendDdpInvoice(quoteId: string, sessionId: string, email?: string) {
   const q = await quoteForSession(quoteId, sessionId);
   assertQuoteUsable(q);
-  const recipient = email?.trim() || serverEnv().sandboxBuyerEmail;
-  if (!recipient) throw new CheckoutError(400, 'no recipient email (set PAYPAL_SANDBOX_BUYER_EMAIL or pass one)');
+  const to = invoiceRecipient({
+    ...(email !== undefined ? { requested: email } : {}),
+    ...(serverEnv().sandboxBuyerEmail ? { sandboxBuyerEmail: serverEnv().sandboxBuyerEmail! } : {}),
+    production: process.env.NODE_ENV === 'production',
+  });
+  if (!to.ok) throw new CheckoutError(400, to.error);
+  const recipient = to.email;
   const [inv] = await db.insert(invoices).values({ quoteId: q.id, status: 'CREATING', recipientEmail: recipient, createRequestId: randomUUID() }).returning();
   const invoiceId = await createInvoice(q, recipient, inv!.createRequestId);
   const sendReq = randomUUID();
