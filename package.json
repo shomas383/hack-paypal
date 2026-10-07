@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "node scripts/stub.mjs db:seed \"listings + data/rates import\"",
+    "db:seed": "tsx --env-file=.env scripts/seed.ts",
     "rates:import": "tsx scripts/import-verify-sheet.ts",
     "rates:validate": "tsx scripts/validate-rates.ts",
     "eval:classifier": "node scripts/stub.mjs eval:classifier \"classifier eval on data/eval/products.json\"",

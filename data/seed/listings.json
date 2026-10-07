@@ -1,0 +1,60 @@
+{
+  "note": "Demo seed listings. Prices come from the human-verified sheet (data/eval/golden-2026-rev20-v1.json; the seed script checks they match). shipping_minor is a flat DEMO SHIPPING RATE ($25.00), not a carrier quote. Shipping is excluded from customs value, so it never changes the duty.",
+  "listings": [
+    {
+      "id": "L-P03",
+      "sheet_ref": "P03",
+      "title": "1990s Japanese automatic diver watch, 21 jewels, stainless case, steel bracelet",
+      "origin": "JP",
+      "hts10": "9102.21.7000",
+      "price_minor": 30000,
+      "shipping_minor": 2500,
+      "value_split": { "case_minor": 25000, "band_minor": 5000 },
+      "facts": {}
+    },
+    {
+      "id": "L-P11",
+      "sheet_ref": "P11",
+      "title": "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
+      "origin": "JP",
+      "hts10": "8211.92.9030",
+      "price_minor": 14000,
+      "shipping_minor": 2500,
+      "value_split": null,
+      "facts": { "steel_weight_share_ge_15pct": true, "steel_us_melted_poured_ge_85pct": false }
+    },
+    {
+      "id": "L-P12",
+      "sheet_ref": "P12",
+      "title": "Anime series Blu-ray box set, Japanese release (commercially recorded)",
+      "origin": "JP",
+      "hts10": "8523.49.4000",
+      "price_minor": 18000,
+      "shipping_minor": 2500,
+      "value_split": null,
+      "facts": { "informational_material": true }
+    },
+    {
+      "id": "L-P08",
+      "sheet_ref": "P08",
+      "title": "Men's selvedge blue denim jeans, 100% cotton",
+      "origin": "JP",
+      "hts10": "6203.42.4511",
+      "price_minor": 20000,
+      "shipping_minor": 2500,
+      "value_split": null,
+      "facts": {}
+    },
+    {
+      "id": "L-P05",
+      "sheet_ref": "P05",
+      "title": "Articulated PVC collectible figure, ages 15+",
+      "origin": "CN",
+      "hts10": "9503.00.0090",
+      "price_minor": 6500,
+      "shipping_minor": 2500,
+      "value_split": null,
+      "facts": {}
+    }
+  ]
+}
