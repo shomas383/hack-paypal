@@ -1,7 +1,7 @@
 // Demo path (docs/DEMO.md 0:55–1:45, 2:15–2:45) end to end against the PayPal SANDBOX.
 // Buyer password: PAYPAL_SANDBOX_BUYER_PASSWORD in .env — never logged; traces/screenshots/video are off (playwright.config.ts).
 // Missing password or unmatched PayPal selectors → headed page.pause() so a human finishes the step.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 async function manual(popup: Page, why: string): Promise<void> {
   if (popup.isClosed()) return;
@@ -15,26 +15,62 @@ async function manual(popup: Page, why: string): Promise<void> {
   await popup.pause();
 }
 
-/** VERIFY: PayPal sandbox login selectors (#email/#btnNext/#password/#btnLogin) are undocumented; fallback is manual. */
+const STEP_TIMEOUT = 15_000;
+const auto = (step: string) => console.log(`>>> auto login: ${step}`); // step names only — never values
+
+/** One automated step; on failure pause for a human and report false, so nothing is ever finished silently. */
+async function step(popup: Page, name: string, action: () => Promise<void>): Promise<boolean> {
+  try {
+    await action();
+    auto(name);
+    return true;
+  } catch {
+    await manual(popup, `could not ${name} automatically — finish the login by hand`);
+    return false;
+  }
+}
+
+/**
+ * VERIFY: PayPal sandbox login selectors are undocumented. Each control is matched by id OR by role/name and
+ * waited for (not checked once), since the page renders the Next/Log In buttons asynchronously.
+ */
 async function loginBuyer(popup: Page): Promise<void> {
   const email = process.env.PAYPAL_SANDBOX_BUYER_EMAIL;
   const password = process.env.PAYPAL_SANDBOX_BUYER_PASSWORD;
   if (!email || !password) return manual(popup, 'no buyer credentials in .env — log in as the sandbox Personal buyer');
-  try {
-    await popup.locator('#email').fill(email, { timeout: 20_000 });
-    const next = popup.locator('#btnNext');
-    if (await next.isVisible().catch(() => false)) await next.click();
-    await popup.locator('#password').fill(password, { timeout: 20_000 });
-    await popup.locator('#btnLogin').click();
-  } catch {
-    await manual(popup, 'login selectors did not match — log in as the sandbox Personal buyer');
+
+  const emailField = popup.locator('#email').or(popup.getByRole('textbox', { name: /email/i })).first();
+  const nextButton: Locator = popup.locator('#btnNext').or(popup.getByRole('button', { name: /^next$/i })).first();
+  const passwordField = popup.locator('#password').or(popup.locator('input[type="password"]')).first();
+  // Observed 2026-10-07: two sandbox login variants. (a) email → Next → password → #btnLogin; (b) email + password on one
+  // page whose only submit button has no id (field log: input#email[name=login_email], input#password[name=login_password]).
+  const loginButton: Locator = popup
+    .locator('#btnLogin')
+    .or(popup.getByRole('button', { name: /^log ?in$/i }))
+    .or(popup.locator('form:has(input[type="password"]) button[type="submit"]'))
+    .first();
+
+  if (!(await step(popup, 'fill email', () => emailField.fill(email, { timeout: STEP_TIMEOUT })))) return;
+  // Some sandbox variants show the password on the same page; only click Next when it isn't there yet.
+  if (!(await passwordField.isVisible().catch(() => false))) {
+    if (!(await step(popup, 'click Next', () => nextButton.click({ timeout: STEP_TIMEOUT })))) return;
   }
+  if (!(await step(popup, 'fill password', () => passwordField.fill(password, { timeout: STEP_TIMEOUT })))) return;
+  await step(popup, 'click Log In', () => loginButton.click({ timeout: STEP_TIMEOUT }));
 }
 
-/** VERIFY: approve button label in the sandbox review page. */
+/**
+ * Approve on the sandbox review page. Observed 2026-10-07 (headed run, field log): the main call to action is
+ * `button#one-time-cta[type=submit]`; the role/name match is a fallback. Still undocumented by PayPal.
+ */
 async function approveInPopup(popup: Page): Promise<void> {
+  const cta = popup
+    .locator('#one-time-cta')
+    .or(popup.getByRole('button', { name: /complete purchase|continue to review|continue|pay now|agree & pay/i }))
+    .first();
   try {
-    await popup.getByRole('button', { name: /complete purchase|continue to review|continue|pay now|agree & pay/i }).first().click({ timeout: 30_000 });
+    await cta.click({ timeout: 30_000 });
+    auto('click approve');
   } catch {
     await manual(popup, 'approve button not found — click the approve/complete button');
   }
