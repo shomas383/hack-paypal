@@ -11,6 +11,7 @@ import { db } from './db/client';
 import { approvals, auditLog, invoices, listings, orders, quotes } from './db/schema';
 import { serverEnv } from './env';
 import { authorizeOrder, captureAuthorization, createInvoice, createOrder, getInvoice, getOrder, sendInvoice, voidAuthorization } from './paypal/api';
+import { InvoiceStuckError, runInvoiceFlow } from './invoiceFlow';
 import { currentRateTable } from './rates';
 
 export class CheckoutError extends Error {
@@ -216,25 +217,57 @@ export async function completePayPalOrder(paypalOrderId: string, sessionId: stri
   return { status: 'VOIDED', captureId: null, policy };
 }
 
-/** DDP path: invoice from the stored quote, duty as a labelled custom amount (SPEC §4.6). */
+/**
+ * DDP path: invoice from the stored quote, duty as a labelled custom amount (SPEC §4.6). One PayPal invoice per quote:
+ * the CREATING row is unique per quote, so a second click re-reads it instead of creating (see invoiceFlow.ts).
+ */
 export async function sendDdpInvoice(quoteId: string, sessionId: string, email?: string) {
   const q = await quoteForSession(quoteId, sessionId);
-  assertQuoteUsable(q);
-  const to = invoiceRecipient({
-    ...(email !== undefined ? { requested: email } : {}),
-    ...(serverEnv().sandboxBuyerEmail ? { sandboxBuyerEmail: serverEnv().sandboxBuyerEmail! } : {}),
-    production: process.env.NODE_ENV === 'production',
-  });
-  if (!to.ok) throw new CheckoutError(400, to.error);
-  const recipient = to.email;
-  const [inv] = await db.insert(invoices).values({ quoteId: q.id, status: 'CREATING', recipientEmail: recipient, createRequestId: randomUUID() }).returning();
-  const invoiceId = await createInvoice(q, recipient, inv!.createRequestId);
-  const sendReq = randomUUID();
-  await db.update(invoices).set({ paypalInvoiceId: invoiceId, status: 'DRAFT', sendRequestId: sendReq }).where(eq(invoices.id, inv!.id));
-  await sendInvoice(invoiceId, sendReq);
-  const got = await getInvoice(invoiceId);
-  await db.update(invoices).set({ status: got.status }).where(eq(invoices.id, inv!.id));
-  await audit('invoice.sent', 'invoice', invoiceId, sessionId, { quoteId: q.id, status: got.status, total: got.amount?.value });
+  let [row] = await db.select().from(invoices).where(eq(invoices.quoteId, q.id));
+  let claimedNow = false;
+  // A finished invoice is returned as is; anything that could still create or send needs a usable quote.
+  if (!row || row.status === 'CREATING' || row.status === 'DRAFT') assertQuoteUsable(q);
+  if (!row) {
+    const to = invoiceRecipient({
+      ...(email !== undefined ? { requested: email } : {}),
+      ...(serverEnv().sandboxBuyerEmail ? { sandboxBuyerEmail: serverEnv().sandboxBuyerEmail! } : {}),
+      production: process.env.NODE_ENV === 'production',
+    });
+    if (!to.ok) throw new CheckoutError(400, to.error);
+    const [inserted] = await db
+      .insert(invoices)
+      .values({ quoteId: q.id, status: 'CREATING', recipientEmail: to.email, createRequestId: randomUUID() })
+      .onConflictDoNothing({ target: invoices.quoteId })
+      .returning();
+    if (inserted) {
+      row = inserted;
+      claimedNow = true;
+    } else {
+      [row] = await db.select().from(invoices).where(eq(invoices.quoteId, q.id)); // lost a concurrent click
+    }
+  }
+  const inv = row!;
+
+  let got: Awaited<ReturnType<typeof getInvoice>>;
+  try {
+    got = await runInvoiceFlow(inv, { claimedNow }, {
+      create: (createRequestId) => createInvoice(q, inv.recipientEmail, createRequestId),
+      saveDraft: async (paypalInvoiceId, sendRequestId) => {
+        await db.update(invoices).set({ paypalInvoiceId, status: 'DRAFT', sendRequestId }).where(eq(invoices.id, inv.id));
+      },
+      send: sendInvoice,
+      get: getInvoice,
+      saveStatus: async (status) => {
+        await db.update(invoices).set({ status }).where(eq(invoices.id, inv.id));
+      },
+      newRequestId: randomUUID,
+    });
+  } catch (e) {
+    if (e instanceof InvoiceStuckError) throw new CheckoutError(409, e.message);
+    throw e;
+  }
+  const invoiceId = got.id;
+  await audit('invoice.sent', 'invoice', invoiceId, sessionId, { quoteId: q.id, status: got.status, total: got.amount?.value, claimedNow });
   return {
     invoiceId,
     status: got.status,

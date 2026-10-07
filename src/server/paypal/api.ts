@@ -51,11 +51,15 @@ export async function voidAuthorization(authorizationId: string, requestId: stri
   await paypalRequest('POST', `/v2/payments/authorizations/${encodeURIComponent(authorizationId)}/void`, { requestId });
 }
 
-/** Create returns only a link {rel, href, method} (spike b) — the id is the last path segment. */
+/**
+ * Create returns only a link {rel, href, method} (spike b) — the id is the last path segment.
+ * NOT idempotent: PayPal ignores PayPal-Request-Id here (spike f), so it is sent once and never retried.
+ */
 export async function createInvoice(quote: QuoteRecord, recipientEmail: string, requestId: string): Promise<string> {
   const res = await paypalRequest<{ id?: string; href?: string }>('POST', '/v2/invoicing/invoices', {
     body: buildInvoiceRequest(quote, recipientEmail),
     requestId,
+    retry: false,
   });
   const id = res.body?.id ?? res.body?.href?.split('/').pop();
   if (!id) throw new Error('invoice create returned no id or link');

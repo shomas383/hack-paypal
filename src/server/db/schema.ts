@@ -70,7 +70,8 @@ export const orders = pgTable('orders', {
 
 export const invoices = pgTable('invoices', {
   id: uuid('id').primaryKey().defaultRandom(),
-  quoteId: uuid('quote_id').notNull().references(() => quotes.id),
+  // One PayPal invoice per quote: Invoicing create is not idempotent (spike f), so the DB enforces it.
+  quoteId: uuid('quote_id').notNull().unique().references(() => quotes.id),
   paypalInvoiceId: text('paypal_invoice_id'),
   status: text('status').notNull(),
   recipientEmail: text('recipient_email').notNull(),

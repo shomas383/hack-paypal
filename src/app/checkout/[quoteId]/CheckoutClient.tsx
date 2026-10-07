@@ -31,6 +31,7 @@ export function CheckoutClient(props: Props) {
   const [outcome, setOutcome] = useState<Outcome | null>(props.initialOrder);
   const [status, setStatus] = useState('');
   const [invoice, setInvoice] = useState<Record<string, string | null> | null>(null);
+  const [invoicing, setInvoicing] = useState(false);
   const buttonHost = useRef<HTMLDivElement>(null);
 
   async function approve() {
@@ -88,12 +89,16 @@ export function CheckoutClient(props: Props) {
   }, [approved, outcome?.status, props.clientId, props.quoteId]);
 
   async function sendInvoice() {
+    if (invoicing) return;
+    setInvoicing(true);
     setStatus('Creating DDP invoice…');
     try {
       setInvoice(await post<Record<string, string | null>>(`/api/quotes/${props.quoteId}/invoice`, {}));
       setStatus('');
     } catch (e) {
       setStatus(`Invoice failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setInvoicing(false);
     }
   }
 
@@ -118,7 +123,7 @@ export function CheckoutClient(props: Props) {
       <p data-testid="status" aria-live="polite">{status}</p>
       <hr />
       <p>
-        <button type="button" data-testid="send-invoice" onClick={sendInvoice}>Send DDP invoice instead</button>
+        <button type="button" data-testid="send-invoice" onClick={sendInvoice} disabled={invoicing}>Send DDP invoice instead</button>
       </p>
       {invoice && (
         <div data-testid="invoice-result">

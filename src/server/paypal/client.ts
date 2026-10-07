@@ -43,11 +43,14 @@ async function accessToken(): Promise<string> {
   return token.value;
 }
 
-/** POST requires a requestId; one retry on network error / 5xx with the SAME id. Non-2xx throws PayPalError. */
+/**
+ * POST requires a requestId; one retry on network error / 5xx with the SAME id. Non-2xx throws PayPalError.
+ * `retry: false` for endpoints that ignore PayPal-Request-Id (Invoicing create — spike f): a resend could duplicate.
+ */
 export async function paypalRequest<T>(
   method: 'GET' | 'POST',
   path: string,
-  opts: { body?: unknown; requestId?: string } = {},
+  opts: { body?: unknown; requestId?: string; retry?: boolean } = {},
 ): Promise<PayPalResponse<T>> {
   if (method === 'POST' && !opts.requestId) throw new Error(`POST ${path} needs a persisted PayPal-Request-Id`);
   const base = serverEnv().paypalApiBase;
@@ -63,11 +66,15 @@ export async function paypalRequest<T>(
     });
 
   let res: Response;
-  try {
+  if (opts.retry === false) {
     res = await send();
-    if (res.status >= 500) res = await send();
-  } catch {
-    res = await send();
+  } else {
+    try {
+      res = await send();
+      if (res.status >= 500) res = await send();
+    } catch {
+      res = await send();
+    }
   }
   const text = await res.text();
   const body = (text ? JSON.parse(text) : null) as T;
