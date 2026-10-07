@@ -93,7 +93,6 @@ Carried over:
 - Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery; reconciliation webhook not built yet.
 - PayPal-Request-Id retention window unknown — never rely on retries days later.
 - Sandbox webhook points at a dead cloudflared quick-tunnel URL — update to a new tunnel or the Render URL.
-- VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read;
-  buyer-view rendering of a $0.00 invoice duty line.
+- VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

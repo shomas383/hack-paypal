@@ -72,7 +72,9 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   `custom` schema, whether only one custom field is allowed, and buyer-facing rendering — all resolved.
 - **$0.00 custom amount accepted (spike (e), 2026-10-07):** draft with `custom { label, amount: 0.00 }` → 201; GET returns the
   label verbatim and `amount 0.00` (INV2-ARRX-PH8V-8VSV-MKRA, draft, not sent). Decision: exempt items (e.g. 9903.05.92) show an
-  explicit "US import duty (est.) – HTS … $0.00" line. Buyer-view rendering of a $0.00 line not yet checked.
+  explicit "US import duty (est.) – HTS … $0.00" line. **Buyer view confirmed 2026-10-07** (sent invoice INV2-73MU-SSEW-267C-TLEK,
+  Blu-ray from the app): lines Subtotal $180.00 · Shipping $25.00 · "US import duty (est.) – HTS 8523.49.40" $0.00 · Total
+  $205.00, and the note "No US import duty (exempt)" under "Notes to customer".
 
 ## Webhooks
 - Verify via postback `POST /v1/notifications/verify-webhook-signature` (headers PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL,
