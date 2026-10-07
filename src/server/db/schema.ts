@@ -1,2 +1,90 @@
-// Drizzle schema. Tables are added with their features (see docs/SPEC.md §5); intentionally empty in Week 1.
-export {};
+// Drizzle schema (SPEC §5). Money is integer minor units in bigint columns (invariant 1); currency is USD.
+// `quotes` is immutable: the repository only inserts/reads and a DB trigger (migration 0001) rejects UPDATE/DELETE.
+import { bigint, bigserial, char, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import type { StoredLine } from '@/domain/quote/buildQuote';
+
+const money = (name: string) => bigint(name, { mode: 'bigint' });
+const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
+
+export const listings = pgTable('listings', {
+  id: text('id').primaryKey(),
+  sheetRef: text('sheet_ref').notNull(),
+  title: text('title').notNull(),
+  origin: char('origin', { length: 2 }).notNull(),
+  hts10: text('hts10').notNull(),
+  priceMinor: money('price_minor').notNull(),
+  shippingMinor: money('shipping_minor').notNull(),
+  currency: text('currency').notNull().default('USD'),
+  valueSplit: jsonb('value_split').$type<{ case_minor: number; band_minor: number } | null>(),
+  facts: jsonb('facts').$type<Record<string, boolean>>().notNull().default({}),
+  createdAt: ts('created_at').notNull().defaultNow(),
+});
+
+export const quotes = pgTable('quotes', {
+  id: uuid('id').primaryKey(),
+  listingId: text('listing_id').notNull().references(() => listings.id),
+  sessionId: text('session_id').notNull(),
+  title: text('title').notNull(),
+  rateVersion: text('rate_version').notNull(),
+  rateRowId: text('rate_row_id').notNull(),
+  origin: char('origin', { length: 2 }).notNull(),
+  hts10: text('hts10').notNull(),
+  entryDate: text('entry_date').notNull(),
+  goodsMinor: money('goods_minor').notNull(),
+  shippingMinor: money('shipping_minor').notNull(),
+  dutyMinor: money('duty_minor').notNull(),
+  totalMinor: money('total_minor').notNull(),
+  currency: text('currency').notNull(),
+  lines: jsonb('lines').$type<StoredLine[]>().notNull(),
+  effectiveRatePpm: integer('effective_rate_ppm').notNull(),
+  createdAt: ts('created_at').notNull(),
+  expiresAt: ts('expires_at').notNull(),
+});
+
+export const approvals = pgTable('approvals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  quoteId: uuid('quote_id').notNull().unique().references(() => quotes.id),
+  sessionId: text('session_id').notNull(),
+  amountMinor: money('amount_minor').notNull(),
+  currency: text('currency').notNull(),
+  amountHash: text('amount_hash').notNull(),
+  approvedAt: ts('approved_at').notNull().defaultNow(),
+});
+
+export const orders = pgTable('orders', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  quoteId: uuid('quote_id').notNull().unique().references(() => quotes.id),
+  paypalOrderId: text('paypal_order_id').unique(),
+  status: text('status').notNull(), // CREATING|CREATED|AUTHORIZED|CAPTURED|VOIDED|FAILED
+  authorizationId: text('authorization_id'),
+  captureId: text('capture_id'),
+  // PayPal-Request-Ids are stored BEFORE each POST and reused on retry (invariant 7).
+  createRequestId: uuid('create_request_id').notNull(),
+  authorizeRequestId: uuid('authorize_request_id'),
+  captureRequestId: uuid('capture_request_id'),
+  voidRequestId: uuid('void_request_id'),
+  policyDecision: jsonb('policy_decision').$type<{ decision: string; reasons: string[] }>(),
+  createdAt: ts('created_at').notNull().defaultNow(),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
+});
+
+export const invoices = pgTable('invoices', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  quoteId: uuid('quote_id').notNull().references(() => quotes.id),
+  paypalInvoiceId: text('paypal_invoice_id'),
+  status: text('status').notNull(),
+  recipientEmail: text('recipient_email').notNull(),
+  createRequestId: uuid('create_request_id').notNull(),
+  sendRequestId: uuid('send_request_id'),
+  createdAt: ts('created_at').notNull().defaultNow(),
+});
+
+export const auditLog = pgTable('audit_log', {
+  id: bigserial('id', { mode: 'bigint' }).primaryKey(),
+  at: ts('at').notNull().defaultNow(),
+  sessionId: text('session_id'),
+  event: text('event').notNull(),
+  entity: text('entity').notNull(),
+  entityId: text('entity_id').notNull(),
+  data: jsonb('data').$type<Record<string, unknown>>().notNull().default({}),
+});
