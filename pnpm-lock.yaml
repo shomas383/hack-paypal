@@ -14,6 +14,9 @@ importers:
       '@paypal/agent-toolkit':
         specifier: 1.11.0
         version: 1.11.0(react@19.3.0)
+      '@paypal/paypal-js':
+        specifier: 11.2.1
+        version: 11.2.1
       ai:
         specifier: 7.0.127
         version: 7.0.127(zod@4.6.5)
@@ -22,7 +25,7 @@ importers:
         version: 0.45.3(@opentelemetry/api@1.9.0)(postgres@3.4.9)
       next:
         specifier: 16.3.8
-        version: 16.3.8(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 16.3.8(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.63.0)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       postgres:
         specifier: 3.4.9
         version: 3.4.9
@@ -36,6 +39,9 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
     devDependencies:
+      '@playwright/test':
+        specifier: 1.63.0
+        version: 1.63.0
       '@types/node':
         specifier: 24.19.1
         version: 24.19.1
@@ -1062,9 +1068,17 @@ packages:
   '@paypal/agent-toolkit@1.11.0':
     resolution: {integrity: sha512-wfjOaF67uuBRtyc3wapD+0xbfMbo0Zje/HzmYsqOkonULh1aXs4b8N1UD+6Iy2AIQ/yPs7DtKU1Upc9F87KmOg==}
 
+  '@paypal/paypal-js@11.2.1':
+    resolution: {integrity: sha512-Oi9JAxXOZrTpPWvJtlf98r76AvjIsn5kud7ZgqaqCL0JUOS3rqNzCbPmmWt9eg9Gw0qMf3KpVX+sEusQGe09pw==}
+
   '@paypal/paypal-server-sdk@1.1.0':
     resolution: {integrity: sha512-MaJQmSVpQb5nEeZWZDTtGRxeaHj6O51G9Olmm3zQ5E4XNgR4emAI08CKC2ZPhBldVoxAoBVjLyvKjGV5lC1n2Q==}
     engines: {node: '>=14.17.0'}
+
+  '@playwright/test@1.63.0':
+    resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@rolldown/binding-android-arm-eabi@1.2.12':
     resolution: {integrity: sha512-dB/a1214qKfHMXCpgqR4OZT+jS4kTyEXbQGJPqzobt5EwH5rX080pxE37alt3RzvR1bf1Yz/yGqRfrYAxuPw0A==}
@@ -3042,6 +3056,16 @@ packages:
     resolution: {integrity: sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==}
     engines: {node: '>=8'}
 
+  playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.63.0:
+    resolution: {integrity: sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -3061,6 +3085,9 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+
+  promise-polyfill@8.3.0:
+    resolution: {integrity: sha512-H5oELycFml5yto/atYqmjyigJoAo3+OXwolYiH7OfQuYlAqhxNvTfiNMbV9hsC6Yp83yE5r2KTVmtrG6R9i6Pg==}
 
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
@@ -4356,13 +4383,13 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@langchain/core@0.3.6(openai@4.86.1(zod@3.25.76))':
+  '@langchain/core@0.3.6(openai@4.86.1(zod@4.6.5))':
     dependencies:
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.21
-      langsmith: 0.1.68(openai@4.86.1(zod@3.25.76))
+      langsmith: 0.1.68(openai@4.86.1(zod@4.6.5))
       mustache: 4.2.0
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -4456,7 +4483,7 @@ snapshots:
     dependencies:
       os: 0.1.2
       '@dotenvx/dotenvx': 1.75.1
-      '@langchain/core': 0.3.6(openai@4.86.1(zod@3.25.76))
+      '@langchain/core': 0.3.6(openai@4.86.1(zod@4.6.5))
       '@modelcontextprotocol/sdk': 1.32.0(zod@3.25.76)
       '@paypal/paypal-server-sdk': 1.1.0(debug@4.4.3)
       ai: 4.3.19(react@19.3.0)(zod@3.25.76)
@@ -4474,6 +4501,10 @@ snapshots:
       - supports-color
       - ws
 
+  '@paypal/paypal-js@11.2.1':
+    dependencies:
+      promise-polyfill: 8.3.0
+
   '@paypal/paypal-server-sdk@1.1.0(debug@4.4.3)':
     dependencies:
       '@apimatic/authentication-adapters': 0.5.14
@@ -4484,6 +4515,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
       - supports-color
+
+  '@playwright/test@1.63.0':
+    dependencies:
+      playwright: 1.63.0
 
   '@rolldown/binding-android-arm-eabi@1.2.12':
     optional: true
@@ -6116,7 +6151,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  langsmith@0.1.68(openai@4.86.1(zod@3.25.76)):
+  langsmith@0.1.68(openai@4.86.1(zod@4.6.5)):
     dependencies:
       '@types/uuid': 10.0.0
       commander: 10.0.1
@@ -6283,7 +6318,7 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  next@16.3.8(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+  next@16.3.8(@babel/core@7.29.7)(@opentelemetry/api@1.9.0)(@playwright/test@1.63.0)(@types/node@24.19.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@next/env': 16.3.8
       '@swc/helpers': 0.5.23
@@ -6303,6 +6338,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 16.3.8
       '@next/swc-win32-x64-msvc': 16.3.8
       '@opentelemetry/api': 1.9.0
+      '@playwright/test': 1.63.0
       sharp: 0.35.5(@types/node@24.19.1)
     transitivePeerDependencies:
       - '@babel/core'
@@ -6486,6 +6522,12 @@ snapshots:
     dependencies:
       find-up: 3.0.0
 
+  playwright-core@1.63.0: {}
+
+  playwright@1.63.0:
+    dependencies:
+      playwright-core: 1.63.0
+
   possible-typed-array-names@1.1.0: {}
 
   postcss@8.5.23:
@@ -6503,6 +6545,8 @@ snapshots:
   postgres@3.4.9: {}
 
   prelude-ls@1.2.1: {}
+
+  promise-polyfill@8.3.0: {}
 
   prop-types@15.8.1:
     dependencies:

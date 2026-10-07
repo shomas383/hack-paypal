@@ -6,7 +6,10 @@ duties included, before approving a PayPal payment.
 
 > **Sandbox only.** The app refuses to run unless `PAYPAL_ENV=sandbox`. Duty figures are estimates, not customs rulings.
 
-Status: Week 1 — project scaffold + PayPal sandbox spikes. No product features yet.
+Status: Week 3 — walking skeleton of the demo path (listing → quote → checkout → PayPal sandbox → policy-gated capture; DDP invoice).
+
+> **Demo data.** Seeded listings charge a **flat $25.00 demo shipping rate — not a carrier quote**. Shipping is excluded
+> from customs value, so it never changes the duty estimate.
 
 ## Prerequisites
 - Node 24 LTS, pnpm 10 (`corepack enable`)
