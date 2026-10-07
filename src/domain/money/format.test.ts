@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toPayPalValue } from './format';
+import { fromPayPalValue, toPayPalValue } from './format';
 import { jpy, usd } from './money';
 
 describe('toPayPalValue', () => {
@@ -21,6 +21,26 @@ describe('toPayPalValue', () => {
 
   it('rejects negative amounts (PayPal amount values are non-negative)', () => {
     expect(() => toPayPalValue(usd(-1n))).toThrow(RangeError);
+  });
+});
+
+describe('fromPayPalValue', () => {
+  it('parses PayPal amount strings into exact minor units', () => {
+    expect(fromPayPalValue('362.50', 'USD')).toEqual(usd(36_250n));
+    expect(fromPayPalValue('0.05', 'USD')).toEqual(usd(5n));
+    expect(fromPayPalValue('12', 'USD')).toEqual(usd(1_200n));
+    expect(fromPayPalValue('1234', 'JPY')).toEqual(jpy(1_234n));
+  });
+
+  it('round-trips with toPayPalValue', () => {
+    for (const m of [usd(0n), usd(1n), usd(36_250n), usd(9007199254740993n)]) {
+      expect(fromPayPalValue(toPayPalValue(m), 'USD')).toEqual(m);
+    }
+  });
+
+  it('rejects malformed values, too many decimals and decimals on JPY', () => {
+    for (const bad of ['', '-1.00', '1.234', '1,00', 'abc', '1.']) expect(() => fromPayPalValue(bad, 'USD')).toThrow(RangeError);
+    expect(() => fromPayPalValue('1.5', 'JPY')).toThrow(RangeError);
   });
 });
 
