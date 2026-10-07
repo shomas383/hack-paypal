@@ -4,7 +4,14 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function manual(popup: Page, why: string): Promise<void> {
-  console.log(`\n>>> PayPal popup: ${why}. Finish this step by hand in the popup, then press Resume in the Playwright inspector.\n`);
+  if (popup.isClosed()) return;
+  // Selector discovery for the VERIFY item: field ids/names/types only — never values.
+  const fields = await popup
+    .locator('input, button')
+    .evaluateAll((els) => els.map((e) => `${e.tagName.toLowerCase()}#${e.id || '-'}[name=${e.getAttribute('name') ?? '-'}][type=${e.getAttribute('type') ?? '-'}]`))
+    .catch(() => [] as string[]);
+  console.log(`\n>>> PayPal popup: ${why}. Finish this step by hand in the popup, then press Resume in the Playwright inspector.`);
+  console.log(`>>> popup fields seen: ${fields.join(' ') || '(none)'}\n`);
   await popup.pause();
 }
 
@@ -45,6 +52,7 @@ test('watch: landed cost shown before PayPal, approve, pay in sandbox, policy-ga
   await page.goto('/listings');
   await page.getByTestId('quote-L-P03').click();
   await expect(page).toHaveURL(/\/checkout\/[0-9a-f-]{36}$/);
+  const watchCheckoutUrl = page.url();
 
   // Breakdown BEFORE any PayPal UI (SPEC §4.3 AC).
   await expect(page.getByTestId('goods')).toHaveText('$300.00');
@@ -74,11 +82,17 @@ test('watch: landed cost shown before PayPal, approve, pay in sandbox, policy-ga
   const [popup] = await Promise.all([page.waitForEvent('popup'), container.locator('paypal-button').click()]);
   await popup.waitForLoadState();
   await loginBuyer(popup);
-  await expect(popup.getByText('$362.50').first()).toBeVisible({ timeout: 60_000 });
-  await approveInPopup(popup);
+  // If the human finished login AND approval during a manual pause, PayPal has already closed the popup.
+  if (!popup.isClosed()) {
+    await expect(popup.getByText('$362.50').first()).toBeVisible({ timeout: 60_000 });
+    await approveInPopup(popup);
+  }
 
-  // Server: verify order = quote → authorize → decideCapture → capture.
+  // Server: verify order = quote → authorize → decideCapture → capture — on THIS quote's page, not another one.
+  expect(page.url()).toBe(watchCheckoutUrl);
+  await expect(page.getByTestId('title')).toContainText('automatic diver watch');
   await expect(page.getByTestId('outcome-status')).toHaveText('CAPTURED', { timeout: 120_000 });
+  expect(page.url()).toBe(watchCheckoutUrl);
   await expect(page.getByTestId('capture-id')).not.toBeEmpty();
   await expect(page.getByTestId('outcome')).toContainText('all checks passed');
 });
