@@ -22,6 +22,11 @@ export function fromPayPalValue(value: string, currency: Currency): Money {
   return money(BigInt(`${m[1]}${frac.padEnd(exp, '0')}`), currency);
 }
 
+/** Human display, e.g. "$362.50" — same exact digits as the PayPal value. */
+export function formatDisplay(m: Money): string {
+  return `${m.currency === 'USD' ? '$' : '¥'}${toPayPalValue(m)}`;
+}
+
 /** PayPal money object, e.g. `{ currency_code: 'USD', value: '12.34' }`. */
 export function toPayPalAmount(m: Money): { currency_code: Money['currency']; value: string } {
   return { currency_code: m.currency, value: toPayPalValue(m) };

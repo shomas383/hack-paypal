@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fromPayPalValue, toPayPalValue } from './format';
+import { formatDisplay, fromPayPalValue, toPayPalValue } from './format';
 import { jpy, usd } from './money';
 
 describe('toPayPalValue', () => {
@@ -41,6 +41,14 @@ describe('fromPayPalValue', () => {
   it('rejects malformed values, too many decimals and decimals on JPY', () => {
     for (const bad of ['', '-1.00', '1.234', '1,00', 'abc', '1.']) expect(() => fromPayPalValue(bad, 'USD')).toThrow(RangeError);
     expect(() => fromPayPalValue('1.5', 'JPY')).toThrow(RangeError);
+  });
+});
+
+describe('formatDisplay', () => {
+  it('formats for people: symbol + PayPal-exact digits', () => {
+    expect(formatDisplay(usd(36_250n))).toBe('$362.50');
+    expect(formatDisplay(usd(0n))).toBe('$0.00');
+    expect(formatDisplay(jpy(1_234n))).toBe('¥1234');
   });
 });
 
