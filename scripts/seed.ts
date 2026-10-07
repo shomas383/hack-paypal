@@ -1,10 +1,13 @@
 // pnpm db:seed — upserts the demo listings from data/seed/listings.json.
 // Aborts unless every listing (1) matches the verified golden price for its sheet row and (2) quotes OK in the engine.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { buildQuote, type ListingForQuote } from '../src/domain/quote/buildQuote';
 import { listings } from '../src/server/db/schema';
 import { currentRateTable } from '../src/server/rates';
+
+// Local: load .env. On Render there is no .env — the variables come from the service environment (same as drizzle.config.ts).
+if (!process.env.DATABASE_URL && existsSync('.env')) process.loadEnvFile('.env');
 
 interface SeedListing {
   id: string;
