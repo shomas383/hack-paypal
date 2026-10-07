@@ -9,6 +9,7 @@ const SPIKES: Record<string, string> = {
   d: './d-agent-toolkit',
   e: './e-invoice-zero-custom',
   f: './f-invoice-request-id',
+  g: './g-invoice-number',
 };
 
 async function main(): Promise<void> {

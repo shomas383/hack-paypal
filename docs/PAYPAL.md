@@ -81,6 +81,11 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   same body twice → two different drafts (both 201: INV2-4TU5-XA3C-ZJV4-UDMM, INV2-Q8JA-42YS-DRSB-NRXU); same id + different body →
   a third (201). All three deleted (`DELETE /v2/invoicing/invoices/{id}` → 204; drafts/scheduled only). **Consequence:** never retry
   an invoice create — not even our client's automatic same-id retry on 5xx/network error — and dedupe per quote in our DB.
+- **`detail.invoice_number` is unique per merchant and searchable (spike (g), 2026-10-07).** Spec: `detail.invoice_number` string
+  ≤25 chars (omitted → auto-incremented); `POST /v2/invoicing/search-invoices` body `{ invoice_number }` filter; no duplicate
+  error documented. Sandbox: a second create with the same number → **422 `UNPROCESSABLE_ENTITY`, issue
+  `DUPLICATE_INVOICE_NUMBER`**; `search-invoices` with that number → 200, `total_items` 1, the first draft
+  (INV2-PGCR-REVH-BGXB-69NW, deleted → 204). Not yet used: a quote-derived number would let a stuck CREATING row recover.
 
 ## Webhooks
 - Verify via postback `POST /v1/notifications/verify-webhook-signature` (headers PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL,
