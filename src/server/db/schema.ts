@@ -79,6 +79,18 @@ export const invoices = pgTable('invoices', {
   createdAt: ts('created_at').notNull().defaultNow(),
 });
 
+/** PayPal webhook deliveries, verified by postback, idempotent by event id. Reconciliation only — never moves money. */
+export const paymentEvents = pgTable('payment_events', {
+  id: bigserial('id', { mode: 'bigint' }).primaryKey(),
+  eventId: text('event_id').notNull().unique(),
+  eventType: text('event_type').notNull(),
+  resourceId: text('resource_id'),
+  verification: text('verification').notNull(),
+  reconcile: text('reconcile'),
+  raw: jsonb('raw').$type<Record<string, unknown>>().notNull(),
+  receivedAt: ts('received_at').notNull().defaultNow(),
+});
+
 export const auditLog = pgTable('audit_log', {
   id: bigserial('id', { mode: 'bigint' }).primaryKey(),
   at: ts('at').notNull().defaultNow(),

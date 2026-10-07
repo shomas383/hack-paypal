@@ -13,6 +13,8 @@ export interface ServerEnv {
   quoteTtlSeconds: number;
   /** Default invoice recipient (sandbox Personal account). Optional. */
   sandboxBuyerEmail?: string;
+  /** Id of the registered sandbox webhook; without it the webhook route answers 503. Optional. */
+  paypalWebhookId?: string;
 }
 
 type RawEnv = Record<string, string | undefined>;
@@ -34,6 +36,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
   const base = raw.PAYPAL_API_BASE?.trim() || SANDBOX_API_BASE;
   if (base !== SANDBOX_API_BASE) throw new Error(`Refusing to start: PAYPAL_API_BASE must be the sandbox base ${SANDBOX_API_BASE}`);
   const email = raw.PAYPAL_SANDBOX_BUYER_EMAIL?.trim();
+  const webhookId = raw.PAYPAL_WEBHOOK_ID?.trim();
   return {
     paypalApiBase: base,
     paypalClientId: required(raw, 'PAYPAL_CLIENT_ID'),
@@ -44,6 +47,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     spendCapPerSessionMinor: positiveInt(raw, 'SPEND_CAP_PER_SESSION_USD_MINOR'),
     quoteTtlSeconds: Number(positiveInt(raw, 'QUOTE_TTL_SECONDS')),
     ...(email ? { sandboxBuyerEmail: email } : {}),
+    ...(webhookId ? { paypalWebhookId: webhookId } : {}),
   };
 }
 

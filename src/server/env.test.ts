@@ -15,6 +15,11 @@ const valid = {
 };
 
 describe('parseServerEnv', () => {
+  it('reads the optional webhook id', () => {
+    expect(parseServerEnv(valid).paypalWebhookId).toBeUndefined();
+    expect(parseServerEnv({ ...valid, PAYPAL_WEBHOOK_ID: ' WH-ID ' }).paypalWebhookId).toBe('WH-ID');
+  });
+
   it('parses a valid sandbox env; caps are integer minor units', () => {
     const env = parseServerEnv(valid);
     expect(env.spendCapPerOrderMinor).toBe(40_000n);
