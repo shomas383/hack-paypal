@@ -207,7 +207,10 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   received `X-Forwarded-For: "6.6.6.6,73.55.190.127, 172.71.146.201"`. The client-supplied entry is kept at the left, the real
   client IP (73.55.190.127) follows, and the rightmost entry is a Cloudflare edge (172.71.146.201, in 172.64.0.0/13). So the
   rightmost hop is NOT the client: `clientIp` skips `TRUSTED_PROXY_HOPS` (=1 on Render) entries from the right. Entries are
-  separated by both "," and ", ". `cf-connecting-ip` / `true-client-ip` are now echoed too while debugging (comparison pending).
+  separated by both "," and ", ".
+  **Re-checked after 5c8e561 (2026-10-07):** XFF `"6.6.6.6,73.55.190.127, 172.71.146.245"` → `countedIp` 73.55.190.127, equal to
+  `cf-connecting-ip` and `true-client-ip`. The Cloudflare edge IP varies per request (.201, then .245), so it must never be used
+  as a rate-limit key. `DEBUG_CLIENT_IP` removed from Render afterwards.
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).
