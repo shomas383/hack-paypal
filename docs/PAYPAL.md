@@ -204,3 +204,6 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   default plans `0.5c-512mb` (web) / `0.1c-256mb` (Postgres); `postgresMajorVersion` as a string. Render's default for new
   Postgres is 18 (changelog 2025-11-13); we pin 17. Client IP: no official doc — feedback.render.com (2021) says Render "only
   appends" to X-Forwarded-For → we count the rightmost hop. VERIFY after deploy with `DEBUG_CLIENT_IP=1`.
+- **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
+  '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
+  pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).

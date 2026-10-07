@@ -44,10 +44,11 @@ PayPal login; if PayPal's popup changes, the test pauses so you can finish the l
    threshold and the classifier limits.
    - `NEXT_PUBLIC_PAYPAL_CLIENT_ID` is baked into the build, so it must be set before the first build.
    - `DATABASE_URL` comes from the database automatically.
-3. **What each deploy runs:**
-   - **Build:** `pnpm install --frozen-lockfile && pnpm build`.
-   - **Pre-deploy:** `drizzle-kit migrate` plus the seed. Both are idempotent, and the seed aborts if any listing can't be quoted.
-   - **Start:** `next start`.
+3. **What each deploy runs.** Each step runs through `npx --yes pnpm@10.32.1`, so it uses the pinned pnpm. Render's image doesn't
+   allow `corepack enable`.
+   - **Build:** `install --frozen-lockfile`, then `build`.
+   - **Pre-deploy:** `db:migrate` plus `db:seed`. Both are idempotent, and the seed aborts if any listing can't be quoted.
+   - **Start:** `start`.
    - **Health check:** `/api/health`.
 4. **The server refuses to boot unless `PAYPAL_ENV=sandbox`** with the sandbox API base.
 5. **Register the webhook.** In the PayPal developer dashboard, point the sandbox app's webhook at

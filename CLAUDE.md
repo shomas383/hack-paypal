@@ -98,7 +98,8 @@ Carried over:
   an invoice create. A stuck CREATING invoice row → 409; recovery via a quote-derived `invoice_number` is possible (spike g), not built.
 - Sandbox webhook points at a dead cloudflared quick-tunnel URL — re-register at the Render URL after deploy.
 - VERIFY on Render: the rightmost X-Forwarded-For hop is the real client IP (`DEBUG_CLIENT_IP=1` on `/api/health`, then unset);
-  corepack/pnpm on the build image; plan names/prices.
+  plan names/prices. Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
+  `npx --yes pnpm@10.32.1 …`.
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

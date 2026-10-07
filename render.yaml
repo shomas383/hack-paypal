@@ -15,12 +15,12 @@ services:
     plan: 0.5c-512mb
     region: oregon
     branch: main
-    # VERIFY on the first build: corepack provides pnpm 10.32.1 from "packageManager".
-    # Fallback if corepack is not allowed: npx --yes pnpm@10.32.1 install --frozen-lockfile && npx --yes pnpm@10.32.1 build
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
-    # Binaries directly (no pnpm needed at runtime). Migrate + seed are idempotent; the seed aborts if any listing can't be quoted.
-    preDeployCommand: node_modules/.bin/drizzle-kit migrate && node_modules/.bin/tsx scripts/seed.ts
-    startCommand: node_modules/.bin/next start # honours Render's PORT
+    # pnpm pinned to 10.32.1 via npx in every step. `corepack enable` fails on Render's build image (2026-10-07:
+    # "EROFS: read-only file system, unlink '/usr/bin/pnpm'", Node 24.21.0), and the preinstalled pnpm is not our version.
+    buildCommand: npx --yes pnpm@10.32.1 install --frozen-lockfile && npx --yes pnpm@10.32.1 build
+    # Migrate + seed are idempotent; the seed aborts if any listing can't be quoted.
+    preDeployCommand: npx --yes pnpm@10.32.1 db:migrate && npx --yes pnpm@10.32.1 db:seed
+    startCommand: npx --yes pnpm@10.32.1 start # next start; honours Render's PORT
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
