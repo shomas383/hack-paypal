@@ -25,14 +25,15 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 ## Commands (create these scripts in Week 1; keep this list in sync with package.json)
 - `pnpm dev` — run app locally
 - `pnpm test` — Vitest unit tests (fast; run after every change)
-- `pnpm test:e2e` — Playwright demo-path test against sandbox
+- `pnpm test:e2e` — Playwright demo-path test against sandbox (`PW_HEADED=1` to watch; pauses for a human if PayPal's login needs it)
 - `pnpm typecheck` · `pnpm lint`
-- `pnpm db:migrate` · `pnpm db:seed` — seeds listings + imports `data/rates/*.json`
+- `pnpm db:migrate` · `pnpm db:seed` — applies Drizzle migrations · upserts the demo listings from `data/seed/listings.json`
+  (prices checked against the verified golden cases; every listing must quote OK)
 - `pnpm rates:import` — regenerates `data/rates/` + `data/eval/` from the gitignored verified sheet (`data/source/`); stages the output
 - `pnpm rates:validate` — schema + source/effective-date checks on rate data
 - `pnpm eval:classifier` — runs classifier on `data/eval/products.json`, prints accuracy table
-- `pnpm spike:paypal <a|b|c|d>` (aliases `pnpm spike:a` … `spike:d`) — Week 1 sandbox spike scripts in `scripts/spike/`
-- Not yet implemented (stubs exit 1): `test:e2e`, `db:seed`, `eval:classifier`
+- `pnpm spike:paypal <a|b|c|d|e>` (aliases `pnpm spike:a` … `spike:d`) — sandbox spike scripts in `scripts/spike/`
+- Not yet implemented (stub exits 1): `eval:classifier`
 - `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
   denied, except exactly `pnpm rates:import` / `pnpm rates:validate`. Read it with the Read tool.
 
@@ -78,20 +79,21 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - README updated if setup/commands changed
 
 ## Current milestone — update weekly
-Week 2 (Oct 12–18): rate engine + rate data (docs/SPEC.md §4.2). Tests first.
-- `data/rates/<version>.json` schema (zod) + `pnpm rates:validate` (source_refs, hts_revision, effective_from, verified_on required).
-- Pure engine in `src/domain/rates/`: origin + HTS10 + customs value + entry date → itemized lines with sourceRef, or `UNSUPPORTED`.
-- Property tests (duty ≥ 0; JP ≤ max(MFN, 12.5%); EU ≤ max(MFN, 10%); unknown → UNSUPPORTED) + golden tests for the 12 sheet rows
-  + "trust moment" fixture (stale 15% Japan answer flagged).
-- Import the developer's verified 12-product sheet (I provide it); re-verify every row against HTS Rev. 20. Never invent rows.
-- `fast-check` 4.10.2 was deferred in Week 1 — ask before installing.
+Next (per docs/HACKATHON.md Wk3, Oct 19–25 — remaining items): classifier + eval (SPEC §4.1, `pnpm eval:classifier`)
+and the rough-cut demo video (record with human assist on the PayPal login).
 
-Week 1 (Oct 5–11): DONE — all four sandbox spikes PASS; results in `docs/PAYPAL.md`.
-Carried over from Week 1:
-- Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery; confirm the rest once the real checkout exists.
+Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
+PayPal v6 → authorize → `decideCapture()` → capture | void; DDP invoice. Headed e2e green; results in docs/PAYPAL.md.
+Week 2 rate engine + data: DONE (2026-10-06) — 10 verified Rev. 20 rows, golden 11/11, trust 10/11 flagged, property tests.
+Week 1 sandbox spikes: DONE (2026-10-05).
+
+Carried over:
+- App void branch not yet exercised end to end (SPEC §4.3 AC open); PayPal void itself proven in spike (a).
+- PayPal popup automation is flaky (two login variants, "Click to Continue" overlay, one run with no popup) — e2e keeps a manual fallback.
+- Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery; reconciliation webhook not built yet.
 - PayPal-Request-Id retention window unknown — never rely on retries days later.
-- `pnpm db:migrate` not yet run (needs Docker Desktop → `docker compose up -d`).
 - Sandbox webhook points at a dead cloudflared quick-tunnel URL — update to a new tunnel or the Render URL.
-- `docs/HACKATHON.md` is empty — fill in rules, judging, submission checklist and timeline.
+- VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read;
+  buyer-view rendering of a $0.00 invoice duty line.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
