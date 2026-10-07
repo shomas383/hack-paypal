@@ -32,7 +32,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - `pnpm rates:import` — regenerates `data/rates/` + `data/eval/` from the gitignored verified sheet (`data/source/`); stages the output
 - `pnpm rates:validate` — schema + source/effective-date checks on rate data
 - `pnpm eval:classifier` — runs classifier on `data/eval/products.json`, prints accuracy table
-- `pnpm spike:paypal <a|b|c|d|e>` (aliases `pnpm spike:a` … `spike:d`) — sandbox spike scripts in `scripts/spike/`
+- `pnpm spike:paypal <a|b|c|d|e|f|g>` (aliases `pnpm spike:a` … `spike:d`) — sandbox spike scripts in `scripts/spike/`
+- `pnpm build` · `pnpm start` — production build/start (Render runs these via `render.yaml`; `/api/health` is the health check)
 - Not yet implemented (stub exits 1): `eval:classifier`
 - `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
   denied, except exactly `pnpm rates:import` / `pnpm rates:validate`. Read it with the Read tool.
@@ -79,8 +80,10 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - README updated if setup/commands changed
 
 ## Current milestone — update weekly
-Next (per docs/HACKATHON.md Wk3, Oct 19–25 — remaining items): classifier + eval (SPEC §4.1, `pnpm eval:classifier`)
-and the rough-cut demo video (record with human assist on the PayPal login).
+Week 4 part A (deploy readiness) code DONE locally (2026-10-07): health check + boot-time sandbox lock, verified idempotent
+webhook receiver, one invoice per quote, production invoice recipient pinned, classifier rate-limit plumbing, `render.yaml`.
+Waiting on the user: apply the Blueprint on Render, register the webhook, run the post-deploy checks (IP header, demo path).
+Next: part B — classifier + eval (SPEC §4.1, `pnpm eval:classifier`; plan approved), then the rough-cut demo video.
 
 Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
 PayPal v6 → authorize → `decideCapture()` → capture | void; DDP invoice. Headed e2e green; results in docs/PAYPAL.md.
@@ -89,9 +92,13 @@ Week 1 sandbox spikes: DONE (2026-10-05).
 
 Carried over:
 - PayPal popup automation is flaky (two login variants, "Click to Continue" overlay, one run with no popup) — e2e keeps a manual fallback.
-- Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery; reconciliation webhook not built yet.
-- PayPal-Request-Id retention window unknown — never rely on retries days later.
-- Sandbox webhook points at a dead cloudflared quick-tunnel URL — update to a new tunnel or the Render URL.
+- Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery. The receiver (`/api/webhooks/paypal`) is built;
+  VERIFY on real deliveries to Render that `resource.id` is the order/authorization/capture id.
+- PayPal-Request-Id retention window unknown — never rely on retries days later. Invoicing create IGNORES it (spike f): never retry
+  an invoice create. A stuck CREATING invoice row → 409; recovery via a quote-derived `invoice_number` is possible (spike g), not built.
+- Sandbox webhook points at a dead cloudflared quick-tunnel URL — re-register at the Render URL after deploy.
+- VERIFY on Render: the rightmost X-Forwarded-For hop is the real client IP (`DEBUG_CLIENT_IP=1` on `/api/health`, then unset);
+  corepack/pnpm on the build image; plan names/prices.
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

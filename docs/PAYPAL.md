@@ -191,3 +191,16 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
     58X98432TK234561S → policy `VOID [OVER_ORDER_CAP]` → voided (03:30).
   - Both: `orders.status = VOIDED`, no `capture_id`; audit log `paypal.authorized` → `policy.decided` → `paypal.voided` with the
     reason. PayPal dashboard: Authorization $362.50 "Voided", Void "Completed", no capture. Env restored to TTL 900 / cap 40000.
+
+## Week 4 deploy notes (Render; local production checks 2026-10-07)
+- **Webhook receiver** `POST /api/webhooks/paypal`: postback verification (as spike c) → `payment_events` (unique `event_id`) →
+  audit row with match/mismatch vs `orders.status`. Never moves money. Local `next start`: forged signature headers → 400
+  "signature verification failed", missing headers → 400; nothing stored. Real deliveries pending the Render URL registration.
+- **One invoice per quote** (after spikes f/g): concurrent double request for one quote → one 409 + one SENT invoice
+  (INV2-CYV7-9T9K-UT94-F42U), a third call returns the same invoice; one DB row.
+- **Production invoice recipient**: with `NODE_ENV=production`, a browser-supplied `attacker@example.com` was ignored; the invoice
+  (INV2-LQZ2-DHLK-6NS3-BCKG, Blu-ray $205.00, duty $0.00) went to `PAYPAL_SANDBOX_BUYER_EMAIL`.
+- **Render facts** (render.com/docs/blueprint-spec, read 2026-10-07): `preDeployCommand` runs after build, before start, any plan;
+  default plans `0.5c-512mb` (web) / `0.1c-256mb` (Postgres); `postgresMajorVersion` as a string. Render's default for new
+  Postgres is 18 (changelog 2025-11-13); we pin 17. Client IP: no official doc — feedback.render.com (2021) says Render "only
+  appends" to X-Forwarded-For → we count the rightmost hop. VERIFY after deploy with `DEBUG_CLIENT_IP=1`.
