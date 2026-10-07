@@ -1,0 +1,61 @@
+# Render Blueprint — Landed (PayPal SANDBOX only). Field names per https://render.com/docs/blueprint-spec (read 2026-10-07).
+# Plans: smallest paid tiers, kept through judging (Dec 15). Confirm names + prices in the dashboard before applying.
+databases:
+  - name: landed-db
+    plan: 0.1c-256mb
+    region: oregon
+    postgresMajorVersion: "17" # match local postgres:17.11-alpine (Render's default for new DBs is 18)
+    databaseName: landed
+    user: landed
+
+services:
+  - type: web
+    name: landed
+    runtime: node # Node 24 from package.json "engines"
+    plan: 0.5c-512mb
+    region: oregon
+    branch: main
+    # VERIFY on the first build: corepack provides pnpm 10.32.1 from "packageManager".
+    # Fallback if corepack is not allowed: npx --yes pnpm@10.32.1 install --frozen-lockfile && npx --yes pnpm@10.32.1 build
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    # Binaries directly (no pnpm needed at runtime). Migrate + seed are idempotent; the seed aborts if any listing can't be quoted.
+    preDeployCommand: node_modules/.bin/drizzle-kit migrate && node_modules/.bin/tsx scripts/seed.ts
+    startCommand: node_modules/.bin/next start # honours Render's PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: landed-db
+          property: connectionString
+      - key: PAYPAL_ENV
+        value: sandbox # boot fails unless sandbox (src/instrumentation.ts)
+      - key: PAYPAL_API_BASE
+        value: https://api-m.sandbox.paypal.com
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID # inlined at build time: must be set before the first build
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID # set after registering https://<render-url>/api/webhooks/paypal, then redeploy
+        sync: false
+      - key: PAYPAL_SANDBOX_BUYER_EMAIL # the only invoice recipient in production
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SPEND_CAP_PER_ORDER_USD_MINOR
+        sync: false
+      - key: SPEND_CAP_PER_SESSION_USD_MINOR
+        sync: false
+      - key: QUOTE_TTL_SECONDS
+        sync: false
+      - key: CLASSIFIER_REVIEW_THRESHOLD
+        sync: false
+      - key: CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR
+        sync: false
+      - key: CLASSIFIER_LIMIT_PER_IP_PER_HOUR
+        sync: false
+      - key: CLASSIFIER_DAILY_CEILING
+        sync: false
+      # DEBUG_CLIENT_IP=1 only temporarily for the client-IP check after the first deploy; then remove it.
+      # PAYPAL_SANDBOX_BUYER_PASSWORD is deliberately NOT set here (local e2e only).
