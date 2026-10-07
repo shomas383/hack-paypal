@@ -14,6 +14,23 @@ const valid = {
   QUOTE_TTL_SECONDS: '900',
 };
 
+describe('parseServerEnv — classifier limits', () => {
+  it('defaults when unset (10/session/hour, 20/IP/hour, 200/day)', () => {
+    expect(parseServerEnv(valid).classifierLimits).toEqual({ perSessionPerHour: 10, perIpPerHour: 20, dailyCeiling: 200 });
+  });
+
+  it('reads the three env vars as positive integers', () => {
+    const env = parseServerEnv({ ...valid, CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR: '3', CLASSIFIER_LIMIT_PER_IP_PER_HOUR: '5', CLASSIFIER_DAILY_CEILING: '50' });
+    expect(env.classifierLimits).toEqual({ perSessionPerHour: 3, perIpPerHour: 5, dailyCeiling: 50 });
+  });
+
+  it('rejects zero, negatives and non-integers', () => {
+    for (const bad of ['0', '-1', '2.5', 'ten']) {
+      expect(() => parseServerEnv({ ...valid, CLASSIFIER_DAILY_CEILING: bad })).toThrow(/CLASSIFIER_DAILY_CEILING must be a positive integer/);
+    }
+  });
+});
+
 describe('parseServerEnv', () => {
   it('reads the optional webhook id', () => {
     expect(parseServerEnv(valid).paypalWebhookId).toBeUndefined();

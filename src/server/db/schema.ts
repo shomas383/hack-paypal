@@ -1,6 +1,6 @@
 // Drizzle schema (SPEC §5). Money is integer minor units in bigint columns (invariant 1); currency is USD.
 // `quotes` is immutable: the repository only inserts/reads and a DB trigger (migration 0001) rejects UPDATE/DELETE.
-import { bigint, bigserial, char, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigint, bigserial, char, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import type { StoredLine } from '@/domain/quote/buildQuote';
 
 const money = (name: string) => bigint(name, { mode: 'bigint' });
@@ -91,6 +91,19 @@ export const paymentEvents = pgTable('payment_events', {
   raw: jsonb('raw').$type<Record<string, unknown>>().notNull(),
   receivedAt: ts('received_at').notNull().defaultNow(),
 });
+
+/** One row per classifier call attempt, written BEFORE the LLM call; counted for the per-session/IP/day budget. */
+export const classifierCalls = pgTable(
+  'classifier_calls',
+  {
+    id: bigserial('id', { mode: 'bigint' }).primaryKey(),
+    at: ts('at').notNull().defaultNow(),
+    sessionId: text('session_id').notNull(),
+    ip: text('ip').notNull(),
+    outcome: text('outcome').notNull(), // RESERVED | OK | ERROR | REFUSED_DAILY | REFUSED_SESSION | REFUSED_IP
+  },
+  (t) => [index('classifier_calls_at_idx').on(t.at)],
+);
 
 export const auditLog = pgTable('audit_log', {
   id: bigserial('id', { mode: 'bigint' }).primaryKey(),

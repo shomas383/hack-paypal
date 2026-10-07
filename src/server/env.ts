@@ -15,6 +15,8 @@ export interface ServerEnv {
   sandboxBuyerEmail?: string;
   /** Id of the registered sandbox webhook; without it the webhook route answers 503. Optional. */
   paypalWebhookId?: string;
+  /** Classifier call budget (checked before any LLM call). */
+  classifierLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
 }
 
 type RawEnv = Record<string, string | undefined>;
@@ -29,6 +31,14 @@ function positiveInt(raw: RawEnv, name: string): bigint {
   const v = required(raw, name);
   if (!/^\d+$/.test(v) || BigInt(v) <= 0n) throw new Error(`${name} must be a positive integer`);
   return BigInt(v);
+}
+
+/** Optional positive integer with a default (limits, not money). */
+function positiveIntOr(raw: RawEnv, name: string, fallback: number): number {
+  const v = raw[name]?.trim();
+  if (!v) return fallback;
+  if (!/^\d+$/.test(v) || Number(v) <= 0) throw new Error(`${name} must be a positive integer`);
+  return Number(v);
 }
 
 export function parseServerEnv(raw: RawEnv): ServerEnv {
@@ -46,6 +56,11 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     spendCapPerOrderMinor: positiveInt(raw, 'SPEND_CAP_PER_ORDER_USD_MINOR'),
     spendCapPerSessionMinor: positiveInt(raw, 'SPEND_CAP_PER_SESSION_USD_MINOR'),
     quoteTtlSeconds: Number(positiveInt(raw, 'QUOTE_TTL_SECONDS')),
+    classifierLimits: {
+      perSessionPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR', 10),
+      perIpPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_IP_PER_HOUR', 20),
+      dailyCeiling: positiveIntOr(raw, 'CLASSIFIER_DAILY_CEILING', 200),
+    },
     ...(email ? { sandboxBuyerEmail: email } : {}),
     ...(webhookId ? { paypalWebhookId: webhookId } : {}),
   };
