@@ -23,8 +23,17 @@ cp .env.example .env        # fill in sandbox credentials
 pnpm install
 docker compose up -d
 pnpm db:migrate
-pnpm dev                    # http://localhost:3000
+pnpm db:seed                # 5 demo listings
+pnpm dev                    # http://localhost:3000 → /listings
 ```
+
+## Demo path (sandbox)
+`/listings` → **Get landed cost** → the checkout shows goods, shipping, and the **US import duty (est.)** line with HTS code,
+Chapter 99 heading(s), sources and rate version — before any PayPal button → **Approve purchase** (recorded; spend cap shown)
+→ PayPal button → log in as the sandbox Personal buyer → the server re-checks the order against the stored quote, authorizes,
+runs the capture policy, and captures (or voids). **Send DDP invoice instead** creates and sends a PayPal invoice with the duty
+itemized. End-to-end test: `PW_HEADED=1 pnpm test:e2e` (set `PAYPAL_SANDBOX_BUYER_PASSWORD` in `.env` to automate the
+PayPal login; if PayPal's popup changes, the test pauses so you can finish the login and press Resume).
 
 ## Commands
 | Command | What it does |
@@ -32,11 +41,12 @@ pnpm dev                    # http://localhost:3000
 | `pnpm dev` | Run the app locally |
 | `pnpm test` | Vitest unit tests |
 | `pnpm typecheck` · `pnpm lint` | TypeScript (strict) · ESLint |
-| `pnpm db:migrate` | Apply Drizzle migrations |
-| `pnpm spike:a` … `pnpm spike:d` | PayPal sandbox spikes (see below); `pnpm spike:paypal <a\|b\|c\|d>` also works |
+| `pnpm db:migrate` · `pnpm db:seed` | Apply Drizzle migrations · seed the 5 demo listings |
+| `pnpm test:e2e` | Playwright demo-path test against the PayPal sandbox (`PW_HEADED=1` to watch) |
+| `pnpm spike:a` … `pnpm spike:d` | PayPal sandbox spikes (see below); `pnpm spike:paypal <a\|b\|c\|d\|e>` also works |
 | `pnpm rates:import` | Regenerate rate data + eval fixtures from the human-verified sheet (kept locally in `data/source/`, not committed) |
 | `pnpm rates:validate` | Schema + verification-metadata checks on `data/rates/*.json` |
-| `pnpm test:e2e` · `pnpm db:seed` · `pnpm eval:classifier` | Not implemented yet (exit 1) |
+| `pnpm eval:classifier` | Not implemented yet (exit 1) |
 
 ## Sandbox spikes (`scripts/spike/`)
 Each prints a PASS/FAIL table and exits non-zero on failure.
@@ -44,6 +54,7 @@ Each prints a PASS/FAIL table and exits non-zero on failure.
 - **b** — Invoicing v2 draft → send with duty as a labelled custom amount. Needs `PAYPAL_SANDBOX_BUYER_EMAIL`.
 - **c** — Webhooks. Run `cloudflared tunnel --url http://localhost:8787`, register the tunnel URL as a webhook in the sandbox app, set `PAYPAL_WEBHOOK_ID`, start `pnpm spike:c`, then run `pnpm spike:a` in another terminal.
 - **d** — PayPal Agent Toolkit (read-only `get_order`) with the Vercel AI SDK. Optional order id argument; needs `ANTHROPIC_API_KEY` for the LLM checks.
+- **e** — Invoicing v2: does a $0.00 duty line work (exempt items)? Creates a draft only (never sent). `pnpm spike:paypal e`.
 
 ## License
 MIT — see [LICENSE](LICENSE).
