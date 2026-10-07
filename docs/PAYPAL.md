@@ -75,6 +75,12 @@ Endpoints: `POST /v2/checkout/orders` · `GET /v2/checkout/orders/{id}` · `PATC
   explicit "US import duty (est.) – HTS … $0.00" line. **Buyer view confirmed 2026-10-07** (sent invoice INV2-73MU-SSEW-267C-TLEK,
   Blu-ray from the app): lines Subtotal $180.00 · Shipping $25.00 · "US import duty (est.) – HTS 8523.49.40" $0.00 · Total
   $205.00, and the note "No US import duty (exempt)" under "Notes to customer".
+- **Invoice create is NOT idempotent by `PayPal-Request-Id` (spike (f), 2026-10-07).** The Invoicing v2 OpenAPI
+  (`developer.paypal.com/api/invoicing/v2/schema.json`, fetched 2026-10-07) defines the `PayPal-Request-Id` header but does not
+  reference it on `POST /v2/invoicing/invoices` or `…/send` (only on `…/conditional-rules`). In the sandbox, the same request id +
+  same body twice → two different drafts (both 201: INV2-4TU5-XA3C-ZJV4-UDMM, INV2-Q8JA-42YS-DRSB-NRXU); same id + different body →
+  a third (201). All three deleted (`DELETE /v2/invoicing/invoices/{id}` → 204; drafts/scheduled only). **Consequence:** never retry
+  an invoice create — not even our client's automatic same-id retry on 5xx/network error — and dedupe per quote in our DB.
 
 ## Webhooks
 - Verify via postback `POST /v1/notifications/verify-webhook-signature` (headers PAYPAL-AUTH-ALGO, PAYPAL-CERT-URL,

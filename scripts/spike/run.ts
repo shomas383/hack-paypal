@@ -8,6 +8,7 @@ const SPIKES: Record<string, string> = {
   c: './c-webhooks',
   d: './d-agent-toolkit',
   e: './e-invoice-zero-custom',
+  f: './f-invoice-request-id',
 };
 
 async function main(): Promise<void> {

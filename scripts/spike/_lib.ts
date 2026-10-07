@@ -73,7 +73,7 @@ export interface PayPalError {
 }
 
 export async function paypalRequest<T = unknown>(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'DELETE',
   path: string,
   opts: { body?: unknown; requestId?: string; headers?: Record<string, string> } = {},
 ): Promise<PayPalResponse<T>> {
