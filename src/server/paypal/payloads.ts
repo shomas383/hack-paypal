@@ -56,7 +56,7 @@ export function buildInvoiceRequest(q: QuoteRecord, recipientEmail: string) {
   assertQuoteTotals(q);
   if (!recipientEmail.trim()) throw new Error('invoice recipient email is required');
   const hasDuty = q.dutyMinor > 0n;
-  // VERIFY: whether Invoicing accepts a $0.00 custom amount — until confirmed, omit it and say so in the note.
+  // The duty line is always shown, even at $0.00 for exempt items — Invoicing accepts a $0.00 custom amount (spike e, 2026-10-07).
   const note = `Landed DDP invoice · quote ${q.id} · rates ${q.rateVersion}${hasDuty ? '' : ' · No US import duty (exempt)'}`;
   return {
     detail: { currency_code: 'USD' as const, note },
@@ -65,7 +65,7 @@ export function buildInvoiceRequest(q: QuoteRecord, recipientEmail: string) {
     amount: {
       breakdown: {
         shipping: { amount: toPayPalAmount(usd(q.shippingMinor)) },
-        ...(hasDuty ? { custom: { label: dutyLabel(q), amount: toPayPalAmount(usd(q.dutyMinor)) } } : {}),
+        custom: { label: dutyLabel(q), amount: toPayPalAmount(usd(q.dutyMinor)) },
       },
     },
   };
