@@ -13,7 +13,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:e2e": "node scripts/stub.mjs test:e2e \"Playwright demo-path test (deferred until the checkout exists)\"",
+    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "db:migrate": "drizzle-kit migrate",
