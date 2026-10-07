@@ -14,6 +14,14 @@ const valid = {
   QUOTE_TTL_SECONDS: '900',
 };
 
+describe('parseServerEnv — TRUSTED_PROXY_HOPS', () => {
+  it('defaults to 1 (Render: one Cloudflare edge hop) and reads a positive integer', () => {
+    expect(parseServerEnv(valid).trustedProxyHops).toBe(1);
+    expect(parseServerEnv({ ...valid, TRUSTED_PROXY_HOPS: '2' }).trustedProxyHops).toBe(2);
+    expect(() => parseServerEnv({ ...valid, TRUSTED_PROXY_HOPS: '0' })).toThrow(/TRUSTED_PROXY_HOPS must be a positive integer/);
+  });
+});
+
 describe('parseServerEnv — classifier limits', () => {
   it('defaults when unset (10/session/hour, 20/IP/hour, 200/day)', () => {
     expect(parseServerEnv(valid).classifierLimits).toEqual({ perSessionPerHour: 10, perIpPerHour: 20, dailyCeiling: 200 });

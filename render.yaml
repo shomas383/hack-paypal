@@ -57,5 +57,7 @@ services:
         sync: false
       - key: CLASSIFIER_DAILY_CEILING
         sync: false
+      - key: TRUSTED_PROXY_HOPS # Render: one Cloudflare edge hop appended after the client (verified 2026-10-07)
+        value: "1"
       # DEBUG_CLIENT_IP=1 only temporarily for the client-IP check after the first deploy; then remove it.
       # PAYPAL_SANDBOX_BUYER_PASSWORD is deliberately NOT set here (local e2e only).

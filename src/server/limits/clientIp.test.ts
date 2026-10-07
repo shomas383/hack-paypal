@@ -3,21 +3,35 @@ import { clientIp, UNKNOWN_IP } from './clientIp';
 
 const h = (xff?: string) => (name: string) => (name.toLowerCase() === 'x-forwarded-for' ? (xff ?? null) : null);
 
-describe('clientIp — the rightmost X-Forwarded-For hop (appended by the proxy in front of us), never the first', () => {
-  it('a forged leading XFF entry does not change the counted IP', () => {
-    expect(clientIp(h('6.6.6.6, 203.0.113.7'))).toBe('203.0.113.7');
-    expect(clientIp(h('203.0.113.7'))).toBe('203.0.113.7');
-    expect(clientIp(h('1.1.1.1, 6.6.6.6,203.0.113.7'))).toBe('203.0.113.7');
+// Render 2026-10-07 (DEBUG_CLIENT_IP=1, forged leading 6.6.6.6): "6.6.6.6,73.55.190.127, 172.71.146.201" — the rightmost
+// entry is a Cloudflare edge (172.64.0.0/13); the real client is one hop further left → TRUSTED_PROXY_HOPS=1.
+describe('clientIp — skip N trusted proxy hops from the right; never trust the leading (client-supplied) entries', () => {
+  it('Render header with hops=1 → the real client', () => {
+    expect(clientIp(h('6.6.6.6,73.55.190.127, 172.71.146.201'), 1)).toBe('73.55.190.127');
+  });
+
+  it('the same header without the forged entry → the same result', () => {
+    expect(clientIp(h('73.55.190.127, 172.71.146.201'), 1)).toBe('73.55.190.127');
+    expect(clientIp(h('1.1.1.1 , 6.6.6.6,73.55.190.127 ,172.71.146.201'), 1)).toBe('73.55.190.127');
+  });
+
+  it('hops=2 skips two trusted hops', () => {
+    expect(clientIp(h('6.6.6.6, 203.0.113.7, 10.0.0.1, 172.71.146.201'), 2)).toBe('203.0.113.7');
   });
 
   it('accepts IPv6', () => {
-    expect(clientIp(h('6.6.6.6, 2001:db8::1'))).toBe('2001:db8::1');
+    expect(clientIp(h('6.6.6.6, 2001:db8::1, 172.71.146.201'), 1)).toBe('2001:db8::1');
   });
 
-  it('missing, empty or malformed header → the shared unknown bucket', () => {
-    expect(clientIp(h())).toBe(UNKNOWN_IP);
-    expect(clientIp(h('  '))).toBe(UNKNOWN_IP);
-    expect(clientIp(h('1.2.3.4, not-an-ip'))).toBe(UNKNOWN_IP);
-    expect(clientIp(h('1.2.3.4, '))).toBe(UNKNOWN_IP);
+  it('fewer entries than hops + 1 → the unknown bucket', () => {
+    expect(clientIp(h('172.71.146.201'), 1)).toBe(UNKNOWN_IP);
+    expect(clientIp(h('73.55.190.127, 172.71.146.201'), 2)).toBe(UNKNOWN_IP);
+  });
+
+  it('missing, empty or malformed → the unknown bucket', () => {
+    expect(clientIp(h(), 1)).toBe(UNKNOWN_IP);
+    expect(clientIp(h('  '), 1)).toBe(UNKNOWN_IP);
+    expect(clientIp(h('not-an-ip, 172.71.146.201'), 1)).toBe(UNKNOWN_IP);
+    expect(clientIp(h(', 172.71.146.201'), 1)).toBe(UNKNOWN_IP);
   });
 });

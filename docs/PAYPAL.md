@@ -202,8 +202,12 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   (INV2-LQZ2-DHLK-6NS3-BCKG, Blu-ray $205.00, duty $0.00) went to `PAYPAL_SANDBOX_BUYER_EMAIL`.
 - **Render facts** (render.com/docs/blueprint-spec, read 2026-10-07): `preDeployCommand` runs after build, before start, any plan;
   default plans `0.5c-512mb` (web) / `0.1c-256mb` (Postgres); `postgresMajorVersion` as a string. Render's default for new
-  Postgres is 18 (changelog 2025-11-13); we pin 17. Client IP: no official doc — feedback.render.com (2021) says Render "only
-  appends" to X-Forwarded-For → we count the rightmost hop. VERIFY after deploy with `DEBUG_CLIENT_IP=1`.
+  Postgres is 18 (changelog 2025-11-13); we pin 17.
+- **Client IP on Render (verified 2026-10-07, `DEBUG_CLIENT_IP=1`, request with a forged `X-Forwarded-For: 6.6.6.6`):** the app
+  received `X-Forwarded-For: "6.6.6.6,73.55.190.127, 172.71.146.201"`. The client-supplied entry is kept at the left, the real
+  client IP (73.55.190.127) follows, and the rightmost entry is a Cloudflare edge (172.71.146.201, in 172.64.0.0/13). So the
+  rightmost hop is NOT the client: `clientIp` skips `TRUSTED_PROXY_HOPS` (=1 on Render) entries from the right. Entries are
+  separated by both "," and ", ". `cf-connecting-ip` / `true-client-ip` are now echoed too while debugging (comparison pending).
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).

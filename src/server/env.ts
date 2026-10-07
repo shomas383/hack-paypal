@@ -15,6 +15,8 @@ export interface ServerEnv {
   sandboxBuyerEmail?: string;
   /** Id of the registered sandbox webhook; without it the webhook route answers 503. Optional. */
   paypalWebhookId?: string;
+  /** X-Forwarded-For entries appended by trusted proxies, skipped from the right to find the client IP (Render: 1). */
+  trustedProxyHops: number;
   /** Classifier call budget (checked before any LLM call). */
   classifierLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
 }
@@ -56,6 +58,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     spendCapPerOrderMinor: positiveInt(raw, 'SPEND_CAP_PER_ORDER_USD_MINOR'),
     spendCapPerSessionMinor: positiveInt(raw, 'SPEND_CAP_PER_SESSION_USD_MINOR'),
     quoteTtlSeconds: Number(positiveInt(raw, 'QUOTE_TTL_SECONDS')),
+    trustedProxyHops: positiveIntOr(raw, 'TRUSTED_PROXY_HOPS', 1),
     classifierLimits: {
       perSessionPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR', 10),
       perIpPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_IP_PER_HOUR', 20),

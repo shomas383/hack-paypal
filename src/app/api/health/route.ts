@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { bootCheck } from '@/server/boot';
+import { serverEnv } from '@/server/env';
 import { clientIp } from '@/server/limits/clientIp';
 
 export const dynamic = 'force-dynamic';
@@ -8,11 +9,17 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   const boot = bootCheck(process.env);
   if (!boot.ok) return NextResponse.json({ ok: false, error: boot.message }, { status: 503 });
-  // Temporary (DEBUG_CLIENT_IP=1): echo the caller's own X-Forwarded-For and the IP we would count, to verify on Render
-  // that the rightmost hop is the real client IP. Unset after the check.
+  // Temporary (DEBUG_CLIENT_IP=1): echo the caller's own client-IP headers (these values only, no other headers) and the IP
+  // we would count, to verify TRUSTED_PROXY_HOPS on Render. Unset after the check.
   const debug =
     process.env.DEBUG_CLIENT_IP === '1'
-      ? { xForwardedFor: req.headers.get('x-forwarded-for'), countedIp: clientIp((n) => req.headers.get(n)) }
+      ? {
+          xForwardedFor: req.headers.get('x-forwarded-for'),
+          cfConnectingIp: req.headers.get('cf-connecting-ip'),
+          trueClientIp: req.headers.get('true-client-ip'),
+          trustedProxyHops: serverEnv().trustedProxyHops,
+          countedIp: clientIp((n) => req.headers.get(n), serverEnv().trustedProxyHops),
+        }
       : {};
   try {
     const { sql } = await import('@/server/db/client');
