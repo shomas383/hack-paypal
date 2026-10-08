@@ -20,6 +20,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "rates:import": "tsx scripts/import-verify-sheet.ts",
     "rates:validate": "tsx scripts/validate-rates.ts",
+    "hts:import": "tsx scripts/import-hts.ts",
     "eval:classifier": "tsx scripts/eval-classifier.ts",
     "spike:paypal": "tsx --env-file=.env scripts/spike/run.ts",
     "spike:a": "tsx --env-file=.env scripts/spike/run.ts a",

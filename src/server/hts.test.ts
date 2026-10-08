@@ -1,0 +1,46 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { currentHtsIndex, CURRENT_HTS_FILE } from './hts';
+import { currentRateTable } from './rates';
+
+// Spot checks against the COMMITTED index (data/hts/2026-rev20.json, built by pnpm hts:import).
+const { index, codes, chains } = currentHtsIndex();
+
+describe('committed Rev 20 HTS index', () => {
+  it('6203.42.4511 is present, with "Men\'s trousers and breeches" and "Blue denim" in its chain', () => {
+    const chain = chains.get('6203.42.4511')!.join(' > ');
+    expect(chain).toContain("Men's trousers and breeches");
+    expect(chain).toContain('Blue denim');
+  });
+
+  it('6203.42.4011 (the pre-renumbering P08 code) is absent; 9006.53.0205 is present', () => {
+    expect(codes.has('6203.42.4011')).toBe(false);
+    expect(codes.has('9006.53.0205')).toBe(true);
+  });
+
+  it('9102.21.70 is an 8-digit component-reporting code (Ch. 91 Statistical Note 1); 9102.21.7000 does not exist', () => {
+    expect(codes.get('9102.21.70')).toMatchObject({ componentReporting: true });
+    expect(codes.has('9102.21.7000')).toBe(false);
+    expect(chains.get('9102.21.70')!.join(' > ')).toContain('over 17 jewels');
+  });
+
+  it('every eval / golden code is present, except the watch (component reporting) and 9801.00.1098 (Ch. 98, excluded)', () => {
+    const products = JSON.parse(readFileSync('data/eval/products.json', 'utf8')) as { expected: { hts10: string | null } }[];
+    const golden = JSON.parse(readFileSync('data/eval/golden-2026-rev20-v1.json', 'utf8')) as { cases: { hts10: string }[] };
+    const all = new Set([...products.map((p) => p.expected.hts10).filter((h): h is string => !!h), ...golden.cases.map((c) => c.hts10)]);
+    const missing = [...all].filter((h) => !codes.has(h)).sort();
+    expect(missing).toEqual(['9102.21.7000', '9801.00.1098']);
+  });
+
+  it('contains no Chapter 98/99 codes and no rate fields or rate text', () => {
+    expect(index.codes.some((c) => /^9[89]/.test(c.c))).toBe(false);
+    const text = readFileSync(CURRENT_HTS_FILE, 'utf8');
+    for (const k of ['general', 'special', 'other', 'additionalDuties', 'footnotes']) expect(text).not.toContain(`"${k}":`);
+    expect(index.codes.every((c) => /^\d{4}\.\d{2}\.\d{2}(\d{2})?$/.test(c.c))).toBe(true);
+  });
+
+  it('revision lock: the HTS index revision equals the rate table revision', () => {
+    expect(index.hts_revision).toBe('2026 Rev. 20');
+    expect(index.hts_revision).toBe(currentRateTable().hts_revision);
+  });
+});
