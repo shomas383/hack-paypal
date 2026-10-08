@@ -22,7 +22,7 @@ describe('scoreRun', () => {
     expect(s.n).toBe(3);
     expect(s.wrongAuto).toEqual(['P03']);
     expect(s.autoCorrect).toBe(1);
-    expect(s.acc).toEqual({ d6: 3, d8: 2, d10: 2 }); // P03 9102.21.50 ≠ .70 at 8 digits
+    expect(s.acc).toEqual({ d6: 3, d8: 2, d10: 2, d10Strict: 2 }); // P03 9102.21.50 ≠ .70 at 8 digits
     expect(s.matrix).toEqual({ correctAuto: 1, correctReview: 1, wrongAuto: 1, wrongReview: 0 });
   });
 
@@ -38,6 +38,18 @@ describe('scoreRun', () => {
     expect(s.acc.d10).toBe(0);
     expect(s.matrix.wrongReview).toBe(1);
     expect(s.safe).toBe(true);
+  });
+
+  it('component reporting (Ch. 91 Stat. Note 1): correct at 8 digits, left out of the 10-digit denominator; strict count kept', () => {
+    const watch: EvalProduct = { ...v('P03', '9102.21.7000'), componentReporting: true };
+    const s = scoreRun([watch, v('P01', '9504.40.0000')], [p('P03', '9102.21.70', false), p('P01', '9504.40.0000', false)]);
+    expect(s.n).toBe(2);
+    expect(s.n10).toBe(1);
+    expect(s.acc).toEqual({ d6: 2, d8: 2, d10: 1, d10Strict: 1 });
+    expect(s.matrix.correctAuto).toBe(2); // the 8-digit component-reporting answer is correct, so auto is safe
+    expect(s.wrongAuto).toEqual([]);
+    // a wrong 8-digit line is still wrong (and unsafe if auto)
+    expect(scoreRun([watch], [p('P03', '9102.21.50', false)]).wrongAuto).toEqual(['P03']);
   });
 
   it('a missing prediction for a verified product counts as wrong ∧ review', () => {

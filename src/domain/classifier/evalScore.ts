@@ -6,6 +6,11 @@ export interface EvalProduct {
   title: string;
   origin: string | null;
   expected: { status: 'VERIFIED' | 'EXCLUDED'; hts10: string | null };
+  /**
+   * The expected line is a Ch. 91 component-reporting 8-digit line (Statistical Note 1): correct means the right 8-digit line;
+   * there is no single 10-digit answer, so it is left out of the 10-digit denominator (d10Strict still counts it).
+   */
+  componentReporting?: boolean;
 }
 
 export interface Prediction {
@@ -28,7 +33,7 @@ export function digitMatch(expected: string, predicted: string | null) {
 export function scoreRun(products: EvalProduct[], predictions: Prediction[]) {
   const byId = new Map(predictions.map((p) => [p.id, p]));
   const verified = products.filter((p) => p.expected.status === 'VERIFIED' && p.expected.hts10);
-  const acc = { d6: 0, d8: 0, d10: 0 };
+  const acc = { d6: 0, d8: 0, d10: 0, d10Strict: 0 };
   const matrix = { correctAuto: 0, correctReview: 0, wrongAuto: 0, wrongReview: 0 };
   const wrongAuto: string[] = [];
 
@@ -37,9 +42,11 @@ export function scoreRun(products: EvalProduct[], predictions: Prediction[]) {
     const m = digitMatch(prod.expected.hts10!, pred?.top ?? null);
     acc.d6 += Number(m.d6);
     acc.d8 += Number(m.d8);
-    acc.d10 += Number(m.d10);
+    acc.d10Strict += Number(m.d10);
+    if (!prod.componentReporting) acc.d10 += Number(m.d10);
+    const correct = prod.componentReporting ? m.d8 && digits(pred?.top ?? '').length === 8 : m.d10;
     const review = pred ? pred.review : true; // no prediction never counts as auto
-    if (m.d10) matrix[review ? 'correctReview' : 'correctAuto']++;
+    if (correct) matrix[review ? 'correctReview' : 'correctAuto']++;
     else {
       matrix[review ? 'wrongReview' : 'wrongAuto']++;
       if (!review) wrongAuto.push(prod.id);
@@ -52,6 +59,8 @@ export function scoreRun(products: EvalProduct[], predictions: Prediction[]) {
 
   return {
     n: verified.length,
+    /** Denominator for acc.d10 (component-reporting products excluded). acc.d10Strict uses n. */
+    n10: verified.filter((p) => !p.componentReporting).length,
     acc,
     matrix,
     wrongAuto,
