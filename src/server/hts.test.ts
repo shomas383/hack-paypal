@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { expandHeading, validateHts10 } from '@/domain/classifier/hts';
+import { goldenFileName } from '@/domain/rates/current';
+import { checkRateKeysAgainstHts } from '@/domain/rates/htsKeys';
 import { currentHtsIndex, CURRENT_HTS_FILE } from './hts';
 import { currentRateTable } from './rates';
 
@@ -27,10 +29,15 @@ describe('committed Rev 20 HTS index', () => {
 
   it('every eval / golden code is present, except the watch (component reporting) and 9801.00.1098 (Ch. 98, excluded)', () => {
     const products = JSON.parse(readFileSync('data/eval/products.json', 'utf8')) as { expected: { hts10: string | null } }[];
-    const golden = JSON.parse(readFileSync('data/eval/golden-2026-rev20-v1.json', 'utf8')) as { cases: { hts10: string }[] };
+    const golden = JSON.parse(readFileSync(`data/eval/${goldenFileName()}`, 'utf8')) as { cases: { hts10: string }[] };
     const all = new Set([...products.map((p) => p.expected.hts10).filter((h): h is string => !!h), ...golden.cases.map((c) => c.hts10)]);
     const missing = [...all].filter((h) => !codes.has(h)).sort();
-    expect(missing).toEqual(['9102.21.7000', '9801.00.1098']);
+    expect(missing).toEqual(['9801.00.1098']); // Ch. 98, excluded by design (P07 US goods returned → UNSUPPORTED)
+  });
+
+  it('every row of the current rate table is a real Rev 20 line, with the matching component-reporting flag', () => {
+    expect(checkRateKeysAgainstHts(currentRateTable().rows, { hts_revision: index.hts_revision, codes }, currentRateTable().hts_revision)).toEqual([]);
+    expect(currentRateTable().rows.find((r) => r.hts10 === '9102.21.70')).toMatchObject({ id: 'JP-9102.21.70', component_reporting: true });
   });
 
   it('contains no Chapter 98/99 codes and no rate fields or rate text', () => {

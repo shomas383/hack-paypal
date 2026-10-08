@@ -43,7 +43,7 @@
     "origin": "JP",
     "expected": {
       "status": "VERIFIED",
-      "hts10": "9102.21.7000",
+      "hts10": "9102.21.70",
       "total_ppm": 125000
     },
     "llm": {

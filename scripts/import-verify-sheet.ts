@@ -10,18 +10,24 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
+import type { HtsIndex } from '../src/domain/hts/buildIndex';
+import { CURRENT_HTS_REVISION, CURRENT_RATE_VERSION, goldenFileName, rateFileName } from '../src/domain/rates/current';
+import { checkRateKeysAgainstHts } from '../src/domain/rates/htsKeys';
 import { validateRateFile } from '../src/domain/rates/validate';
 import type { Additional, Component, RateFile, RateRow } from '../src/domain/rates/schema';
 
 const SOURCE = join('data', 'source', 'DDP_product_test_sheet_verify.xlsx');
-const VERSION = '2026-rev20-v1';
-const HTS_REVISION = '2026 Rev. 20';
+// v2 (2026-10-08): the watch is keyed by its component-reporting 8-digit line 9102.21.70 (HTS Ch. 91 Stat. Note 1(d)).
+const VERSION = CURRENT_RATE_VERSION;
+const HTS_REVISION = CURRENT_HTS_REVISION;
+// Every rate key must be a real line in the official HTS index of the same revision (built by pnpm hts:import).
+const HTS_INDEX = join('data', 'hts', '2026-rev20.json');
 const VERIFIED_BY = 'Shoma';
 // Accepted assumption (2026-10-05): Rev. 20 publication date. VERIFY: Rev. 20 effective date if it differs.
 const EFFECTIVE_FROM = '2026-09-28';
-const OUT_RATES = join('data', 'rates', `${VERSION}.json`);
+const OUT_RATES = join('data', 'rates', rateFileName(VERSION));
 const OUT_PRODUCTS = join('data', 'eval', 'products.json');
-const OUT_GOLDEN = join('data', 'eval', `golden-${VERSION}.json`);
+const OUT_GOLDEN = join('data', 'eval', goldenFileName(VERSION));
 
 class ImportError extends Error {}
 function assert(cond: unknown, msg: string): asserts cond {
@@ -212,6 +218,8 @@ const RULING = /^[A-Z]{1,2}\d{6}$/;
 function main(): void {
   const buf = readFileSync(SOURCE);
   const sha256 = createHash('sha256').update(buf).digest('hex');
+  const htsIndex = JSON.parse(readFileSync(HTS_INDEX, 'utf8')) as HtsIndex;
+  const htsCodes = new Map(htsIndex.codes.map((c) => [c.c, c.componentReporting ? { componentReporting: true as const } : {}]));
   const sheets = readWorkbook(readZip(buf));
   const verify = sheets.get('Verify');
   const products = sheets.get('Products');
@@ -288,7 +296,8 @@ function main(): void {
     const origin = ORIGIN[cells.get('C') ?? ''];
     assert(origin, `${id}: unsupported origin "${cells.get('C')}"`);
     const hts10 = cells.get('M') ?? '';
-    assert(/^\d{4}\.\d{2}\.\d{4}$/.test(hts10), `${id}: M is not a 10-digit HTS "${hts10}"`);
+    // 10-digit statistical line, or an 8-digit component-reporting line (checked against the HTS index below).
+    assert(/^\d{4}\.\d{2}\.\d{2}(\d{2})?$/.test(hts10), `${id}: M is not an HTS line (NNNN.NN.NNNN or NNNN.NN.NN) "${hts10}"`);
     assert(cells.get('L') === 'Y' && cells.get('P') === 'Y', `${id}: L and P must be Y`);
     const base = toPpm(cells.get('N'), `${id} N`);
     const addon = toPpm(cells.get('Q'), `${id} Q`);
@@ -430,6 +439,7 @@ function main(): void {
     const row: RateRow = {
       id: key,
       hts10: r.hts10,
+      ...(htsCodes.get(r.hts10)?.componentReporting ? { component_reporting: true as const } : {}),
       origin: r.origin,
       listings: [r.id],
       description: GENERIC[r.id]!,
@@ -481,6 +491,8 @@ function main(): void {
   // Self-checks before writing anything.
   const v = validateRateFile(file, { requiredRevision: HTS_REVISION });
   assert(v.ok, `generated file fails validation:\n  ${v.errors.join('\n  ')}`);
+  const keyErrors = checkRateKeysAgainstHts(file.rows, { hts_revision: htsIndex.hts_revision, codes: htsCodes }, HTS_REVISION);
+  assert(keyErrors.length === 0, `rate keys not in the HTS index (${HTS_INDEX}):\n  ${keyErrors.join('\n  ')}`);
   const out = { rates: JSON.stringify(file, null, 2), products: JSON.stringify(evalProducts, null, 2), golden: '' };
   out.golden = JSON.stringify({ rate_version: VERSION, note: 'Expected values from the Verify tab (column R/O); prices from Products E unless overridden.', cases: golden }, null, 2);
   for (const [name, text] of Object.entries(out)) {

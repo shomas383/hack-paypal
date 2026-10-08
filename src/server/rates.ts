@@ -1,11 +1,12 @@
 // The current verified rate table, loaded and validated once per process (server-only).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CURRENT_HTS_REVISION, rateFileName } from '@/domain/rates/current';
 import type { RateFile } from '@/domain/rates/schema';
 import { validateRateFile } from '@/domain/rates/validate';
 
-export const CURRENT_RATE_FILE = join(process.cwd(), 'data', 'rates', '2026-rev20-v1.json');
-const REQUIRED_HTS_REVISION = '2026 Rev. 20';
+export const CURRENT_RATE_FILE = join(process.cwd(), 'data', 'rates', rateFileName());
+const REQUIRED_HTS_REVISION = CURRENT_HTS_REVISION;
 
 let cached: RateFile | undefined;
 

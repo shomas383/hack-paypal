@@ -1,12 +1,13 @@
 // Loads the committed, generated rate data + eval fixtures (produced by `pnpm rates:import`) for tests.
 import { readFileSync } from 'node:fs';
+import { CURRENT_HTS_REVISION, goldenFileName, rateFileName } from '../current';
 import { validateRateFile } from '../validate';
 import type { RateFile } from '../schema';
 
 const read = (rel: string): unknown => JSON.parse(readFileSync(new URL(`../../../../${rel}`, import.meta.url), 'utf8'));
 
 export function loadVerifiedRates(): RateFile {
-  const v = validateRateFile(read('data/rates/2026-rev20-v1.json'), { requiredRevision: '2026 Rev. 20' });
+  const v = validateRateFile(read(`data/rates/${rateFileName()}`), { requiredRevision: CURRENT_HTS_REVISION });
   if (!v.ok || !v.file) throw new Error(`rate data invalid:\n${v.errors.join('\n')}`);
   return v.file;
 }
@@ -25,7 +26,7 @@ export interface GoldenCase {
 }
 
 export function loadGolden(): { rate_version: string; cases: GoldenCase[] } {
-  return read('data/eval/golden-2026-rev20-v1.json') as { rate_version: string; cases: GoldenCase[] };
+  return read(`data/eval/${goldenFileName()}`) as { rate_version: string; cases: GoldenCase[] };
 }
 
 export interface EvalProduct {

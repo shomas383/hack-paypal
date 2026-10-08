@@ -3,6 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { buildQuote, type ListingForQuote } from '../src/domain/quote/buildQuote';
+import { goldenFileName } from '../src/domain/rates/current';
 import { listings } from '../src/server/db/schema';
 import { currentRateTable } from '../src/server/rates';
 
@@ -23,7 +24,7 @@ interface SeedListing {
 
 async function main(): Promise<void> {
   const seed = JSON.parse(readFileSync('data/seed/listings.json', 'utf8')) as { listings: SeedListing[] };
-  const golden = JSON.parse(readFileSync('data/eval/golden-2026-rev20-v1.json', 'utf8')) as {
+  const golden = JSON.parse(readFileSync(`data/eval/${goldenFileName()}`, 'utf8')) as {
     cases: { id: string; origin: string; hts10: string; price_minor?: number; expected: string }[];
   };
   const table = currentRateTable();
