@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
     const listingId = isForm ? String((await req.formData()).get('listingId') ?? '') : String(((await req.json()) as { listingId?: unknown }).listingId ?? '');
     const sessionId = await ensureSessionId();
     const quote = await createQuote(listingId, sessionId);
-    if (isForm) return NextResponse.redirect(new URL(`/checkout/${quote.id}`, req.url), 303);
+    // Relative Location: behind Render's proxy req.url is the internal http://localhost:10000, so never build from it.
+    if (isForm) return new NextResponse(null, { status: 303, headers: { Location: `/checkout/${quote.id}` } });
     return NextResponse.json({ quoteId: quote.id });
   } catch (e) {
     return toJsonError(e);

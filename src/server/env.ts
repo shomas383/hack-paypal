@@ -15,6 +15,11 @@ export interface ServerEnv {
   sandboxBuyerEmail?: string;
   /** Id of the registered sandbox webhook; without it the webhook route answers 503. Optional. */
   paypalWebhookId?: string;
+  /**
+   * Public https origin (e.g. https://landed-hd19.onrender.com) for any absolute URL we must hand out. Required in production;
+   * never derived from the request, Host or X-Forwarded-Host. Redirects use relative paths instead.
+   */
+  publicBaseUrl?: string;
   /** X-Forwarded-For entries appended by trusted proxies, skipped from the right to find the client IP (Render: 1). */
   trustedProxyHops: number;
   /** Classifier call budget (checked before any LLM call). */
@@ -43,12 +48,33 @@ function positiveIntOr(raw: RawEnv, name: string, fallback: number): number {
   return Number(v);
 }
 
+function publicBaseUrl(raw: RawEnv): string | undefined {
+  const v = raw.PUBLIC_BASE_URL?.trim();
+  if (!v) {
+    // Required for a production SERVER; `next build` also runs with NODE_ENV=production and loads route modules.
+    if (raw.NODE_ENV === 'production' && raw.NEXT_PHASE !== 'phase-production-build') {
+      throw new Error('PUBLIC_BASE_URL is not set (required in production)');
+    }
+    return undefined;
+  }
+  const bad = new Error('PUBLIC_BASE_URL must be an https origin like https://example.onrender.com (no path, query or credentials)');
+  let u: URL;
+  try {
+    u = new URL(v);
+  } catch {
+    throw bad;
+  }
+  if (u.protocol !== 'https:' || u.username || u.password || u.search || u.hash || (u.pathname !== '/' && u.pathname !== '')) throw bad;
+  return u.origin;
+}
+
 export function parseServerEnv(raw: RawEnv): ServerEnv {
   if (raw.PAYPAL_ENV !== 'sandbox') throw new Error("Refusing to start: PAYPAL_ENV must be 'sandbox'");
   const base = raw.PAYPAL_API_BASE?.trim() || SANDBOX_API_BASE;
   if (base !== SANDBOX_API_BASE) throw new Error(`Refusing to start: PAYPAL_API_BASE must be the sandbox base ${SANDBOX_API_BASE}`);
   const email = raw.PAYPAL_SANDBOX_BUYER_EMAIL?.trim();
   const webhookId = raw.PAYPAL_WEBHOOK_ID?.trim();
+  const baseUrl = publicBaseUrl(raw);
   return {
     paypalApiBase: base,
     paypalClientId: required(raw, 'PAYPAL_CLIENT_ID'),
@@ -66,6 +92,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     },
     ...(email ? { sandboxBuyerEmail: email } : {}),
     ...(webhookId ? { paypalWebhookId: webhookId } : {}),
+    ...(baseUrl ? { publicBaseUrl: baseUrl } : {}),
   };
 }
 

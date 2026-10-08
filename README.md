@@ -44,6 +44,9 @@ PayPal login; if PayPal's popup changes, the test pauses so you can finish the l
    threshold and the classifier limits.
    - `NEXT_PUBLIC_PAYPAL_CLIENT_ID` is baked into the build, so it must be set before the first build.
    - `DATABASE_URL` comes from the database automatically.
+   - `render.yaml` fixes three values that aren't secrets: `PAYPAL_ENV`, `PAYPAL_API_BASE`, `TRUSTED_PROXY_HOPS=1`.
+   - It also sets `PUBLIC_BASE_URL=https://landed-hd19.onrender.com`. That's the public https origin, required in production.
+     Redirects are relative, and no URL is ever built from the request's host.
 3. **What each deploy runs.** Each step runs through `npx --yes pnpm@10.32.1`, so it uses the pinned pnpm. Render's image doesn't
    allow `corepack enable`.
    - **Build:** `install --frozen-lockfile`, then `build`.

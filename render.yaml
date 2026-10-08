@@ -61,6 +61,8 @@ services:
         sync: false
       - key: CLASSIFIER_DAILY_CEILING
         sync: false
+      - key: PUBLIC_BASE_URL # public https origin; required in production (boot refuses without it). Not a secret.
+        value: https://landed-hd19.onrender.com
       - key: TRUSTED_PROXY_HOPS # Render: one Cloudflare edge hop appended after the client (verified 2026-10-07)
         value: "1"
       # DEBUG_CLIENT_IP=1 only temporarily for the client-IP check after the first deploy; then remove it.

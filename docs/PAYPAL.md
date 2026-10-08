@@ -217,6 +217,10 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   DB access. The web service uses the internal connection string, and `/api/health` still returns ok. `render.yaml` sets
   `ipAllowList: []` so a recreated database is closed too (blueprint-spec: an omitted list allows all IPs on a NEW database
   and keeps the current rules on an existing one).
+- **Request URL is internal behind Render's proxy (2026-10-07):** `req.url` is `http://localhost:10000/…`, so a redirect built
+  from it sent buyers to `https://localhost:10000/checkout/<id>`. Fix: relative `Location` headers. Any absolute URL we must hand
+  out uses `PUBLIC_BASE_URL` (https origin, validated, required in production), never Host or X-Forwarded-Host. No PayPal
+  `return_url`/`cancel_url` is sent today; the v6 popup does not need them.
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).

@@ -14,6 +14,30 @@ const valid = {
   QUOTE_TTL_SECONDS: '900',
 };
 
+describe('parseServerEnv — PUBLIC_BASE_URL', () => {
+  it('is optional outside production and required in production', () => {
+    expect(parseServerEnv(valid).publicBaseUrl).toBeUndefined();
+    expect(() => parseServerEnv({ ...valid, NODE_ENV: 'production' })).toThrow(/PUBLIC_BASE_URL is not set/);
+  });
+
+  it('is not required during `next build` (NEXT_PHASE=phase-production-build); still validated if set', () => {
+    expect(parseServerEnv({ ...valid, NODE_ENV: 'production', NEXT_PHASE: 'phase-production-build' }).publicBaseUrl).toBeUndefined();
+    expect(() => parseServerEnv({ ...valid, NODE_ENV: 'production', NEXT_PHASE: 'phase-production-build', PUBLIC_BASE_URL: 'http://x.test' })).toThrow(/https origin/);
+  });
+
+  it('accepts an https origin and normalises a trailing slash', () => {
+    expect(parseServerEnv({ ...valid, NODE_ENV: 'production', PUBLIC_BASE_URL: 'https://landed-hd19.onrender.com/' }).publicBaseUrl).toBe(
+      'https://landed-hd19.onrender.com',
+    );
+  });
+
+  it('rejects http, a path, a query, credentials and non-URLs', () => {
+    for (const bad of ['http://landed-hd19.onrender.com', 'https://x.onrender.com/app', 'https://x.onrender.com?a=1', 'https://u:p@x.onrender.com', 'landed-hd19.onrender.com']) {
+      expect(() => parseServerEnv({ ...valid, PUBLIC_BASE_URL: bad })).toThrow(/PUBLIC_BASE_URL must be an https origin/);
+    }
+  });
+});
+
 describe('parseServerEnv — TRUSTED_PROXY_HOPS', () => {
   it('defaults to 1 (Render: one Cloudflare edge hop) and reads a positive integer', () => {
     expect(parseServerEnv(valid).trustedProxyHops).toBe(1);
