@@ -2,7 +2,18 @@
 // Anything routed to review is never auto-quoted.
 import type { ClassifierOutputT } from './schema';
 
-export type ReviewReason = 'LOW_CONFIDENCE' | 'TOP2_DIFFER_6' | 'MISSING_ATTRIBUTES' | 'ORIGIN_UNKNOWN' | 'MODEL_FLAGGED' | 'NO_CANDIDATES';
+export type ReviewReason =
+  | 'LOW_CONFIDENCE'
+  | 'TOP2_DIFFER_6'
+  | 'MISSING_ATTRIBUTES'
+  | 'ORIGIN_UNKNOWN'
+  | 'MODEL_FLAGGED'
+  | 'NO_CANDIDATES'
+  // grounded (B2) only:
+  | 'INVALID_CODE'
+  | 'TOO_BROAD'
+  | 'UNVERIFIED_EVIDENCE'
+  | 'INVALID_OUTPUT';
 
 export interface ReviewDecision {
   needsReview: boolean;
