@@ -15,14 +15,10 @@ const valid = {
 };
 
 describe('parseServerEnv — PUBLIC_BASE_URL', () => {
-  it('is optional outside production and required in production', () => {
+  it('is optional, also in production (no code uses it yet), but validated whenever set', () => {
     expect(parseServerEnv(valid).publicBaseUrl).toBeUndefined();
-    expect(() => parseServerEnv({ ...valid, NODE_ENV: 'production' })).toThrow(/PUBLIC_BASE_URL is not set/);
-  });
-
-  it('is not required during `next build` (NEXT_PHASE=phase-production-build); still validated if set', () => {
-    expect(parseServerEnv({ ...valid, NODE_ENV: 'production', NEXT_PHASE: 'phase-production-build' }).publicBaseUrl).toBeUndefined();
-    expect(() => parseServerEnv({ ...valid, NODE_ENV: 'production', NEXT_PHASE: 'phase-production-build', PUBLIC_BASE_URL: 'http://x.test' })).toThrow(/https origin/);
+    expect(parseServerEnv({ ...valid, NODE_ENV: 'production' }).publicBaseUrl).toBeUndefined();
+    expect(() => parseServerEnv({ ...valid, NODE_ENV: 'production', PUBLIC_BASE_URL: 'http://x.test' })).toThrow(/https origin/);
   });
 
   it('accepts an https origin and normalises a trailing slash', () => {

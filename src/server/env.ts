@@ -16,8 +16,8 @@ export interface ServerEnv {
   /** Id of the registered sandbox webhook; without it the webhook route answers 503. Optional. */
   paypalWebhookId?: string;
   /**
-   * Public https origin (e.g. https://landed-hd19.onrender.com) for any absolute URL we must hand out. Required in production;
-   * never derived from the request, Host or X-Forwarded-Host. Redirects use relative paths instead.
+   * Public https origin (e.g. https://landed-hd19.onrender.com) for any absolute URL we must hand out. Optional and unused for
+   * now (validated if set); never derived from the request, Host or X-Forwarded-Host. Redirects use relative paths instead.
    */
   publicBaseUrl?: string;
   /** X-Forwarded-For entries appended by trusted proxies, skipped from the right to find the client IP (Render: 1). */
@@ -50,13 +50,9 @@ function positiveIntOr(raw: RawEnv, name: string, fallback: number): number {
 
 function publicBaseUrl(raw: RawEnv): string | undefined {
   const v = raw.PUBLIC_BASE_URL?.trim();
-  if (!v) {
-    // Required for a production SERVER; `next build` also runs with NODE_ENV=production and loads route modules.
-    if (raw.NODE_ENV === 'production' && raw.NEXT_PHASE !== 'phase-production-build') {
-      throw new Error('PUBLIC_BASE_URL is not set (required in production)');
-    }
-    return undefined;
-  }
+  // Optional until code hands out an absolute URL; then make it required for a production server (not during
+  // `next build`, which also runs with NODE_ENV=production — skip when NEXT_PHASE === 'phase-production-build').
+  if (!v) return undefined;
   const bad = new Error('PUBLIC_BASE_URL must be an https origin like https://example.onrender.com (no path, query or credentials)');
   let u: URL;
   try {
