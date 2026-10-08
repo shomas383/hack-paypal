@@ -104,12 +104,29 @@ Carried over:
   an invoice create. A stuck CREATING invoice row → 409; recovery via a quote-derived `invoice_number` is possible (spike g), not built.
 - `PUBLIC_BASE_URL` is optional and unused (validated if set; `render.yaml` sets it). When code first hands out an absolute URL,
   make it required for a production server (not during `next build`: skip when `NEXT_PHASE === 'phase-production-build'`).
+- Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
+  `npx --yes pnpm@10.32.1 …`.
+- VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
+- rates-v2 (re-key the watch as `9102.21.70`, component reporting per Ch. 91 Statistical Note 1(d); duty amounts unchanged):
+  - The verified sheet is ALREADY edited (2026-10-08): Verify tab row 14 (P03), M14 = `9102.21.70` (entered as text); W14 also
+    cites Ch. 91 Statistical Note 1(d). Nothing else changed.
+  - **Do NOT run `pnpm rates:import` until the rates-v2 importer change is built:** the current importer requires a 10-digit
+    code in column M (`scripts/import-verify-sheet.ts:291`) and would reject the 8-digit code.
+  - To build:
+    - `scripts/import-verify-sheet.ts` (:291 check, `hts8()` :207) and `src/domain/rates/schema.ts:10` (`Hts10`) accept a
+      component-reporting 8-digit code; row id becomes `JP-9102.21.70` (`src/domain/rates/validate.ts:28`)
+    - bump the version to `2026-rev20-v2` (v1 quotes then become stale, which is correct)
+    - regenerated golden and eval files (watch row); `data/seed/listings.json` L-P03 (`scripts/seed.ts` checks it against golden)
+    - checkout display `src/app/checkout/[quoteId]/page.tsx:38` (add a "component reporting (Stat. Note 1)" note) and
+      `tests/e2e/demo-path.spec.ts:98`
+    - PayPal order description `src/server/paypal/payloads.ts:26` (the invoice duty label already prints 8 digits)
+    - `docs/HTS_VERIFICATION_SPEC.md:239` (P03 row) and the SPEC
+    - stored quotes keep `9102.21.7000` (immutable history)
+    - rates import fails if any rate key is not in data/hts/2026-rev20.json (8-digit keys allowed only when
+      componentReporting: true)
 
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line kinds are shown raw (e.g. `S301_FORCED_LABOR`) — show readable labels, e.g. "Section 301 add-on (forced-labor action)".
 - Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
-- Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
-  `npx --yes pnpm@10.32.1 …`.
-- VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
