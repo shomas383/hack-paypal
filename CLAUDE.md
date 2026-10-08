@@ -37,6 +37,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - `pnpm build` · `pnpm start` — production build/start (Render runs these via `render.yaml`; `/api/health` is the health check)
 - `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
   denied, except exactly `pnpm rates:import` / `pnpm rates:validate`. Read it with the Read tool.
+- `data/hts/` (the Rev 20 HTS index) has the same guard: written only by `pnpm hts:import`, which also stages its output;
+  any other command mentioning it is denied. Read it with the Read tool. (Hook tests: `src/guards/protectHook.test.ts`.)
 
 ## Architecture map
 - `src/app/` — Next.js routes: `(buyer)/`, `(seller)/`, `api/`
