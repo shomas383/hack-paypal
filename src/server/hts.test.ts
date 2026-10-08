@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { expandHeading, validateHts10 } from '@/domain/classifier/hts';
 import { currentHtsIndex, CURRENT_HTS_FILE } from './hts';
 import { currentRateTable } from './rates';
 
 // Spot checks against the COMMITTED index (data/hts/2026-rev20.json, built by pnpm hts:import).
-const { index, codes, chains } = currentHtsIndex();
+const { index, codes, chains, lookup } = currentHtsIndex();
 
 describe('committed Rev 20 HTS index', () => {
   it('6203.42.4511 is present, with "Men\'s trousers and breeches" and "Blue denim" in its chain', () => {
@@ -37,6 +38,16 @@ describe('committed Rev 20 HTS index', () => {
     const text = readFileSync(CURRENT_HTS_FILE, 'utf8');
     for (const k of ['general', 'special', 'other', 'additionalDuties', 'footnotes']) expect(text).not.toContain(`"${k}":`);
     expect(index.codes.every((c) => /^\d{4}\.\d{2}\.\d{2}(\d{2})?$/.test(c.c))).toBe(true);
+  });
+
+  it('expandHeading on the real index: 6203.42 → 39 lines incl. 6203.42.4511; 9102.21 → its 6 component-reporting lines', () => {
+    const cotton = expandHeading('6203.42', lookup);
+    expect(cotton).toHaveLength(39);
+    expect(cotton.map((c) => c.code)).toContain('6203.42.4511');
+    const watches = expandHeading('9102.21', lookup);
+    expect(watches.map((c) => c.code)).toEqual(['9102.21.10', '9102.21.25', '9102.21.30', '9102.21.50', '9102.21.70', '9102.21.90']);
+    expect(watches.every((c) => c.componentReporting)).toBe(true);
+    expect(validateHts10('9102.21.70', lookup)).toMatchObject({ ok: true, componentReporting: true });
   });
 
   it('revision lock: the HTS index revision equals the rate table revision', () => {
