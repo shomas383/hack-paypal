@@ -92,9 +92,7 @@ Week 1 sandbox spikes: DONE (2026-10-05).
 
 Carried over:
 - PayPal popup automation is flaky (two login variants, "Click to Continue" overlay, one run with no popup) — e2e keeps a manual fallback.
-- VERIFY (narrow): `resource.id` per event type and the stored `reconcile` value — the three live events were delivered with
-  Success, but neither the payloads nor `payment_events` rows were inspected. Check the payloads in PayPal's webhook dashboard.
-  `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.DENIED`, `INVOICING.INVOICE.PAID` not yet seen as real deliveries.
+- Webhooks: `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.DENIED`, `INVOICING.INVOICE.PAID` not yet seen as real deliveries.
 - PayPal-Request-Id retention window unknown — never rely on retries days later. Invoicing create IGNORES it (spike f): never retry
   an invoice create. A stuck CREATING invoice row → 409; recovery via a quote-derived `invoice_number` is possible (spike g), not built.
 - `PUBLIC_BASE_URL` is optional and unused (validated if set; `render.yaml` sets it). When code first hands out an absolute URL,

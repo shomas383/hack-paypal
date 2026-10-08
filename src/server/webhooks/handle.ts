@@ -15,7 +15,8 @@ export interface VerifyRequest {
 export interface StoredEvent {
   eventId: string;
   eventType: string;
-  /** VERIFY: `resource.id` (order / authorization / capture id) — confirm on real deliveries to the Render URL. */
+  /** `resource.id`: order id (CHECKOUT.ORDER.*), authorization id (PAYMENT.AUTHORIZATION.*), capture id (PAYMENT.CAPTURE.*) —
+   *  confirmed on live deliveries to Render, 2026-10-07 (docs/PAYPAL.md). */
   resourceId: string | null;
   verification: string;
   raw: Record<string, unknown>;

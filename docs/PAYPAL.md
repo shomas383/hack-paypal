@@ -203,10 +203,11 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   `payment_events` (a failure in either answers 400/500).
   - **Sandbox delivery delay:** the two non-capture events sat at PENDING (no response code) for a few minutes, then turned
     Success with no change on our side. That's PayPal's queue, not an error: the demo path must not wait on webhooks.
-  - **Not yet observed:** the stored rows. `payment_events` was not queried (no Render Shell; the DB is closed to external
-    access), so `resource.id` per event type and the `reconcile` value are still unconfirmed. Expected, VERIFY: `CHECKOUT.ORDER.*`
-    → order id, `PAYMENT.AUTHORIZATION.*` → authorization id, `PAYMENT.CAPTURE.*` → capture id. To confirm, open each event's
-    payload in PayPal's webhook dashboard and compare `resource.id` with the three ids above.
+  - **`resource.id` per event type, confirmed in PayPal's webhook dashboard (2026-10-07):** `CHECKOUT.ORDER.APPROVED` payload
+    `resource.id` = 06R32448RY9333933 (the **order** id); the event list's Resource ID column shows `PAYMENT.AUTHORIZATION.CREATED`
+    → 69H53833MG326201D (the **authorization** id) and `PAYMENT.CAPTURE.COMPLETED` → 9ST328317X200011U (the **capture** id).
+    These are exactly the three columns reconciliation matches on (`orders.paypal_order_id` / `authorization_id` / `capture_id`).
+    The stored `reconcile` values were not inspected (no Render Shell; the DB is closed to external access).
   - `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.DENIED` and `INVOICING.INVOICE.PAID` remain VERIFY as real deliveries.
 - **One invoice per quote** (after spikes f/g): concurrent double request for one quote → one 409 + one SENT invoice
   (INV2-CYV7-9T9K-UT94-F42U), a third call returns the same invoice; one DB row.
@@ -232,7 +233,9 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
 - **Request URL is internal behind Render's proxy (2026-10-07):** `req.url` is `http://localhost:10000/…`, so a redirect built
   from it sent buyers to `https://localhost:10000/checkout/<id>`. Fix: relative `Location` headers. Any absolute URL we must hand
   out uses `PUBLIC_BASE_URL` (https origin, validated if set; optional until code uses it), never Host or X-Forwarded-Host. No PayPal
-  `return_url`/`cancel_url` is sent today; the v6 popup does not need them.
+  `return_url`/`cancel_url` is sent today; the v6 popup does not need them. **Verified on Render after ff9d307 (2026-10-07):**
+  "Get landed cost" landed on `https://landed-hd19.onrender.com/checkout/36ebc1e0-6369-41ab-9e04-08d98bc41187` with no address
+  editing.
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).
