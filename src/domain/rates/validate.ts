@@ -26,6 +26,11 @@ export function validateRateFile(data: unknown, opts: { requiredRevision: string
       errors.push(`${at}: hts_revision "${row.hts_revision}", required "${opts.requiredRevision}"`);
     }
     if (row.id !== `${row.origin}-${row.hts10}`) errors.push(`${at}: id must be "${row.origin}-${row.hts10}"`);
+    const eightDigit = row.hts10.length === 10;
+    if (eightDigit && row.component_reporting !== true) {
+      errors.push(`${at}: an 8-digit key needs component_reporting: true (HTS Ch. 91 Statistical Note 1)`);
+    }
+    if (!eightDigit && row.component_reporting) errors.push(`${at}: component_reporting is only for an 8-digit key, not a 10-digit line`);
 
     const key = `${row.origin}|${row.hts10}`;
     if (seen.has(key)) errors.push(`${at}: duplicate (origin, hts10) ${row.origin} ${row.hts10}`);

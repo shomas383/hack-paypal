@@ -7,7 +7,11 @@ const Ppm = z.number().int().nonnegative();
 const UsdMicros = z.number().int().positive();
 const Text = z.string().min(1);
 const IsoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
-const Hts10 = z.string().regex(/^\d{4}\.\d{2}\.\d{4}$/, 'expected NNNN.NN.NNNN');
+/**
+ * The HTS line a row is keyed by: a 10-digit statistical line (NNNN.NN.NNNN), or an 8-digit line (NNNN.NN.NN) that is
+ * reported by component — HTS Ch. 91 Statistical Note 1 (watches/clocks); such rows carry component_reporting: true.
+ */
+const HtsKey = z.string().regex(/^\d{4}\.\d{2}\.\d{2}(\d{2})?$/, 'expected NNNN.NN.NNNN, or NNNN.NN.NN for a component-reporting line');
 const Chapter99 = z.string().regex(/^99\d{2}\.\d{2}\.\d{2}$/, 'expected 99NN.NN.NN');
 
 export const ComponentSchema = z.discriminatedUnion('kind', [
@@ -39,7 +43,9 @@ export const AdditionalSchema = z.strictObject({
 
 export const RateRowSchema = z.strictObject({
   id: Text,
-  hts10: Hts10,
+  hts10: HtsKey,
+  /** Set only on an 8-digit component-reporting key (Ch. 91 Stat. Note 1). */
+  component_reporting: z.literal(true).optional(),
   origin: z.string().regex(/^[A-Z]{2}$/, 'expected ISO 3166 alpha-2'),
   listings: z.array(Text).min(1),
   description: Text,

@@ -74,6 +74,39 @@ describe('validateRateFile', () => {
     expect(validateRateFile(g, opts).errors.join('\n')).toMatch(/ruling/);
   });
 
+  describe('component-reporting keys (HTS Ch. 91 Statistical Note 1: an 8-digit line is the classification)', () => {
+    const asEightDigit = (withFlag: boolean) => {
+      const f = clone(syntheticFile) as unknown as { rows: Record<string, unknown>[] };
+      const row = f.rows.find((r) => r.id === compoundRow.id)!;
+      row.hts10 = '0000.00.00';
+      row.id = `${String(row.origin)}-0000.00.00`;
+      if (withFlag) row.component_reporting = true;
+      return f;
+    };
+
+    it('accepts an 8-digit key with component_reporting: true', () => {
+      expect(validateRateFile(asEightDigit(true), opts).errors).toEqual([]);
+    });
+
+    it('rejects an 8-digit key without the flag', () => {
+      expect(validateRateFile(asEightDigit(false), opts).errors.join('\n')).toMatch(/8-digit.*component_reporting/);
+    });
+
+    it('rejects component_reporting on a 10-digit key', () => {
+      const f = clone(syntheticFile) as unknown as { rows: Record<string, unknown>[] };
+      f.rows[0]!.component_reporting = true;
+      expect(validateRateFile(f, opts).errors.join('\n')).toMatch(/component_reporting.*10-digit/);
+    });
+
+    it('rejects other key shapes (6 digits, a 4-digit suffix on an 8-digit line, no dots)', () => {
+      for (const hts10 of ['0000.00', '0000.00.000', '0000000000']) {
+        const f = clone(syntheticFile) as unknown as { rows: Record<string, unknown>[] };
+        f.rows[0]!.hts10 = hts10;
+        expect(validateRateFile(f, opts).ok).toBe(false);
+      }
+    });
+  });
+
   it('rejects case/band components outside a compound rate and an effective_to before effective_from', () => {
     const f = clone(syntheticFile);
     f.rows.find((r) => r.id === additiveRow.id)!.effective_to = '2025-12-31';
