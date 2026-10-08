@@ -1,6 +1,8 @@
 // Drizzle schema (SPEC §5). Money is integer minor units in bigint columns (invariant 1); currency is USD.
 // `quotes` is immutable: the repository only inserts/reads and a DB trigger (migration 0001) rejects UPDATE/DELETE.
-import { bigint, bigserial, char, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigint, bigserial, boolean, char, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import type { ClassificationInput, ClassificationStatus } from '@/domain/classifier/publish';
+import type { ClassifierOutputT } from '@/domain/classifier/schema';
 import type { StoredLine } from '@/domain/quote/buildQuote';
 
 const money = (name: string) => bigint(name, { mode: 'bigint' });
@@ -90,6 +92,30 @@ export const paymentEvents = pgTable('payment_events', {
   reconcile: text('reconcile'),
   raw: jsonb('raw').$type<Record<string, unknown>>().notNull(),
   receivedAt: ts('received_at').notNull().defaultNow(),
+});
+
+/**
+ * LLM classifications (SPEC §4.1). Never quotable by themselves: a row becomes a `listings` row only via the recorded
+ * Publish action (publishClassification), and only from AUTO_ACCEPTED / ACCEPTED / OVERRIDDEN. No amounts from the model.
+ */
+export const classifications = pgTable('classifications', {
+  id: uuid('id').primaryKey(),
+  sessionId: text('session_id').notNull(),
+  input: jsonb('input').$type<ClassificationInput>().notNull(),
+  model: text('model').notNull(),
+  result: jsonb('result').$type<ClassifierOutputT | null>(),
+  error: text('error'),
+  needsReview: boolean('needs_review').notNull(),
+  reasons: jsonb('reasons').$type<string[]>().notNull(),
+  status: text('status').$type<ClassificationStatus>().notNull(),
+  hts10: text('hts10'),
+  listingId: text('listing_id').references(() => listings.id),
+  reviewedBy: text('reviewed_by'),
+  reviewedAt: ts('reviewed_at'),
+  reviewReason: text('review_reason'),
+  publishedBy: text('published_by'),
+  publishedAt: ts('published_at'),
+  createdAt: ts('created_at').notNull().defaultNow(),
 });
 
 /** One row per classifier call attempt, written BEFORE the LLM call; counted for the per-session/IP/day budget. */
