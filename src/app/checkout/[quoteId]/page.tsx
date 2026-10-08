@@ -35,7 +35,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ quote
             <td>
               <strong>US import duty (est.)</strong>
               <div style={{ fontSize: '0.85em' }}>
-                Origin {q.origin} · HTS <span data-testid="hts">{q.hts10}</span> · Ch.99 <span data-testid="ch99">{headings.join(', ')}</span>
+                Origin {q.origin} · HTS <span data-testid="hts">{q.hts10}</span>
+                {rateRow?.component_reporting ? <span data-testid="component-reporting"> (component reporting, HTS Ch. 91 Stat. Note 1)</span> : null}
+                {' '}· Ch.99 <span data-testid="ch99">{headings.join(', ')}</span>
               </div>
               <ul data-testid="duty-detail" style={{ fontSize: '0.85em', margin: '0.25rem 0' }}>
                 {q.lines.map((l, i) => (

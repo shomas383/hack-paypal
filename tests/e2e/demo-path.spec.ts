@@ -2,6 +2,7 @@
 // Buyer password: PAYPAL_SANDBOX_BUYER_PASSWORD in .env — never logged; traces/screenshots/video are off (playwright.config.ts).
 // Missing password or unmatched PayPal selectors → headed page.pause() so a human finishes the step.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { CURRENT_RATE_VERSION } from '../../src/domain/rates/current';
 
 async function manual(popup: Page, why: string): Promise<void> {
   if (popup.isClosed()) return;
@@ -95,9 +96,10 @@ test('watch: landed cost shown before PayPal, approve, pay in sandbox, policy-ga
   await expect(page.getByTestId('shipping')).toHaveText('$25.00');
   await expect(page.getByTestId('duty-line')).toContainText('US import duty (est.)');
   await expect(page.getByTestId('duty')).toHaveText('$37.50');
-  await expect(page.getByTestId('hts')).toHaveText('9102.21.7000');
+  await expect(page.getByTestId('hts')).toHaveText('9102.21.70'); // component-reporting line (Ch. 91 Stat. Note 1)
+  await expect(page.getByTestId('component-reporting')).toContainText('Stat. Note 1');
   await expect(page.getByTestId('ch99')).toContainText('9903.05.49');
-  await expect(page.getByTestId('rate-version')).toHaveText('2026-rev20-v1');
+  await expect(page.getByTestId('rate-version')).toHaveText(CURRENT_RATE_VERSION);
   await expect(page.getByTestId('disclaimer')).toContainText('Not a customs ruling');
   await expect(page.getByTestId('total')).toHaveText('$362.50');
   await expect(page.getByTestId('paypal-button-container')).toHaveCount(0);

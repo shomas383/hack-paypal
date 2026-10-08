@@ -1,12 +1,12 @@
 {
-  "note": "Demo seed listings. Prices come from the human-verified sheet (data/eval/golden-2026-rev20-v1.json; the seed script checks they match). shipping_minor is a flat DEMO SHIPPING RATE ($25.00), not a carrier quote. Shipping is excluded from customs value, so it never changes the duty.",
+  "note": "Demo seed listings. Prices and HTS lines come from the human-verified sheet (the current data/eval/golden-<rate version>.json; the seed script checks they match). L-P03 is keyed by the component-reporting line 9102.21.70 (HTS Ch. 91 Statistical Note 1). shipping_minor is a flat DEMO SHIPPING RATE ($25.00), not a carrier quote. Shipping is excluded from customs value, so it never changes the duty.",
   "listings": [
     {
       "id": "L-P03",
       "sheet_ref": "P03",
       "title": "1990s Japanese automatic diver watch, 21 jewels, stainless case, steel bracelet",
       "origin": "JP",
-      "hts10": "9102.21.7000",
+      "hts10": "9102.21.70",
       "price_minor": 30000,
       "shipping_minor": 2500,
       "value_split": { "case_minor": 25000, "band_minor": 5000 },
