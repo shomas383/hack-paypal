@@ -195,7 +195,19 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
 ## Week 4 deploy notes (Render; local production checks 2026-10-07)
 - **Webhook receiver** `POST /api/webhooks/paypal`: postback verification (as spike c) → `payment_events` (unique `event_id`) →
   audit row with match/mismatch vs `orders.status`. Never moves money. Local `next start`: forged signature headers → 400
-  "signature verification failed", missing headers → 400; nothing stored. Real deliveries pending the Render URL registration.
+  "signature verification failed", missing headers → 400; nothing stored.
+- **Live deliveries to Render verified (2026-10-07)**, from one app checkout: watch order 06R32448RY9333933, authorization
+  69H53833MG326201D, capture 9ST328317X200011U, $362.50. PayPal's webhook dashboard shows three events delivered with **Success**:
+  `CHECKOUT.ORDER.APPROVED`, `PAYMENT.AUTHORIZATION.CREATED`, `PAYMENT.CAPTURE.COMPLETED` (these spellings are now confirmed as real
+  deliveries). Success means our route answered 2xx, which it does only after verification SUCCESS and the insert into
+  `payment_events` (a failure in either answers 400/500).
+  - **Sandbox delivery delay:** the two non-capture events sat at PENDING (no response code) for a few minutes, then turned
+    Success with no change on our side. That's PayPal's queue, not an error: the demo path must not wait on webhooks.
+  - **Not yet observed:** the stored rows. `payment_events` was not queried (no Render Shell; the DB is closed to external
+    access), so `resource.id` per event type and the `reconcile` value are still unconfirmed. Expected, VERIFY: `CHECKOUT.ORDER.*`
+    → order id, `PAYMENT.AUTHORIZATION.*` → authorization id, `PAYMENT.CAPTURE.*` → capture id. To confirm, open each event's
+    payload in PayPal's webhook dashboard and compare `resource.id` with the three ids above.
+  - `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.DENIED` and `INVOICING.INVOICE.PAID` remain VERIFY as real deliveries.
 - **One invoice per quote** (after spikes f/g): concurrent double request for one quote → one 409 + one SENT invoice
   (INV2-CYV7-9T9K-UT94-F42U), a third call returns the same invoice; one DB row.
 - **Production invoice recipient**: with `NODE_ENV=production`, a browser-supplied `attacker@example.com` was ignored; the invoice
@@ -219,7 +231,7 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   and keeps the current rules on an existing one).
 - **Request URL is internal behind Render's proxy (2026-10-07):** `req.url` is `http://localhost:10000/…`, so a redirect built
   from it sent buyers to `https://localhost:10000/checkout/<id>`. Fix: relative `Location` headers. Any absolute URL we must hand
-  out uses `PUBLIC_BASE_URL` (https origin, validated, required in production), never Host or X-Forwarded-Host. No PayPal
+  out uses `PUBLIC_BASE_URL` (https origin, validated if set; optional until code uses it), never Host or X-Forwarded-Host. No PayPal
   `return_url`/`cancel_url` is sent today; the v6 popup does not need them.
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our

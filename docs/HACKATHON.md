@@ -33,7 +33,7 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 ## Submission checklist
 - [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); MIT LICENSE visible in About; README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1
 - [ ] `.env.example` complete; no secrets in git history (run a secret scan BEFORE making the repo public)
-- [ ] Sandbox webhook URL points at the live Render URL (not a dead quick tunnel)
+- [x] Sandbox webhook URL points at the live Render URL (not a dead quick tunnel) — live deliveries verified 2026-10-07
 - [ ] Hosted demo works from a fresh browser; seeded data present; stays up through Dec 15 (not on a free tier that sleeps/expires)
 - [ ] YouTube video public, < 2:55, captions on
 - [ ] Devpost form: description, tools list (PayPal Orders v2, Payments v2, Invoicing v2, Webhooks, JS SDK v6, Agent Toolkit, Claude, AG Grid, Render), repo + video links

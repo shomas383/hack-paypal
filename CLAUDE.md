@@ -80,9 +80,9 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - README updated if setup/commands changed
 
 ## Current milestone — update weekly
-Week 4 part A (deploy readiness) code DONE locally (2026-10-07): health check + boot-time sandbox lock, verified idempotent
-webhook receiver, one invoice per quote, production invoice recipient pinned, classifier rate-limit plumbing, `render.yaml`.
-Waiting on the user: apply the Blueprint on Render, register the webhook, run the post-deploy checks (IP header, demo path).
+Week 4 part A (deploy) DONE (2026-10-07): live on Render (https://landed-hd19.onrender.com) — health check + boot-time sandbox
+lock, verified idempotent webhook receiver (live deliveries Success), one invoice per quote, production invoice recipient pinned,
+classifier rate limit (client IP verified), DB closed to external access. Watch $362.50 captured on Render.
 Next: part B — classifier + eval (SPEC §4.1, `pnpm eval:classifier`; plan approved), then the rough-cut demo video.
 
 Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
@@ -92,11 +92,17 @@ Week 1 sandbox spikes: DONE (2026-10-05).
 
 Carried over:
 - PayPal popup automation is flaky (two login variants, "Click to Continue" overlay, one run with no popup) — e2e keeps a manual fallback.
-- Webhook event names: only `CHECKOUT.ORDER.APPROVED` seen as a real delivery. The receiver (`/api/webhooks/paypal`) is built;
-  VERIFY on real deliveries to Render that `resource.id` is the order/authorization/capture id.
+- VERIFY (narrow): `resource.id` per event type and the stored `reconcile` value — the three live events were delivered with
+  Success, but neither the payloads nor `payment_events` rows were inspected. Check the payloads in PayPal's webhook dashboard.
+  `PAYMENT.AUTHORIZATION.VOIDED`, `PAYMENT.CAPTURE.DENIED`, `INVOICING.INVOICE.PAID` not yet seen as real deliveries.
 - PayPal-Request-Id retention window unknown — never rely on retries days later. Invoicing create IGNORES it (spike f): never retry
   an invoice create. A stuck CREATING invoice row → 409; recovery via a quote-derived `invoice_number` is possible (spike g), not built.
-- Sandbox webhook points at a dead cloudflared quick-tunnel URL — re-register at the Render URL after deploy.
+- `PUBLIC_BASE_URL` is optional and unused (validated if set; `render.yaml` sets it). When code first hands out an absolute URL,
+  make it required for a production server (not during `next build`: skip when `NEXT_PHASE === 'phase-production-build'`).
+
+Polish backlog (Wk5, before the Nov 4 freeze):
+- Duty line kinds are shown raw (e.g. `S301_FORCED_LABOR`) — show readable labels, e.g. "Section 301 add-on (forced-labor action)".
+- Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
 - Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
