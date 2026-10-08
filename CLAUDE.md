@@ -83,7 +83,10 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 Week 4 part A (deploy) DONE (2026-10-07): live on Render (https://landed-hd19.onrender.com) — health check + boot-time sandbox
 lock, verified idempotent webhook receiver (live deliveries Success), one invoice per quote, production invoice recipient pinned,
 classifier rate limit (client IP verified), DB closed to external access. Watch $362.50 captured on Render.
-Next: part B — classifier + eval (SPEC §4.1, `pnpm eval:classifier`; plan approved), then the rough-cut demo video.
+Part B1 (classifier + eval) DONE (2026-10-08): safe (wrong ∧ auto 0/33) but baseline not beaten (10-digit 7/5/7 vs 8/11),
+auto rate 0/11 — the model answers from stale (pre-Rev 20) memory. See SPEC §4.1.
+Next: part B2 — ground the classifier in the official Rev 20 HTS export (`pnpm hts:import`, two-call grounded choice), then the
+rough-cut demo video.
 
 Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
 PayPal v6 → authorize → `decideCapture()` → capture | void; DDP invoice. Headed e2e green; results in docs/PAYPAL.md.

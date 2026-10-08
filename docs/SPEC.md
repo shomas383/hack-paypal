@@ -36,6 +36,16 @@ AC:
 - [ ] `pnpm eval:classifier` reports exact-match accuracy at 6/8/10 digits on the 12-product set, and the
       review-routing confusion matrix. Baseline from earlier offline test: 7/12 correct. Goal: beat baseline;
       every wrong answer must be either routed to review or caught in eval output.
+      Note: 7/12 predates manual verification (P08 renumbered, P07 excluded); the bar is **8/11 at 10 digits** on the 11
+      verified products (recomputed from the offline answers in `data/eval/products.json`), P07 scored on routing only.
+      **Result 2026-10-08** (`pnpm eval:classifier --runs 3`, claude-opus-5-5, title + origin only, threshold 0.80):
+      reporting is built; **safety met** (wrong ∧ auto 0 across all 33 verified answers; P07 routed to review in all 3 runs);
+      **baseline not beaten** (10-digit 7 / 5 / 7 of 11 vs 8/11; 8-digit 8 / 6 / 7; 6-digit 11 / 10 / 11); **auto rate 0/11** in
+      every run (MISSING_ATTRIBUTES on 32 of 33 answers, TOP2_DIFFER_6 even at 0.92). n = 11, so 1–2 products is noise.
+      Unstable between runs: P03, P04, P05, P06, P11. **The model answers from stale memory:** P08's repeated answer
+      6203.42.4011 is the pre-renumbering code (Rev 20 has 6203.42.4511; the 2026-10-07 HTS export has no 6203.42.4011), and
+      P04's correct 9006.53.0205 is also a renumbered line that the model never produced. Next: ground the classifier in the
+      official Rev 20 HTS (part B2).
 - [ ] Japanese listing classified end-to-end in the UI with confidence displayed; one seeded listing lands in review queue.
 
 ### 4.2 Rate engine (deterministic)
