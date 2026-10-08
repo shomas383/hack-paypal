@@ -14,6 +14,21 @@ const valid = {
   QUOTE_TTL_SECONDS: '900',
 };
 
+describe('parseServerEnv — CLASSIFIER_REVIEW_THRESHOLD', () => {
+  it('defaults to 0.80 and reads a decimal in [0, 1]', () => {
+    expect(parseServerEnv(valid).classifierReviewThreshold).toBe(0.8);
+    expect(parseServerEnv({ ...valid, CLASSIFIER_REVIEW_THRESHOLD: '0.85' }).classifierReviewThreshold).toBe(0.85);
+    expect(parseServerEnv({ ...valid, CLASSIFIER_REVIEW_THRESHOLD: '1' }).classifierReviewThreshold).toBe(1);
+    expect(parseServerEnv({ ...valid, CLASSIFIER_REVIEW_THRESHOLD: '0' }).classifierReviewThreshold).toBe(0);
+  });
+
+  it('rejects values outside [0, 1] and non-numbers', () => {
+    for (const bad of ['1.01', '-0.1', '80', 'high', '0.8.1']) {
+      expect(() => parseServerEnv({ ...valid, CLASSIFIER_REVIEW_THRESHOLD: bad })).toThrow(/CLASSIFIER_REVIEW_THRESHOLD must be a decimal between 0 and 1/);
+    }
+  });
+});
+
 describe('parseServerEnv — PUBLIC_BASE_URL', () => {
   it('is optional, also in production (no code uses it yet), but validated whenever set', () => {
     expect(parseServerEnv(valid).publicBaseUrl).toBeUndefined();

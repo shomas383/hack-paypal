@@ -22,6 +22,8 @@ export interface ServerEnv {
   publicBaseUrl?: string;
   /** X-Forwarded-For entries appended by trusted proxies, skipped from the right to find the client IP (Render: 1). */
   trustedProxyHops: number;
+  /** Top-candidate confidence below this → human review (SPEC §4.1). A probability, not money. */
+  classifierReviewThreshold: number;
   /** Classifier call budget (checked before any LLM call). */
   classifierLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
 }
@@ -45,6 +47,13 @@ function positiveIntOr(raw: RawEnv, name: string, fallback: number): number {
   const v = raw[name]?.trim();
   if (!v) return fallback;
   if (!/^\d+$/.test(v) || Number(v) <= 0) throw new Error(`${name} must be a positive integer`);
+  return Number(v);
+}
+
+function unitInterval(raw: RawEnv, name: string, fallback: number): number {
+  const v = raw[name]?.trim();
+  if (!v) return fallback;
+  if (!/^(0(\.\d+)?|1(\.0+)?)$/.test(v)) throw new Error(`${name} must be a decimal between 0 and 1`);
   return Number(v);
 }
 
@@ -81,6 +90,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     spendCapPerSessionMinor: positiveInt(raw, 'SPEND_CAP_PER_SESSION_USD_MINOR'),
     quoteTtlSeconds: Number(positiveInt(raw, 'QUOTE_TTL_SECONDS')),
     trustedProxyHops: positiveIntOr(raw, 'TRUSTED_PROXY_HOPS', 1),
+    classifierReviewThreshold: unitInterval(raw, 'CLASSIFIER_REVIEW_THRESHOLD', 0.8),
     classifierLimits: {
       perSessionPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR', 10),
       perIpPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_IP_PER_HOUR', 20),
