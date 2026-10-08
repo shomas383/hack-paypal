@@ -73,7 +73,7 @@ PayPal login; if PayPal's popup changes, the test pauses so you can finish the l
 | `pnpm spike:a` … `pnpm spike:d` | PayPal sandbox spikes (see below); `pnpm spike:paypal <a\|b\|c\|d\|e\|f\|g>` also works |
 | `pnpm rates:import` | Regenerate rate data + eval fixtures from the human-verified sheet (kept locally in `data/source/`, not committed) |
 | `pnpm rates:validate` | Schema + verification-metadata checks on `data/rates/*.json` |
-| `pnpm eval:classifier` | Not implemented yet (exit 1) |
+| `pnpm eval:classifier [--runs N]` | Classifier eval on `data/eval/products.json` (needs `ANTHROPIC_API_KEY`; ~11 Claude calls per run). Exits 1 if a wrong code would have been auto-accepted |
 
 ## Sandbox spikes (`scripts/spike/`)
 Each prints a PASS/FAIL table and exits non-zero on failure.

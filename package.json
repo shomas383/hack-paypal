@@ -20,7 +20,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "rates:import": "tsx scripts/import-verify-sheet.ts",
     "rates:validate": "tsx scripts/validate-rates.ts",
-    "eval:classifier": "node scripts/stub.mjs eval:classifier \"classifier eval on data/eval/products.json\"",
+    "eval:classifier": "tsx scripts/eval-classifier.ts",
     "spike:paypal": "tsx --env-file=.env scripts/spike/run.ts",
     "spike:a": "tsx --env-file=.env scripts/spike/run.ts a",
     "spike:b": "tsx --env-file=.env scripts/spike/run.ts b",

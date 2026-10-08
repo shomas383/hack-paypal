@@ -31,10 +31,10 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   (prices checked against the verified golden cases; every listing must quote OK)
 - `pnpm rates:import` — regenerates `data/rates/` + `data/eval/` from the gitignored verified sheet (`data/source/`); stages the output
 - `pnpm rates:validate` — schema + source/effective-date checks on rate data
-- `pnpm eval:classifier` — runs classifier on `data/eval/products.json`, prints accuracy table
+- `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
+  wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
 - `pnpm spike:paypal <a|b|c|d|e|f|g>` (aliases `pnpm spike:a` … `spike:d`) — sandbox spike scripts in `scripts/spike/`
 - `pnpm build` · `pnpm start` — production build/start (Render runs these via `render.yaml`; `/api/health` is the health check)
-- Not yet implemented (stub exits 1): `eval:classifier`
 - `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
   denied, except exactly `pnpm rates:import` / `pnpm rates:validate`. Read it with the Read tool.
 
