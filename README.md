@@ -36,6 +36,30 @@ runs the capture policy, and captures (or voids). **Send DDP invoice instead** c
 itemized. End-to-end test: `PW_HEADED=1 pnpm test:e2e` (set `PAYPAL_SANDBOX_BUYER_PASSWORD` in `.env` to automate the
 PayPal login; if PayPal's popup changes, the test pauses so you can finish the login and press Resume).
 
+## How classification stays safe
+The AI proposes a code; the code decides what happens with it.
+- **Only real codes.** The model first names up to 3 HTS headings. The app expands them into the actual lines of the official
+  HTS 2026 Rev. 20, and the model must choose from that list. Codes that no longer exist, such as pre-renumbering ones, can't
+  get through.
+- **Checked quotes.** Every piece of evidence and every attribute the model says the listing states must actually appear in
+  the listing text.
+- **Review when unsure.** Low confidence, close alternatives, or an unknown attribute that decides between lines all send the
+  item to human review.
+- **No amounts from the AI.** Duty comes only from the verified rate table, and nothing is quotable until the seller publishes
+  the listing.
+
+Eval on 11 verified products (+1 excluded), 3 runs, claude-opus-5-5, 2026-10-08 (`pnpm eval:classifier --runs 3`):
+
+| | Ungrounded | Grounded |
+|---|---|---|
+| Wrong code auto-accepted | 0 / 0 / 0 | **0 / 0 / 0** |
+| Correct and auto-accepted | 0/11 | **3/11** every run |
+| 10-digit accuracy (baseline 8/11) | 7 / 5 / 7 of 11 | **9/11** every run |
+| 8-digit accuracy (baseline 8/11) | 8 / 6 / 7 of 11 | **10/11** every run |
+
+The baseline is beaten by one product at 10 digits, consistently across 3 runs. With n = 11, that's a small sample. The one
+wrong answer went to review. A classification takes about 12–14 s (max 34 s).
+
 ## Deploy (Render, sandbox only)
 `render.yaml` is a Render Blueprint: a web service plus Render Postgres 17, on the smallest paid plans.
 1. **Apply the Blueprint.** In Render, choose New → Blueprint and select this repo. Confirm the plan names and prices first.

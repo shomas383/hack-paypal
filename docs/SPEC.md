@@ -27,13 +27,29 @@ MPF/processing fees modeling, FX hedging, Store Sync/Cart API integration.
 ### 4.1 Classifier (LLM)
 Input: listing title/description in any language (incl. Japanese), optional attributes.
 Output (zod-validated): `{ candidates: [{ hts10, description, confidence (0..1), rationale, evidence: [quoted spans] }], missing_attributes: [], needs_review: boolean }`.
-Rules:
+Rules (B1 as first specified):
 - needs_review = true if top confidence < THRESHOLD (start 0.80, tune on eval) OR top-2 candidates differ at
   6-digit level OR any decisive attribute missing (material, movement type, age, power source).
 - Age ≥100 years may change classification (antiques, Ch. 97) — classifier must ask for age when relevant. VERIFY treatment.
 - Classifier NEVER outputs rates or prices.
+
+Grounded classifier (B2, current; `src/domain/classifier/classifyGrounded.ts`). Rules recorded as they are on 2026-10-08 —
+**not tuned on the eval** (n = 11 would be overfitting):
+- Source of valid codes: the official HTS 2026 Rev. 20 export (hts.usitc.gov, 2026-10-07) → committed index
+  `data/hts/2026-rev20.json` (`pnpm hts:import`; codes + description chains, no rates). Valid = a 10-digit statistical line, or
+  an 8-digit Ch. 91 component-reporting line (Statistical Note 1: watches/clocks reported by component suffix, e.g. 9102.21.70).
+  Ch. 98/99 excluded. The index revision must equal the rate table's (test).
+- Call 1: up to 3 headings (6 or 8 digits). Code expands them to real lines (unknown headings counted as invalid);
+  0 lines → NO_CANDIDATES; > 100 lines in total → TOO_BROAD (no second call).
+- Call 2: chooses only from the expanded list (schema enum), with evidence and the attributes that separate the candidates.
+- Code checks every evidence quote and every stated attribute value against the listing (NFKC + case + whitespace folding,
+  comparison only). An unverifiable value counts as unknown; a candidate with no verified evidence → UNVERIFIED_EVIDENCE.
+- Review if any of: LOW_CONFIDENCE (< 0.80; exactly 0.80 is auto), TOP2_DIFFER_6, MISSING_ATTRIBUTES (only an unknown
+  SEPARATING attribute), ORIGIN_UNKNOWN, MODEL_FLAGGED, INVALID_CODE, UNVERIFIED_EVIDENCE, NO_CANDIDATES, TOO_BROAD,
+  INVALID_OUTPUT. The model's flag can only add review. API errors are raised, never turned into review.
+- A classification never becomes quotable by itself: only a recorded "Publish listing" action creates a listing.
 AC:
-- [ ] `pnpm eval:classifier` reports exact-match accuracy at 6/8/10 digits on the 12-product set, and the
+- [x] `pnpm eval:classifier` reports exact-match accuracy at 6/8/10 digits on the 12-product set, and the
       review-routing confusion matrix. Baseline from earlier offline test: 7/12 correct. Goal: beat baseline;
       every wrong answer must be either routed to review or caught in eval output.
       Note: 7/12 predates manual verification (P08 renumbered, P07 excluded); the bar is **8/11 at 10 digits** on the 11
@@ -46,6 +62,26 @@ AC:
       6203.42.4011 is the pre-renumbering code (Rev 20 has 6203.42.4511; the 2026-10-07 HTS export has no 6203.42.4011), and
       P04's correct 9006.53.0205 is also a renumbered line that the model never produced. Next: ground the classifier in the
       official Rev 20 HTS (part B2).
+      **B2 result 2026-10-08** (`pnpm eval:classifier --runs 3`, grounded, claude-opus-5-5, title + origin only, threshold 0.80,
+      cap 100 lines). P03's expected line is the component-reporting 9102.21.70: scored correct at 8 digits and left out of the
+      10-digit denominator; a strict count against the file's literal codes is shown too.
+
+      | | B1 (ungrounded) | B2 (grounded) |
+      |---|---|---|
+      | wrong ∧ auto | 0 / 0 / 0 | **0 / 0 / 0** |
+      | auto rate (auto-accepted ∧ correct) | 0/11 every run | **3/11 every run** (P03, P06, P11) |
+      | 10-digit, component reporting excluded (baseline 8/10) | — | **9/10 every run** |
+      | 10-digit strict (baseline 8/11) | 7 / 5 / 7 | **9/11 every run** |
+      | 8-digit (baseline 8/11) | 8 / 6 / 7 | **10/11 every run** |
+      | answer or routing changed between runs | P03, P04, P05, P06, P11 | **none** |
+
+      **Caveat: baseline beaten by one product at 10 digits (9/11 vs 8/11 strict; 9/10 vs 8/10 with component reporting
+      excluded), consistent across 3 runs; n = 11.** The one miss (P12 → 8523.49.5000; the verified line is .4000) was routed to
+      review (the deciding attribute, interactive vs linear video, reported unknown). Call-1 headings invalid in Rev 20: 2/29,
+      0/27, 1/28 (6203.42.40 is pre-renumbering; 9705.00) — absorbed by expansion. Quote check: 0 quotes dropped. Expanded lines
+      max 79 (P07), no TOO_BROAD. Time per classification (both calls): median 11.9–14.3 s, max 33.9 s. Tokens per run (12
+      classifications): about 53k input, 10.4–10.8k output. Correct answers still in review: 7 per run, mostly TOP2_DIFFER_6;
+      P08 by MISSING_ATTRIBUTES on exclusions (recreational performance outerwear, compact yarns).
 - [ ] Japanese listing classified end-to-end in the UI with confidence displayed; one seeded listing lands in review queue.
 
 ### 4.2 Rate engine (deterministic)
