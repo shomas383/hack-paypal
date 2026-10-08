@@ -87,10 +87,13 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 Week 4 part A (deploy) DONE (2026-10-07): live on Render (https://landed-hd19.onrender.com) — health check + boot-time sandbox
 lock, verified idempotent webhook receiver (live deliveries Success), one invoice per quote, production invoice recipient pinned,
 classifier rate limit (client IP verified), DB closed to external access. Watch $362.50 captured on Render.
-Part B1 (classifier + eval) DONE (2026-10-08): safe (wrong ∧ auto 0/33) but baseline not beaten (10-digit 7/5/7 vs 8/11),
-auto rate 0/11 — the model answers from stale (pre-Rev 20) memory. See SPEC §4.1.
-Next: part B2 — ground the classifier in the official Rev 20 HTS export (`pnpm hts:import`, two-call grounded choice), then the
-rough-cut demo video.
+Part B1 (classifier + eval) DONE (2026-10-08): safe but baseline not beaten; the model answers from stale memory.
+Part B2 (grounded classifier on the Rev 20 HTS index) DONE (2026-10-08): wrong ∧ auto 0/33, auto 3/11, 10-digit 9/10 every run
+(baseline 8/10; beaten by one product, n = 11). See SPEC §4.1.
+rates-v2 DONE (2026-10-08): the watch is keyed by its component-reporting line 9102.21.70 (Ch. 91 Stat. Note 1); every rate key
+is checked against the HTS index; duty unchanged ($37.50 on $300).
+Next: seller UI (plan first — notes in the 2026-10-08 plan: grounded classifier in the service, progress state, seller
+questions + ANSWER_CONTRADICTS, review queue, AG Grid Community review queue + orders/duty ledger), then the rough-cut demo video.
 
 Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
 PayPal v6 → authorize → `decideCapture()` → capture | void; DDP invoice. Headed e2e green; results in docs/PAYPAL.md.
@@ -107,23 +110,10 @@ Carried over:
 - Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
-- rates-v2 (re-key the watch as `9102.21.70`, component reporting per Ch. 91 Statistical Note 1(d); duty amounts unchanged):
-  - The verified sheet is ALREADY edited (2026-10-08): Verify tab row 14 (P03), M14 = `9102.21.70` (entered as text); W14 also
-    cites Ch. 91 Statistical Note 1(d). Nothing else changed.
-  - **Do NOT run `pnpm rates:import` until the rates-v2 importer change is built:** the current importer requires a 10-digit
-    code in column M (`scripts/import-verify-sheet.ts:291`) and would reject the 8-digit code.
-  - To build:
-    - `scripts/import-verify-sheet.ts` (:291 check, `hts8()` :207) and `src/domain/rates/schema.ts:10` (`Hts10`) accept a
-      component-reporting 8-digit code; row id becomes `JP-9102.21.70` (`src/domain/rates/validate.ts:28`)
-    - bump the version to `2026-rev20-v2` (v1 quotes then become stale, which is correct)
-    - regenerated golden and eval files (watch row); `data/seed/listings.json` L-P03 (`scripts/seed.ts` checks it against golden)
-    - checkout display `src/app/checkout/[quoteId]/page.tsx:38` (add a "component reporting (Stat. Note 1)" note) and
-      `tests/e2e/demo-path.spec.ts:98`
-    - PayPal order description `src/server/paypal/payloads.ts:26` (the invoice duty label already prints 8 digits)
-    - `docs/HTS_VERIFICATION_SPEC.md:239` (P03 row) and the SPEC
-    - stored quotes keep `9102.21.7000` (immutable history)
-    - rates import fails if any rate key is not in data/hts/2026-rev20.json (8-digit keys allowed only when
-      componentReporting: true)
+- rates-v2 DONE (2026-10-08): sheet M14 = 9102.21.70, V14 = 2026-10-08; the import (now 2026-rev20-v2) aborts unless every rate
+  key is a real line in data/hts/2026-rev20.json (8-digit keys only with componentReporting). The current version is named in
+  `src/domain/rates/current.ts`; v1 files stay as history (stored v1 quotes reference them and are refused as stale).
+  After the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v2` (pre-deploy re-seeds L-P03).
 
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line kinds are shown raw (e.g. `S301_FORCED_LABOR`) — show readable labels, e.g. "Section 301 add-on (forced-labor action)".

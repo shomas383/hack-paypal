@@ -82,6 +82,10 @@ AC:
       max 79 (P07), no TOO_BROAD. Time per classification (both calls): median 11.9–14.3 s, max 33.9 s. Tokens per run (12
       classifications): about 53k input, 10.4–10.8k output. Correct answers still in review: 7 per run, mostly TOP2_DIFFER_6;
       P08 by MISSING_ATTRIBUTES on exclusions (recreational performance outerwear, compact yarns).
+      **Note (rates v2, 2026-10-08):** P03's expected code in `data/eval/products.json` was corrected from `9102.21.7000` to the
+      real component-reporting line `9102.21.70`. On a re-run, the B2 "strict" 10-digit count becomes 10/11 **only because of
+      that correction**, not because of a classifier change; the component-reporting-excluded count (9/10) and every other
+      number are unaffected. The offline baseline is unchanged (8/11 strict, 8/10 excluded).
 - [ ] Japanese listing classified end-to-end in the UI with confidence displayed; one seeded listing lands in review queue.
 
 ### 4.2 Rate engine (deterministic)
@@ -90,9 +94,15 @@ Input: `{ origin: ISO-3166 alpha-2 (EU members map to 'EU' program), hts10, entr
 quantity, valueSplit?: { case, band } (compound watch rates), facts?: Record<string, boolean> (row conditions, e.g.
 steel ≥15% of weight, informational material) }`. A missing split or fact the row needs → `UNSUPPORTED`.
 Output: `{ lines: [{ kind: 'MFN'|'S301_FORCED_LABOR'|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
-Data file schema (`data/rates/<version>.json`, e.g. `2026-rev20-v1`), one row per (hts10, origin); generated only by
-`scripts/import-verify-sheet.ts` from the human-verified sheet, never hand-edited. Integers only: rates in ppm, specific
-amounts in USD micros.
+Data file schema (`data/rates/<version>.json`, current `2026-rev20-v2`; the name is set in `src/domain/rates/current.ts`),
+one row per (hts10, origin); generated only by `scripts/import-verify-sheet.ts` from the human-verified sheet, never
+hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
+- The key (`hts10`) is a 10-digit statistical line, **or** an 8-digit line reported by component (HTS Ch. 91 Statistical
+  Note 1: watches and clocks are split into movement / case / strap suffixes, so the 8-digit line is the classification);
+  such rows carry `component_reporting: true`. v2 (2026-10-08) keys the watch as `9102.21.70` (it was `9102.21.7000`, which
+  does not exist); duty amounts are unchanged.
+- Every key of the current version must be a real line in the committed HTS index of the same revision
+  (`data/hts/2026-rev20.json`); `pnpm rates:import` aborts and `pnpm rates:validate` fails otherwise. v1 stays as history.
 - `hts10`, `origin`, `listings[]`, generic `description`, `hts_revision` ("2026 Rev. 20"), `mfn`: `free` | `ad_valorem` |
   `specific` | `compound` with `components[]` (specific per unit, or ad valorem on full value / case / band) + verbatim `text`.
   **Never store a compound rate as a flat %**; the AVE is computed per listing price.

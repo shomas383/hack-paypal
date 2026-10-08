@@ -28,7 +28,13 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - Sponsor: AG Grid $5,000 / $2,000 / $1,000 (×3); Render $1,000 / $750 / $500 in credits; APIMatic $1,000 + 6-month business subscription (×3); Bryntum $1,000 (×3); Channel3 $1,500.
 - Max: one Grand OR one Honorable Mention, plus one Sponsor prize.
 - Our targets: Grand (primary) / Best Use of Agentic Commerce (fallback) + Best Use of AG Grid.
-- VERIFY (carried over from Week 1): sponsor-prize-specific requirements (rules §8 refer to them) on the Resources page, before building toward AG Grid in Week 4.
+- AG Grid prize rules (checked by the user on https://paypalaihackathon.devpost.com/rules, 2026-10-08): "Best Use of AG Grid"
+  ($5,000 / $2,000 / 3 × $1,000) is open to submissions "that use any AG Grid tools". No edition, licence or AG Studio
+  requirement; general judging criteria; stacks with one Grand Prize or Honorable Mention. (Devpost returns 403 to automated
+  fetches, so this was checked by hand.)
+- Plan (seller UI, later): AG Grid **Community** only (no row grouping, pivot or Excel export) for the review queue and an
+  orders/duty ledger (goods, duty, HTS, rate version, capture/void status, CSV export). Dependency pins to be proposed after
+  checking current ag-grid-community / ag-grid-react versions and React 19 support on npm.
 
 ## Submission checklist
 - [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); MIT LICENSE visible in About; README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1

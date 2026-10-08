@@ -57,7 +57,9 @@ Eval on 11 verified products (+1 excluded), 3 runs, claude-opus-5-5, 2026-10-08 
 | 10-digit accuracy (baseline 8/11) | 7 / 5 / 7 of 11 | **9/11** every run |
 | 8-digit accuracy (baseline 8/11) | 8 / 6 / 7 of 11 | **10/11** every run |
 
-The baseline is beaten by one product at 10 digits, consistently across 3 runs. With n = 11, that's a small sample. The one
+The baseline is beaten by one product at 10 digits, consistently across 3 runs. With n = 11, that's a small sample. (The watch
+is classified under 9102.21.70, which HTS Chapter 91 reports by component. Its expected code was corrected on 2026-10-08, after
+this run. On a re-run the 10-digit count reads 10/11 only because of that correction, not because the classifier changed.) The one
 wrong answer went to review. A classification takes about 12–14 s (max 34 s).
 
 ## Deploy (Render, sandbox only)

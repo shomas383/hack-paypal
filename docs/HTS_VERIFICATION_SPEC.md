@@ -236,7 +236,7 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 |---|---|---|---|---|---|---|
 | P01 | Pokémon TCG booster box (JP) | 9504.40.0000 | Free | 9903.05.49 | 12.5% | N352819 (2025) |
 | P02 | PSA-graded single card (JP) | 9504.40.0000 | Free | 9903.05.49 | 12.5% | N359352 (2026; rejected 4911.99.6000) |
-| P03 | Automatic watch, 21 jewels, steel bracelet (JP) | 9102.21.7000 | $1.53 + 4.2% case + 9.8% band (AVE 5.6% @ $300) | 9903.05.49 | 12.5% | none |
+| P03 | Automatic watch, 21 jewels, steel bracelet (JP) | 9102.21.70 (component reporting: Ch. 91 Stat. Note 1(d), suffixes 10/20/30; no 9102.21.7000 exists; re-verified 2026-10-08) | $1.53 + 4.2% case + 9.8% band (AVE 5.6% @ $300) | 9903.05.49 | 12.5% | none |
 | P04 | 35mm SLR + lens (JP) | 9006.53.0205 | Free | 9903.05.49 | 12.5% | none |
 | P05 | Articulated PVC figure, 15+ (CN) | 9503.00.0090 | Free | 9903.05.31 (List 4B suspended) | 12.5% | none |
 | P06 | Spinning reel >$8.45 (JP) | 9507.30.6000 | 3.9% (JP: Free if claimed) | 9903.05.49 | 12.5% | none |
