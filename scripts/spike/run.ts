@@ -11,6 +11,7 @@ const SPIKES: Record<string, string> = {
   f: './f-invoice-request-id',
   g: './g-invoice-number',
   h: './h-classifier-structured-output',
+  i: './i-grounded-classifier',
 };
 
 async function main(): Promise<void> {
