@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fakeDeps, INJECTION } from './fakeDeps';
-import { AGENT_TOOL_NAMES, buildAgentTools } from './tools';
+import { AGENT_TOOL_NAMES, buildAgentTools, WITHHELD } from './tools';
 
 const ctx = { sessionId: 's-1', budgetMinor: 40_000n };
 // Call a tool's execute directly (as the model's tool call would).
@@ -20,8 +20,11 @@ describe('agent tools — read and prepare only; amounts from stored quotes; sel
     );
     expect(r.results[0]!.listingId).toMatch(/L-P03|L-BIG/);
     const inj = r.results.find((x) => x.listingId === 'L-T-INJ')!;
-    expect(inj.untrusted_seller_text.description).toBe(INJECTION);
+    // flagged text is WITHHELD from the model by code; the flag stays so the search card can say "ignored"
+    expect(inj.untrusted_seller_text.description).toBe(WITHHELD);
     expect(inj.seller_text_contains_instructions).toBe(true);
+    expect(JSON.stringify(r)).not.toContain(INJECTION);
+    expect(JSON.stringify(r)).not.toContain('$50');
     expect(r.results.find((x) => x.listingId === 'L-P03')!.seller_text_contains_instructions).toBe(false);
   });
 

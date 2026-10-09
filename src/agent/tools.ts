@@ -53,6 +53,10 @@ export interface AgentContext {
 }
 
 const money = (m: bigint) => formatDisplay(usd(m));
+
+/** Replaces seller text that reads like instructions: the model never sees it (the result keeps a flag for the UI). */
+export const WITHHELD = '[withheld by code: seller text contains instructions]';
+const sellerText = (s: string | null) => (s !== null && looksLikeInstructions(s) ? WITHHELD : s);
 const STOP = new Set(['the', 'and', 'for', 'with', 'under', 'below', 'delivered', 'shipped', 'max', 'than', 'less', 'over', 'from', 'usd']);
 const tokens = (s: string) => (s.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter((t) => t.length >= 3 && !STOP.has(t) && !/^\d+$/.test(t));
 
@@ -61,7 +65,7 @@ function quoteSummary(q: QuoteRecord, ctx: AgentContext, deps: AgentDeps) {
   return {
     quoteId: q.id,
     listingId: q.listingId,
-    untrusted_seller_text: { title: q.title },
+    untrusted_seller_text: { title: sellerText(q.title) },
     origin: q.origin,
     hts: q.hts10,
     ...(row?.component_reporting ? { hts_note: 'component reporting (HTS Ch. 91 Statistical Note 1)' } : {}),
@@ -96,7 +100,7 @@ export function buildAgentTools(ctx: AgentContext, deps: AgentDeps) {
             origin: l.origin,
             goods: money(l.priceMinor),
             shipping: money(l.shippingMinor),
-            untrusted_seller_text: { title: l.title, description: l.description },
+            untrusted_seller_text: { title: sellerText(l.title), description: sellerText(l.description) },
             // Code-only, display-only flag. It never changes what the agent may do.
             seller_text_contains_instructions: looksLikeInstructions(`${l.title} ${l.description ?? ''}`),
           })),
