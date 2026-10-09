@@ -7,13 +7,13 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { anthropic } from '@ai-sdk/anthropic';
-import { agentDeps } from '../src/agent/deps';
-import { AGENT_MODEL, runAgent, type AgentEvent } from '../src/agent/run';
+import type { AgentEvent } from '../src/agent/run';
 import { AGENT_TOOL_NAMES } from '../src/agent/tools';
 import { checkStatedAmounts } from '../src/domain/agent/amountCheck';
 import { parseBudgetField } from '../src/domain/agent/checks';
 
-if (!process.env.ANTHROPIC_API_KEY && existsSync('.env')) process.loadEnvFile('.env');
+// Load .env BEFORE importing anything that reads the server env (ESM evaluates static imports first).
+if (!process.env.DATABASE_URL && existsSync('.env')) process.loadEnvFile('.env');
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(name);
@@ -26,6 +26,8 @@ async function main() {
   if (budgetMinor === null) throw new Error('invalid --budget');
   const out = arg('--out');
 
+  const { agentDeps } = await import('../src/agent/deps');
+  const { AGENT_MODEL, runAgent } = await import('../src/agent/run');
   const { reserveCall, finishClassifierCall } = await import('../src/server/limits/classifierCalls');
   const { sql } = await import('../src/server/db/client');
   const sessionId = randomUUID();
