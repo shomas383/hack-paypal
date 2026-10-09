@@ -93,7 +93,7 @@ Method and rules for verifying a row: `docs/HTS_VERIFICATION_SPEC.md` (overrides
 Input: `{ origin: ISO-3166 alpha-2 (EU members map to 'EU' program), hts10, entryDate, customsValue: Money(USD, goods only),
 quantity, valueSplit?: { case, band } (compound watch rates), facts?: Record<string, boolean> (row conditions, e.g.
 steel ≥15% of weight, informational material) }`. A missing split or fact the row needs → `UNSUPPORTED`.
-Output: `{ lines: [{ kind: 'MFN'|'S301_FORCED_LABOR'|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
+Output: `{ lines: [{ kind: 'MFN'|<program, e.g. the Chapter 99 U.S. note 52 additional duty (9903.05.xx); renamed CH99_NOTE52 in rates-v3>|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
 Data file schema (`data/rates/<version>.json`, current `2026-rev20-v2`; the name is set in `src/domain/rates/current.ts`),
 one row per (hts10, origin); generated only by `scripts/import-verify-sheet.ts` from the human-verified sheet, never
 hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
@@ -115,7 +115,7 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
   a DDP estimate doesn't assume anyone files an FTA claim.
 - Customs value = transaction value of the goods; **itemized international shipping is excluded** (HTS_VERIFICATION_SPEC §3
   Step 3.4). This clears the earlier VERIFY on customs value.
-- Section 301 forced-labor action (U.S. note 52), effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983.
+- Chapter 99 U.S. note 52 additional duty (9903.05.xx), effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983.
   - JP: **9903.05.49** if the col. 1 rate **or its AVE** (compound rates) is < 12.5% → total becomes 12.5% (add-on = 12.5% − base);
     **9903.05.48** if ≥ 12.5% → no add-on. It is a cap/top-up, not an additive surcharge.
   - CN: **9903.05.31** = base **+ 12.5% (additive)**, plus any *active* legacy China 301 list (note 20). List 4B

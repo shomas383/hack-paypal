@@ -122,7 +122,10 @@ Carried over:
   After the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v2` (pre-deploy re-seeds L-P03).
 
 Polish backlog (Wk5, before the Nov 4 freeze):
-- Duty line kinds are shown raw (e.g. `S301_FORCED_LABOR`) — show readable labels, e.g. "Section 301 add-on (forced-labor action)".
+- Duty line labels: done for the checkout and the agent (official Ch. 99 heading text, quoted; no internal program label).
+  The program is still named `S301_FORCED_LABOR` in the rate data, code and tests; rates-v3 renames it `CH99_NOTE52` (the
+  importer assigns it; no sheet change). It is the Chapter 99 U.S. note 52 additional duty (9903.05.xx); the HTS names no
+  Section 301 or forced-labor action for it (user, Ch. 99 PDF, 2026-10-09).
 - Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

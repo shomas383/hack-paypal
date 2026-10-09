@@ -76,7 +76,7 @@ CSV format (confirmed): `HTS Number,Indent,Description,Unit of Quantity,General 
   4. **Check** the ruling number, date, `TARIFF NO.` line, the product description, and the "applicable subheading will be…" sentence.
 
 ### 2.6 Other primary sources
-- **CBP CSMS #69326983**: filing guidance for the Section 301 forced-labor action (Chapter 99 headings 9903.05.xx). Find via WebSearch; a broker reprint was used in earlier research. Prefer cbp.gov.
+- **CBP CSMS #69326983**: filing guidance for the Chapter 99 U.S. note 52 additional duty (9903.05.xx). Find via WebSearch; a broker reprint was used in earlier research. Prefer cbp.gov.
 - Federal Register for proclamations and interim final rules.
 
 ---
@@ -111,7 +111,7 @@ Check the HTS release named on hts.usitc.gov, the CSV, or the PDF header ("Harmo
 ### Step 4: Chapter 99 for the origin (columns O, Q)
 Do all of these in order.
 
-**4a. Exemptions from the forced-labor 301 (headings 9903.05.85–9903.05.92):** check each.
+**4a. Exemptions from the Chapter 99 U.S. note 52 additional duty (9903.05.xx) (headings 9903.05.85–9903.05.92):** check each.
 
 | Heading | Exempts | How to check |
 |---|---|---|
@@ -126,7 +126,7 @@ Do all of these in order.
 
 Exempt headings carry "The duty provided in the applicable subheading" (no add-on). Exempt ≠ duty-free: Section 232 may still apply.
 
-**4b. Origin rule (forced-labor Section 301, U.S. note 52, effective 12:01 a.m. ET July 24, 2026):**
+**4b. Origin rule (Chapter 99 U.S. note 52 additional duty (9903.05.xx), effective 12:01 a.m. ET July 24, 2026):**
 
 | Origin | Heading | Rule (read the heading text each time) |
 |---|---|---|
@@ -207,7 +207,7 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 
 ## 5. Regime facts as of HTS 2026 Rev 20 (re-verify on each new revision)
 - De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).
-- Forced-labor Section 301: U.S. note 52; headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983.
+- Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. (The HTS names no Section 301 or "forced labor" action for note 52 — checked against the Rev 20 Ch. 99 PDF by the user, 2026-10-09.)
 - Japan 9903.05.48/.49 (12.5% combined); China 9903.05.31 (+12.5% additive).
 - Section 232 derivatives: note 16; 9903.82.09 = +25% (lists (c)(vi)–(viii), (xi)), full value, ≥15% metal-weight test.
 - China legacy 301: note 20; List 4B (9903.88.16) suspended.

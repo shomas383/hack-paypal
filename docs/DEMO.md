@@ -8,12 +8,12 @@ landed prices." Show comparison card JP / CN / EU with itemized duty lines + sou
 A second listing (missing material/age) lands in the review queue (AG Grid console). Reviewer accepts.
 
 0:55–1:45 Buyer agent. Prompt: "vintage automatic diver watch under $400 delivered." Agent searches, compares origins, explains
-duties (MFN + Section 301, cited), proposes best option, and ASKS for approval. Checkout shows the landed-cost breakdown with
+duties (MFN + Chapter 99 U.S. note 52 additional duty (9903.05.xx), cited), proposes best option, and ASKS for approval. Checkout shows the landed-cost breakdown with
 "US import duty (est.)" + HTS + source BEFORE the PayPal button (PayPal's popup labels it only "Tax"). Human clicks Approve (spend cap visible) →
 PayPal sandbox approval popup → order shows item, shipping, and duty (as tax) matching quote → authorized → policy gate passes → captured.
 
 1:45–2:15 Trust moment. Show the pure-LLM answer from the earlier offline test: 15% on Japan rows (stale IEEPA-era rate). Rate engine
-flags mismatch: current combined MFN + Section 301 = 12.5% for Japan (CBP CSMS #69326983, effective July 24, 2026).  "LLM for
+flags mismatch: current combined MFN + Chapter 99 U.S. note 52 additional duty (9903.05.xx) = 12.5% for Japan (CBP CSMS #69326983, effective July 24, 2026).  "LLM for
 classification. Verified data for money."
 
 2:15–2:45 Impact + roadmap. Who it's for (small cross-border sellers, AI shopping agents), DDP invoice path (show invoice with duty line
