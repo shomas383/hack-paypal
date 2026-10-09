@@ -10,18 +10,25 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
-import type { HtsIndex } from '../src/domain/hts/buildIndex';
+import type { Ch99Lookup, HtsIndex } from '../src/domain/hts/buildIndex';
+import { usd } from '../src/domain/money/money';
+import { checkCh99Headings, parseCh99Headings } from '../src/domain/rates/ch99Headings';
 import { CURRENT_HTS_REVISION, CURRENT_RATE_VERSION, goldenFileName, rateFileName } from '../src/domain/rates/current';
+import { quoteDuty } from '../src/domain/rates/engine';
 import { checkRateKeysAgainstHts } from '../src/domain/rates/htsKeys';
 import { validateRateFile } from '../src/domain/rates/validate';
 import type { Additional, Component, RateFile, RateRow } from '../src/domain/rates/schema';
 
 const SOURCE = join('data', 'source', 'DDP_product_test_sheet_verify.xlsx');
 // v2 (2026-10-08): the watch is keyed by its component-reporting 8-digit line 9102.21.70 (HTS Ch. 91 Stat. Note 1(d)).
+// v3 (2026-10-09): CN watch P13 (two Ch. 99 add-ons: 9903.05.31 + 9903.88.15, cumulative per note 52(a)); programs named
+// after their HTS note (CH99_NOTE52, CH99_NOTE20_LIST4A/4B) — the HTS names no Section 301 / forced-labor action for note 52.
 const VERSION = CURRENT_RATE_VERSION;
 const HTS_REVISION = CURRENT_HTS_REVISION;
 // Every rate key must be a real line in the official HTS index of the same revision (built by pnpm hts:import).
 const HTS_INDEX = join('data', 'hts', '2026-rev20.json');
+// Every Chapter 99 heading a row applies must exist in the official Ch. 99 lookup and not be marked suspended.
+const CH99_LOOKUP = join('data', 'hts', '2026-rev20-ch99.json');
 const VERIFIED_BY = 'Shoma';
 // Accepted assumption (2026-10-05): Rev. 20 publication date. VERIFY: Rev. 20 effective date if it differs.
 const EFFECTIVE_FROM = '2026-09-28';
@@ -135,6 +142,7 @@ const GENERIC: Record<string, string> = {
   P10: 'Complete golf driver',
   P11: "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
   P12: 'Anime series Blu-ray box set, Japanese release (commercially recorded)',
+  P13: 'Automatic diver watch, 21 jewels, stainless case, steel bracelet (China)',
 };
 
 /** Brand → generic replacements for free text (col W evidence, LLM notes). Printed for review on every run. */
@@ -168,6 +176,14 @@ const COMPOUND: Record<string, { text: string; components: Component[] }> = {
       { kind: 'ad_valorem', rate_ppm: 98_000, applies_to: 'band' },
     ],
   },
+  P13: {
+    text: '$1.53 each + 4.2% case + 9.8% band',
+    components: [
+      { kind: 'specific', amount_usd_micros: 1_530_000, per: 'each' },
+      { kind: 'ad_valorem', rate_ppm: 42_000, applies_to: 'case' },
+      { kind: 'ad_valorem', rate_ppm: 98_000, applies_to: 'band' },
+    ],
+  },
   P11: {
     text: '0.4¢ each + 6.1%',
     components: [
@@ -189,6 +205,25 @@ const FACTS: Record<string, { facts: Record<string, boolean>; evidence: string[]
 /** Golden price override (decision 2026-10-05): P03 at $300 = case $250 + band $50, per col W. */
 const GOLDEN_OVERRIDE: Record<string, { price_minor: number; value_split: { case_minor: number; band_minor: number }; evidence: string }> = {
   P03: { price_minor: 30_000, value_split: { case_minor: 25_000, band_minor: 5_000 }, evidence: 'AVE 5.6% at $300 (case 250 / band 50)' },
+  P13: { price_minor: 28_000, value_split: { case_minor: 23_000, band_minor: 5_000 }, evidence: 'AVE 5.7% at $280 (case 230 / band 50)' },
+};
+
+/**
+ * Rows that apply SEVERAL Chapter 99 headings (column O "a + b"): each heading's rate, asserted against O (same headings,
+ * same order), Q (= the sum) and W (each "heading +x%" text). Cumulative per note 52(a).
+ */
+const MULTI_CH99: Record<string, { heading: string; rate_ppm: number; text: string; ref: string; program: string }[]> = {
+  P13: [
+    { heading: '9903.05.31', rate_ppm: 125_000, text: '9903.05.31 +12.5%', ref: 'U.S. note 52', program: 'CH99_NOTE52' },
+    { heading: '9903.88.15', rate_ppm: 75_000, text: '9903.88.15 +7.5%', ref: 'U.S. note 20(r)/(s)(i) (List 4A)', program: 'CH99_NOTE20_LIST4A' },
+  ],
+};
+/** Phrases W must contain for a multi-heading CN row (the user's verification against the Ch. 99 PDF, 2026-10-09). */
+const MULTI_CH99_EVIDENCE = ['note 20(r)', 'note 52(a)', 'not in List 4B', 'no in-effect exclusion', 'not in note 16'];
+
+/** Exact expected duty where R × price isn't a whole cent (compound MFN + additive add-ons), asserted against W. */
+const EXACT_DUTY: Record<string, { text: string; duty_minor: number }> = {
+  P13: { text: '= $72.09', duty_minor: 7_209 },
 };
 
 const ORIGIN: Record<string, string> = { Japan: 'JP', China: 'CN' };
@@ -220,6 +255,9 @@ function main(): void {
   const sha256 = createHash('sha256').update(buf).digest('hex');
   const htsIndex = JSON.parse(readFileSync(HTS_INDEX, 'utf8')) as HtsIndex;
   const htsCodes = new Map(htsIndex.codes.map((c) => [c.c, c.componentReporting ? { componentReporting: true as const } : {}]));
+  const ch99 = JSON.parse(readFileSync(CH99_LOOKUP, 'utf8')) as Ch99Lookup;
+  assert(ch99.hts_revision === HTS_REVISION, `Ch. 99 lookup revision "${ch99.hts_revision}" ≠ "${HTS_REVISION}"`);
+  const evalSkipped: string[] = [];
   const sheets = readWorkbook(readZip(buf));
   const verify = sheets.get('Verify');
   const products = sheets.get('Products');
@@ -254,17 +292,31 @@ function main(): void {
   const evalProducts: unknown[] = [];
   const golden: unknown[] = [];
 
-  for (const [rowNum, cells] of verify) {
-    const id = cells.get('A');
-    if (!id || !/^P\d{2}$/.test(id) || rowNum <= 11) continue;
+  // The Verify table is the contiguous block of ID rows below the header (row 11). It ends at the first non-ID row (the
+  // "Progress" block starts right after the last ID row, e.g. row 25 after P13 on row 24); an ID row below that aborts.
+  const ordered = [...verify].filter(([n]) => n > 11).sort((a, b) => a[0] - b[0]);
+  const isId = (c: Map<string, string>) => /^P\d{2}$/.test(c.get('A') ?? '');
+  const first = ordered.findIndex(([, c]) => isId(c));
+  assert(first >= 0, 'Verify: no ID rows below the header');
+  const endIdx = ordered.findIndex(([, c], i) => i > first && !isId(c));
+  const tableRows = endIdx < 0 ? ordered.slice(first) : ordered.slice(first, endIdx);
+  const after = endIdx < 0 ? [] : ordered.slice(endIdx).filter(([, c]) => isId(c));
+  assert(after.length === 0, `Verify: ID row(s) ${after.map(([n]) => n).join(', ')} below the end of the table (row ${ordered[endIdx]?.[0]}) — not read`);
+  const readRange = `rows ${tableRows[0]![0]}–${tableRows.at(-1)![0]} (${tableRows.length} rows; table ends before row ${endIdx < 0 ? '(end of sheet)' : ordered[endIdx]![0]})`;
+
+  for (const [, cells] of tableRows) {
+    const id = cells.get('A')!;
     const status = cells.get('X') ?? '';
     const prod = productRows.get(id);
     assert(prod, `${id}: no Products row`);
     assert(GENERIC[id], `${id}: no generic name — add one to GENERIC`);
 
-    // eval/products.json gets every product (incl. excluded) with the LLM's answer, genericized.
+    // eval/products.json gets every product (incl. excluded) that HAS an offline LLM answer (Products O–S), genericized.
+    // Rows added later without one (P13) stay out of the eval set instead of getting an invented answer.
     const notes = genericize(prod.get('S') ?? '');
-    evalProducts.push({
+    const hasLlmAnswer = Boolean(prod.get('O'));
+    if (!hasLlmAnswer) evalSkipped.push(id);
+    if (hasLlmAnswer) evalProducts.push({
       id,
       title: GENERIC[id],
       origin: ORIGIN[cells.get('C') ?? ''] ?? null,
@@ -309,6 +361,7 @@ function main(): void {
     const priceUsd = prod.get('E');
     assert(priceUsd && /^\d+(\.\d{1,2})?$/.test(priceUsd), `${id}: Products E price "${priceUsd}"`);
     if (price) assert((cells.get('W') ?? '').includes(price.evidence), `${id}: W lacks "${price.evidence}"`);
+    if (EXACT_DUTY[id]) assert((cells.get('W') ?? '').includes(EXACT_DUTY[id].text), `${id}: W lacks "${EXACT_DUTY[id].text}"`);
     golden.push({
       id,
       origin,
@@ -318,7 +371,8 @@ function main(): void {
       ...(price ? { value_split: price.value_split } : {}),
       ...(FACTS[id] ? { facts: FACTS[id].facts } : {}),
       expected_total_ppm: total,
-      expected_chapter99: cells.get('O'),
+      ...(EXACT_DUTY[id] ? { expected_duty_minor: EXACT_DUTY[id].duty_minor } : {}),
+      expected_chapter99: parseCh99Headings(cells.get('O') ?? '')[0], // the first heading in O (P13 lists two)
       expected: 'OK',
     });
   }
@@ -354,9 +408,13 @@ function main(): void {
     const additional: Additional[] = [];
     const notApplied: RateRow['not_applied'] = [];
     const exemptRefs = ['9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)'];
+    // Column O: one or more Chapter 99 headings, each in the official lookup and not suspended.
+    const heads = parseCh99Headings(o);
+    const headErrors = checkCh99Headings(heads, ch99.headings);
+    assert(headErrors.length === 0, `${where}: ${headErrors.join('; ')}`);
     const sources: RateRow['source_refs'] = [
       { kind: 'hts_line', ref: `${hts8(r.hts10)} General (HTS ${HTS_REVISION})`, url: rest(hts8(r.hts10)) },
-      { kind: 'ch99_heading', ref: o },
+      ...heads.map((h) => ({ kind: 'ch99_heading' as const, ref: h })),
     ];
     const conditions = (FACTS[r.id]?.evidence ?? []).length
       ? Object.entries(FACTS[r.id]!.facts).map(([fact, required_value]) => ({ fact, required_value, ref: '' }))
@@ -371,21 +429,41 @@ function main(): void {
         assert(r.base >= jpCap && r.addon === 0, `${where}: .48 needs base ≥ cap and no add-on`);
       }
       additional.push({
-        program: 'S301_FORCED_LABOR', chapter99: '9903.05.49', chapter99_at_or_above_cap: '9903.05.48', rule: 'combined_cap',
+        program: 'CH99_NOTE52', chapter99: '9903.05.49', chapter99_at_or_above_cap: '9903.05.48', rule: 'combined_cap',
         rate_ppm: jpCap, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52; CSMS #69326983',
       });
       sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52' }, { kind: 'csms', ref: 'CSMS #69326983' });
     } else if (r.origin === 'CN' && o === '9903.05.31') {
       assert(r.addon > 0, `${where}: CN .31 add-on missing`);
       additional.push({
-        program: 'S301_FORCED_LABOR', chapter99: '9903.05.31', rule: 'additive', rate_ppm: r.addon, basis: 'full_value',
+        program: 'CH99_NOTE52', chapter99: '9903.05.31', rule: 'additive', rate_ppm: r.addon, basis: 'full_value',
         conditions: [], ref: 'U.S. note 52; CSMS #69326983',
       });
       // P05: "List 4B (9903.88.16, note 20(u)) SUSPENDED"; P09: "List 4B (9903.88.16) SUSPENDED".
       assert(/List 4B \(9903\.88\.16(?:, note 20\(u\))?\) SUSPENDED/.test(w), `${where}: W must record List 4B (9903.88.16) SUSPENDED`);
-      notApplied.push({ program: 'S301_CHINA_LIST_4B', chapter99: '9903.88.16', reason: "suspended (compiler's note)", ref: 'U.S. note 20(u)' });
-      exemptRefs.push('note 20 (legacy China 301 lists) checked');
+      notApplied.push({ program: 'CH99_NOTE20_LIST4B', chapter99: '9903.88.16', reason: "suspended (compiler's note)", ref: 'U.S. note 20(u)' });
+      exemptRefs.push('note 20 (legacy China lists) checked');
       sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52; note 20(u)' }, { kind: 'csms', ref: 'CSMS #69326983' });
+    } else if (r.origin === 'CN' && MULTI_CH99[r.id] && heads.join(' + ') === '9903.05.31 + 9903.88.15') {
+      // CN with the note 52 duty AND an active legacy List 4A line (9903.88.15), cumulative per note 52(a) — P13.
+      const parts = MULTI_CH99[r.id]!;
+      assert(JSON.stringify(parts.map((p) => p.heading)) === JSON.stringify(heads), `${where}: O headings ≠ MULTI_CH99 (${parts.map((p) => p.heading).join(' + ')})`);
+      assert(parts.reduce((s, p) => s + p.rate_ppm, 0) === r.addon, `${where}: Q (${r.addon} ppm) ≠ the sum of the headings' rates`);
+      for (const p of parts) assert(w.includes(p.text), `${where}: W lacks "${p.text}"`);
+      for (const e of MULTI_CH99_EVIDENCE) assert(w.includes(e), `${where}: W lacks "${e}"`);
+      for (const p of parts) {
+        additional.push({ program: p.program, chapter99: p.heading, rule: 'additive', rate_ppm: p.rate_ppm, basis: 'full_value', conditions: [], ref: p.ref });
+      }
+      notApplied.push({
+        program: 'CH99_NOTE20_LIST4B', chapter99: '9903.88.16',
+        reason: "9102.21.70 not listed in List 4B (note 20(u)); provision suspended (compiler's note)", ref: 'U.S. note 20(u)',
+      });
+      exemptRefs.push('note 20 (legacy China lists): List 4A active for this line, not in List 4B, no in-effect exclusion', 'note 16 (Section 232): 9102 not listed');
+      sources.push(
+        { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(a) cumulative)' },
+        { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 20(r)/(s)(i) (List 4A)' },
+        { kind: 'csms', ref: 'CSMS #69326983' },
+      );
     } else if (r.origin === 'JP' && o === '9903.82.09') {
       assert(/note 16\(c\)\(vii\)/i.test(w) && /9903\.05\.90/.test(w), `${where}: W must cite note 16(c)(vii) and 9903.05.90`);
       additional.push(
@@ -398,7 +476,7 @@ function main(): void {
           ref: 'note 16(c)(vii) derivative steel',
         },
         {
-          program: 'S301_FORCED_LABOR', chapter99: '9903.05.90', rule: 'exempt', rate_ppm: 0, basis: 'full_value', conditions: [],
+          program: 'CH99_NOTE52', chapter99: '9903.05.90', rule: 'exempt', rate_ppm: 0, basis: 'full_value', conditions: [],
           ref: 'note 52(f)(1): Section 232 article',
         },
       );
@@ -407,7 +485,7 @@ function main(): void {
     } else if (r.origin === 'JP' && o === '9903.05.92') {
       assert(r.addon === 0, `${where}: .92 must have no add-on`);
       additional.push({
-        program: 'S301_FORCED_LABOR', chapter99: '9903.05.92', rule: 'exempt', rate_ppm: 0, basis: 'full_value',
+        program: 'CH99_NOTE52', chapter99: '9903.05.92', rule: 'exempt', rate_ppm: 0, basis: 'full_value',
         conditions: conditions.map((c) => ({ ...c, ref: '9903.05.92: films, compact disks, CD-ROMs… "including but not limited to"' })),
         ref: 'U.S. note 52',
       });
@@ -481,7 +559,8 @@ function main(): void {
     generated_from: { file: 'data/source/DDP_product_test_sheet_verify.xlsx', tab: 'Verify', sha256 },
     regime_notes: [
       'De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).',
-      'Forced-labor Section 301: U.S. note 52; headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983.',
+      'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. The HTS names no Section 301 action for note 52.',
+      'China: legacy List 4A (9903.88.15, note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); List 4B (9903.88.16) is suspended.',
       'IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',
       'Section 122 10% surcharge expired July 24, 2026. China legacy 301 List 4B (9903.88.16) suspended.',
     ],
@@ -493,6 +572,20 @@ function main(): void {
   assert(v.ok, `generated file fails validation:\n  ${v.errors.join('\n  ')}`);
   const keyErrors = checkRateKeysAgainstHts(file.rows, { hts_revision: htsIndex.hts_revision, codes: htsCodes }, HTS_REVISION);
   assert(keyErrors.length === 0, `rate keys not in the HTS index (${HTS_INDEX}):\n  ${keyErrors.join('\n  ')}`);
+  // Exact-duty golden cases: the engine on the generated rows must reproduce the W-stated duty to the cent.
+  for (const g of golden as { id: string; origin: string; hts10: string; price_minor?: number; value_split?: { case_minor: number; band_minor: number }; expected_duty_minor?: number }[]) {
+    if (g.expected_duty_minor === undefined) continue;
+    const q = quoteDuty(file, {
+      origin: g.origin,
+      hts10: g.hts10,
+      entryDate: EFFECTIVE_FROM,
+      customsValue: usd(g.price_minor!),
+      quantity: 1,
+      ...(g.value_split ? { valueSplit: { case: usd(g.value_split.case_minor), band: usd(g.value_split.band_minor) } } : {}),
+    });
+    assert(q.kind === 'OK', `${g.id}: engine refuses the generated row — ${q.kind === 'UNSUPPORTED' ? q.reason : ''}`);
+    assert(q.kind === 'OK' && q.totalDuty.amountMinor === BigInt(g.expected_duty_minor), `${g.id}: engine duty ${q.kind === 'OK' ? q.totalDuty.amountMinor : '?'} ≠ W-stated ${g.expected_duty_minor}`);
+  }
   const out = { rates: JSON.stringify(file, null, 2), products: JSON.stringify(evalProducts, null, 2), golden: '' };
   out.golden = JSON.stringify({ rate_version: VERSION, note: 'Expected values from the Verify tab (column R/O); prices from Products E unless overridden.', cases: golden }, null, 2);
   for (const [name, text] of Object.entries(out)) {
@@ -507,6 +600,7 @@ function main(): void {
   writeFileSync(OUT_GOLDEN, out.golden + '\n');
 
   console.log(`source ${SOURCE} sha256 ${sha256.slice(0, 12)}…`);
+  console.log(`Verify tab: read ${readRange}`);
   console.log('\nimported (VERIFIED):');
   for (const row of file.rows) {
     const heads = row.additional.map((a) => `${a.chapter99} ${a.rule}${a.rate_ppm ? ` ${a.rate_ppm / 10_000}%` : ''}`).join(' + ');
@@ -514,6 +608,7 @@ function main(): void {
   }
   console.log('\nskipped (not VERIFIED → engine returns UNSUPPORTED):');
   for (const s of skipped) console.log(`  ${s.id} ${s.status}: ${s.reason}`);
+  console.log(`\nnot in the classifier eval set (no offline LLM answer on the Products sheet): ${evalSkipped.join(', ') || 'none'}`);
   console.log('\ngenericize map (review):');
   for (const [re, to] of GENERICIZE) console.log(`  ${re.source} → "${to}"`);
   const sha = (text: string): string => createHash('sha256').update(text + '\n').digest('hex').slice(0, 12);

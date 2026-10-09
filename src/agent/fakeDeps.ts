@@ -45,7 +45,7 @@ export function fakeDeps(over: Partial<AgentDeps> = {}) {
           listingId === 'L-P03'
             ? [
                 { kind: 'MFN', amountMinor: '1693', basis: '$1.53 each + 4.2% case + 9.8% band', sourceRef: '9102.21.70 General (HTS 2026 Rev. 20)' },
-                { kind: 'S301_FORCED_LABOR', chapter99: '9903.05.49', amountMinor: '2057', basis: 'combined cap 12.5%', sourceRef: '9903.05.49 — U.S. note 52; CSMS #69326983' },
+                { kind: 'CH99_NOTE52', chapter99: '9903.05.49', amountMinor: '2057', basis: 'combined cap 12.5%', sourceRef: '9903.05.49 — U.S. note 52; CSMS #69326983' },
               ]
             : [{ kind: 'MFN', amountMinor: String(duty), basis: 'engine', sourceRef: 'verified rate row' }],
         effectiveRatePpm: 0,

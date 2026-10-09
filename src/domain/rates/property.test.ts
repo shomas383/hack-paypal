@@ -80,10 +80,13 @@ describe('properties over the verified table', () => {
     );
   });
 
-  it('CN rows (9903.05.31): total = MFN + 12.5%-style additive from the table, never a cap', () => {
+  it('CN rows (9903.05.31): total = MFN + additive add-ons from the table (incl. List 4A where listed), never a cap', () => {
     const cn = table.rows.filter((r) => r.origin === 'CN');
     expect(cn.length).toBeGreaterThan(0);
-    for (const row of cn) expect(row.additional.map((a) => a.rule)).toEqual(['additive']);
+    for (const row of cn) {
+      expect(row.additional.every((a) => a.rule === 'additive')).toBe(true);
+      expect(row.additional[0]!.chapter99).toBe('9903.05.31');
+    }
   });
 
   it.each(table.rows.filter((r) => r.mfn.type === 'ad_valorem' || r.mfn.type === 'free').map((r) => [r.id, r] as const))(

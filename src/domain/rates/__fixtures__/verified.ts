@@ -21,6 +21,8 @@ export interface GoldenCase {
   value_split?: { case_minor: number; band_minor: number };
   facts?: Record<string, boolean>;
   expected_total_ppm?: number;
+  /** Exact expected duty where expected_total_ppm × price isn't a whole cent (compound + additive add-ons, e.g. P13). */
+  expected_duty_minor?: number;
   expected_chapter99?: string;
   expected: 'OK' | 'UNSUPPORTED';
 }

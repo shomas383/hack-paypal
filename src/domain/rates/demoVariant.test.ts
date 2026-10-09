@@ -46,7 +46,7 @@ describe('seed demo variants: engine result equals the declared expectation', ()
     if (r.kind !== 'OK') throw new Error(r.reason);
     expect(r.lines.map((l) => [l.kind, l.amount.amountMinor])).toEqual([
       ['MFN', 2_085n],
-      ['S301_FORCED_LABOR', 2_665n],
+      ['CH99_NOTE52', 2_665n],
     ]);
   });
 });
