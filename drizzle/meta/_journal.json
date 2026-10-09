@@ -43,6 +43,13 @@
       "when": 1791423741548,
       "tag": "0005_classifications",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791507791866,
+      "tag": "0006_agent_listing_text_and_proposals",
+      "breakpoints": true
     }
   ]
 }

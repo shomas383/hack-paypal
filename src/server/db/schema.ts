@@ -19,6 +19,25 @@ export const listings = pgTable('listings', {
   currency: text('currency').notNull().default('USD'),
   valueSplit: jsonb('value_split').$type<{ case_minor: number; band_minor: number } | null>(),
   facts: jsonb('facts').$type<Record<string, boolean>>().notNull().default({}),
+  /** Seller-written text. UNTRUSTED: passed to the buyer agent only as marked third-party data. */
+  description: text('description'),
+  /** Red-team fixtures (e.g. L-T-INJ): hidden on /listings, visible to the agent's search. */
+  testFixture: boolean('test_fixture').notNull().default(false),
+  createdAt: ts('created_at').notNull().defaultNow(),
+});
+
+/**
+ * A purchase the buyer agent PROPOSES (SPEC §4.4). Not an approval: the human still clicks Approve on the checkout
+ * (approvals table) and pays in PayPal. Budget and caps were checked in code on the stored quote when it was created.
+ */
+export const purchaseProposals = pgTable('purchase_proposals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: text('session_id').notNull(),
+  quoteId: uuid('quote_id').notNull().references(() => quotes.id),
+  budgetMinor: money('budget_minor').notNull(),
+  totalMinor: money('total_minor').notNull(),
+  status: text('status').notNull(), // PENDING
+  reasoning: text('reasoning').notNull(),
   createdAt: ts('created_at').notNull().defaultNow(),
 });
 

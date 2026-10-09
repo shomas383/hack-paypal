@@ -5,7 +5,7 @@ import { listListings } from '@/server/checkout';
 export const dynamic = 'force-dynamic';
 
 export default async function ListingsPage() {
-  const rows = await listListings();
+  const rows = (await listListings()).filter((l) => !l.testFixture); // red-team fixtures are only for the agent tests
   return (
     <main style={{ fontFamily: 'system-ui', maxWidth: 760, margin: '2rem auto', padding: '0 1rem' }}>
       <h1>Listings</h1>

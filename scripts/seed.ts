@@ -20,6 +20,8 @@ interface SeedListing {
   shipping_minor: number;
   value_split: { case_minor: number; band_minor: number } | null;
   facts: Record<string, boolean>;
+  description?: string;
+  test_fixture?: boolean;
 }
 
 async function main(): Promise<void> {
@@ -64,6 +66,8 @@ async function main(): Promise<void> {
       currency: 'USD',
       valueSplit: l.value_split,
       facts: l.facts,
+      description: l.description ?? null,
+      testFixture: l.test_fixture === true,
     };
     await db.insert(listings).values(row).onConflictDoUpdate({ target: listings.id, set: row });
   }
