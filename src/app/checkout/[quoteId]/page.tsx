@@ -26,6 +26,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ quote
     <main style={{ fontFamily: 'system-ui', maxWidth: 760, margin: '2rem auto', padding: '0 1rem' }}>
       <p><a href="/listings">← Listings</a></p>
       <h1>Landed cost</h1>
+      {view.proposal ? (
+        <div data-testid="agent-proposal" role="note" style={{ border: '1px solid #9db4d6', background: '#f2f6fc', borderRadius: 8, padding: '0.6rem 0.8rem', margin: '0.5rem 0 1rem' }}>
+          <strong>Proposed by your agent.</strong> Delivered total {fmt(view.proposal.totalMinor)}, within your confirmed budget of{' '}
+          {fmt(view.proposal.budgetMinor)}. Review the duty lines below; approving and paying are yours to do.
+        </div>
+      ) : null}
       <h2 data-testid="title">{q.title}</h2>
 
       <table data-testid="breakdown" style={{ borderCollapse: 'collapse', width: '100%' }}>

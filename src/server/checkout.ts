@@ -1,7 +1,7 @@
 // Checkout service: quote → human approval → PayPal order (from the stored quote) → authorize → policy → capture | void,
 // plus the DDP invoice. Every PayPal-Request-Id is written to the DB BEFORE its POST and reused on retry (invariant 7).
 import { randomUUID } from 'node:crypto';
-import { and, eq, sql as dsql } from 'drizzle-orm';
+import { and, desc, eq, sql as dsql } from 'drizzle-orm';
 import { fromPayPalValue } from '@/domain/money/format';
 import { approvalHash, decideCapture } from '@/domain/policy/decideCapture';
 import { orderCapMessage, sessionCapMessage } from '@/domain/policy/capMessages';
@@ -9,7 +9,7 @@ import { invoiceRecipient } from '@/domain/policy/invoiceRecipient';
 import { buildQuote, type QuoteRecord } from '@/domain/quote/buildQuote';
 import { quoteUnusableMessage, quoteUsable } from '@/domain/quote/quoteUsable';
 import { db } from './db/client';
-import { approvals, auditLog, invoices, listings, orders, quotes } from './db/schema';
+import { approvals, auditLog, invoices, listings, orders, purchaseProposals, quotes } from './db/schema';
 import { serverEnv } from './env';
 import { authorizeOrder, captureAuthorization, createInvoice, createOrder, getInvoice, getOrder, sendInvoice, voidAuthorization } from './paypal/api';
 import { InvoiceStuckError, runInvoiceFlow } from './invoiceFlow';
@@ -117,10 +117,18 @@ export async function getCheckoutView(quoteId: string, sessionId: string | undef
   const quote = await quoteForSession(quoteId, sessionId);
   const [approval] = await db.select().from(approvals).where(eq(approvals.quoteId, quote.id));
   const [order] = await db.select().from(orders).where(eq(orders.quoteId, quote.id));
+  // A proposal by the buyer's agent (read-only here; Approve stays the human click on this page).
+  const [proposal] = await db
+    .select({ budgetMinor: purchaseProposals.budgetMinor, totalMinor: purchaseProposals.totalMinor, reasoning: purchaseProposals.reasoning })
+    .from(purchaseProposals)
+    .where(and(eq(purchaseProposals.quoteId, quote.id), eq(purchaseProposals.sessionId, quote.sessionId)))
+    .orderBy(desc(purchaseProposals.createdAt))
+    .limit(1);
   const env = serverEnv();
   const row = currentRateTable().rows.find((r) => r.id === quote.rateRowId);
   return {
     quote,
+    proposal: proposal ?? null,
     approved: Boolean(approval),
     order: order ? { status: order.status, captureId: order.captureId, policy: order.policyDecision } : null,
     rateRow: row ?? null,
