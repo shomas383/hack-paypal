@@ -78,7 +78,9 @@ function quoteSummary(q: QuoteRecord, ctx: AgentContext, deps: AgentDeps) {
     budget: money(ctx.budgetMinor),
     within_budget: q.totalMinor <= ctx.budgetMinor, // computed in code on the stored quote
     duty_lines: q.lines.map((l) => ({
-      kind: l.kind,
+      // Chapter 99 lines carry no internal program label: the HTS names none (user, Ch. 99 PDF, 2026-10-09). The heading,
+      // its official text, the basis and the sources identify the line.
+      ...(l.chapter99 ? {} : { kind: l.kind }),
       chapter99: l.chapter99 ?? null,
       amount: money(BigInt(l.amountMinor)),
       basis: l.basis,

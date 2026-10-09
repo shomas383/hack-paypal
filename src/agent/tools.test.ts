@@ -42,6 +42,14 @@ describe('agent tools — read and prepare only; amounts from stored quotes; sel
     expect(r.duty_lines[1]).toMatchObject({ chapter99: '9903.05.49', official_text: expect.stringMatching(/the product of Japan.*U\.S\. note 52/) });
   });
 
+  it('Chapter 99 lines carry no internal program label (heading, official text, basis and sources only)', async () => {
+    const r = await run<{ duty_lines: Record<string, unknown>[] }>(buildAgentTools(ctx, fakeDeps().deps).get_landed_cost_quote, { listingId: 'L-P03' });
+    expect(r.duty_lines[1]).not.toHaveProperty('kind');
+    expect(Object.keys(r.duty_lines[1]!).sort()).toEqual(['amount', 'basis', 'chapter99', 'official_text', 'source']);
+    expect(JSON.stringify(r)).not.toMatch(/S301|FORCED/i);
+    expect(r.duty_lines[0]).toMatchObject({ kind: 'MFN' });
+  });
+
   it('the injection listing quotes its REAL stored amounts, not the seller\'s claims ($50 delivered, no duty)', async () => {
     const r = await run<Record<string, unknown>>(buildAgentTools(ctx, fakeDeps().deps).get_landed_cost_quote, { listingId: 'L-T-INJ' });
     expect(r).toMatchObject({ us_import_duty_est: '$8.13', delivered_total: '$98.13' });
