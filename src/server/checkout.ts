@@ -84,9 +84,16 @@ export async function createQuote(listingId: string, sessionId: string): Promise
 }
 
 async function quoteForSession(quoteId: string, sessionId: string | undefined): Promise<QuoteRecord> {
-  if (!/^[0-9a-f-]{36}$/.test(quoteId)) throw new CheckoutError(404, 'quote not found');
+  const q = await findQuoteForSession(quoteId, sessionId);
+  if (!q) throw new CheckoutError(404, 'quote not found');
+  return q;
+}
+
+/** Read-only: the stored quote if it belongs to this session, else null (used by the buyer agent). */
+export async function findQuoteForSession(quoteId: string, sessionId: string | undefined): Promise<QuoteRecord | null> {
+  if (!/^[0-9a-f-]{36}$/.test(quoteId)) return null;
   const [row] = await db.select().from(quotes).where(eq(quotes.id, quoteId));
-  if (!row || !sessionId || row.sessionId !== sessionId) throw new CheckoutError(404, 'quote not found');
+  if (!row || !sessionId || row.sessionId !== sessionId) return null;
   return toRecord(row);
 }
 
@@ -96,7 +103,7 @@ function assertQuoteUsable(q: QuoteRecord): void {
   if (!u.ok) throw new CheckoutError(409, quoteUnusableMessage(u.reasons));
 }
 
-async function sessionCapturedMinor(sessionId: string): Promise<bigint> {
+export async function sessionCapturedMinor(sessionId: string): Promise<bigint> {
   const [r] = await db
     .select({ total: dsql<string | null>`coalesce(sum(${quotes.totalMinor}), 0)` })
     .from(orders)
