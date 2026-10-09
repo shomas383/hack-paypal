@@ -41,7 +41,7 @@ describe('checkProposal — budget and caps on the STORED quote, in code', () =>
     expect(checkProposal({ ...base, quote: { ...quote, totalMinor: 40_001n } })).toEqual({
       ok: false,
       reasons: ['OVER_BUDGET', 'OVER_ORDER_CAP'],
-      message: expect.stringMatching(/\$400\.01 delivered is over the \$400\.00 budget/),
+      message: '$400.01 delivered is over the $400.00 budget. This order: $400.01; per-order cap: $400.00.',
     });
   });
 
@@ -49,7 +49,19 @@ describe('checkProposal — budget and caps on the STORED quote, in code', () =>
     expect(checkProposal({ ...base, sessionId: 's-2' }).ok).toBe(false);
     expect(checkProposal({ ...base, now: new Date('2026-10-08T12:15:00Z') })).toMatchObject({ ok: false, reasons: ['QUOTE_EXPIRED'] });
     expect(checkProposal({ ...base, currentRateVersion: 'v3' })).toMatchObject({ ok: false, reasons: ['RATE_VERSION_STALE'] });
-    expect(checkProposal({ ...base, sessionCapturedMinor: 50_000n })).toMatchObject({ ok: false, reasons: ['OVER_SESSION_CAP'] });
+    expect(checkProposal({ ...base, sessionCapturedMinor: 50_000n })).toMatchObject({
+      ok: false,
+      reasons: ['OVER_SESSION_CAP'],
+      message: 'Already captured this session: $500.00 of the $800.00 session cap. This order ($362.50) would exceed it.',
+    });
+  });
+
+  it('cap refusals use the same wording as approval, with the numbers', () => {
+    expect(checkProposal({ ...base, budgetMinor: 50_000n, quote: { ...quote, totalMinor: 45_250n } })).toMatchObject({
+      ok: false,
+      reasons: ['OVER_ORDER_CAP'],
+      message: 'This order: $452.50; per-order cap: $400.00.',
+    });
   });
 
   it('refuses without a confirmed budget', () => {

@@ -40,7 +40,8 @@ Rules:
   The app tells the buyer that itself, from code.
 - Duty lines come from human-verified rate rows with cited sources. Point the buyer to those sources; don't speculate about whether they apply.
   When you explain a duty line, quote its official_text (the official HTS / Chapter 99 wording) rather than paraphrasing it.
-- The budget and spend caps are enforced by code. If propose_purchase refuses, explain the reason; do not try to work
+- The budget and spend caps are enforced by code. If propose_purchase refuses, quote its message verbatim (the numbers in it
+  are computed by code); do not try to work
   around it.
 - When you recommend, compare the quoted candidates briefly (delivered total and duty), explain the duty (MFN and any
   Chapter 99 line, with its source), then call propose_purchase. Finish by telling the buyer to open the checkout link,

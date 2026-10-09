@@ -2,6 +2,7 @@
 // "Delivered" is always the stored quote's total (goods + shipping + duty).
 import { formatDisplay } from '../money/format';
 import { usd } from '../money/money';
+import { orderCapMessage, sessionCapMessage } from '../policy/capMessages';
 import { quoteUsable } from '../quote/quoteUsable';
 
 const toMinor = (whole: string, cents?: string) => Number(whole.replace(/,/g, '')) * 100 + Number((cents ?? '').padEnd(2, '0') || '0');
@@ -42,22 +43,22 @@ export function checkProposal(i: ProposalInput): ProposalCheck {
   const u = quoteUsable(i.quote, i.now, i.currentRateVersion);
   if (!u.ok) {
     for (const r of u.reasons) reasons.push(r);
-    messages.push('the quote is no longer usable — get a new quote');
+    messages.push('The quote is no longer usable — get a new quote.');
   }
   const total = formatDisplay(usd(i.quote.totalMinor));
   if (i.quote.totalMinor > i.budgetMinor) {
     reasons.push('OVER_BUDGET');
-    messages.push(`${total} delivered is over the ${formatDisplay(usd(i.budgetMinor))} budget`);
+    messages.push(`${total} delivered is over the ${formatDisplay(usd(i.budgetMinor))} budget.`);
   }
   if (i.quote.totalMinor > i.caps.perOrderMinor) {
     reasons.push('OVER_ORDER_CAP');
-    messages.push(`${total} is over the per-order spend cap`);
+    messages.push(orderCapMessage({ orderMinor: i.quote.totalMinor, capMinor: i.caps.perOrderMinor }));
   }
   if (i.sessionCapturedMinor + i.quote.totalMinor > i.caps.perSessionMinor) {
     reasons.push('OVER_SESSION_CAP');
-    messages.push('this would exceed the per-session spend cap');
+    messages.push(sessionCapMessage({ alreadyMinor: i.sessionCapturedMinor, capMinor: i.caps.perSessionMinor, orderMinor: i.quote.totalMinor }));
   }
-  return reasons.length ? { ok: false, reasons, message: messages.join('; ') } : { ok: true };
+  return reasons.length ? { ok: false, reasons, message: messages.join(' ') } : { ok: true };
 }
 
 const INSTRUCTION_PATTERNS = [

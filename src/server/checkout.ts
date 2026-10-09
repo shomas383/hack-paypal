@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { and, eq, sql as dsql } from 'drizzle-orm';
 import { fromPayPalValue } from '@/domain/money/format';
 import { approvalHash, decideCapture } from '@/domain/policy/decideCapture';
+import { orderCapMessage, sessionCapMessage } from '@/domain/policy/capMessages';
 import { invoiceRecipient } from '@/domain/policy/invoiceRecipient';
 import { buildQuote, type QuoteRecord } from '@/domain/quote/buildQuote';
 import { quoteUnusableMessage, quoteUsable } from '@/domain/quote/quoteUsable';
@@ -133,9 +134,12 @@ export async function approveQuote(quoteId: string, sessionId: string) {
   const q = await quoteForSession(quoteId, sessionId);
   const env = serverEnv();
   assertQuoteUsable(q);
-  if (q.totalMinor > env.spendCapPerOrderMinor) throw new CheckoutError(403, 'over the per-order spend cap');
-  if ((await sessionCapturedMinor(sessionId)) + q.totalMinor > env.spendCapPerSessionMinor) {
-    throw new CheckoutError(403, 'over the per-session spend cap');
+  if (q.totalMinor > env.spendCapPerOrderMinor) {
+    throw new CheckoutError(403, orderCapMessage({ orderMinor: q.totalMinor, capMinor: env.spendCapPerOrderMinor }));
+  }
+  const already = await sessionCapturedMinor(sessionId);
+  if (already + q.totalMinor > env.spendCapPerSessionMinor) {
+    throw new CheckoutError(403, sessionCapMessage({ alreadyMinor: already, capMinor: env.spendCapPerSessionMinor, orderMinor: q.totalMinor }));
   }
   await db
     .insert(approvals)
