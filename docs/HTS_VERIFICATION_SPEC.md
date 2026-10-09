@@ -131,7 +131,7 @@ Exempt headings carry "The duty provided in the applicable subheading" (no add-o
 | Origin | Heading | Rule (read the heading text each time) |
 |---|---|---|
 | **Japan** | **9903.05.49** if col.1 rate (or **AVE**) **< 12.5%**; **9903.05.48** if ≥ 12.5% | .49 rate column "12.5%" = **total becomes 12.5%** → add-on Q = 0.125 − N. .48 = no change → Q = 0 (e.g. denim 16.6%) |
-| **China** | **9903.05.31** | "The duty provided in the applicable subheading **+ 12.5%**" → **additive** → Q = 0.125, **plus** any active legacy China 301 list (4d) |
+| **China** | **9903.05.31** | "The duty provided in the applicable subheading **+ 12.5%**" → **additive** → Q = 0.125, **plus** any active legacy China list under note 20 (4d), cumulative per note 52(a) |
 | EU members | 9903.05.38 (≥10%, no change) / 9903.05.39 (combined 10%) | **Not yet read from the HTS in the reference run.** Read both heading texts before using them |
 | UK | 9903.05.81 (+10%) | **Not yet read.** Read it before using |
 
@@ -149,11 +149,14 @@ Other countries: search `9903.05` for "articles the product of <country>".
 6. A 232-covered article is exempt from the 12.5% via 9903.05.90. Total = base + 232 add-on (knife: 6.1% + 25% = 31.1%).
 7. A note list mentioning the code doesn't prove the heading still exists. Confirm the **heading row exists in the Rev's tariff table** (e.g. old aluminum list 9903.85.08 still appears in note text, but its heading row is gone in Rev 20, so it isn't collected).
 
-**4d. China legacy Section 301 lists (2018–19), China only:**
+**4d. China legacy lists under U.S. note 20 (2018–19), China only.** The Rev 20 Chapter 99 text never says "Section 301"
+(not in note 20 either); when a source is needed, cite the Federal Register notices note 20 references (e.g. 84 Fed. Reg.
+43304). Anything buyer-facing uses heading and note numbers only.
 1. Grep the 8-digit code in **note 20**. Identify the subdivision header above the hit and its 9903.88.xx heading.
 2. Read that heading row and the subdivision's **compiler's notes**. Example: 9503.00.00 and 9504.50.00 are in note 20(u) → **9903.88.16 (List 4B) "[Compiler's note: provision suspended.]"** → don't add.
 3. Note 20 also contains **exclusion** lists (e.g. 20(z) / 9903.88.21). Check whether a hit is an inclusion or an exclusion.
-4. If active, add its rate to Q.
+4. If active, add its rate to Q. With two headings, column O lists both ("9903.05.31 + 9903.88.15") and W states each
+   "heading +x%" (P13, rates-v3).
 
 **4e. Things that look applicable but aren't (Rev 20 era):**
 - **IEEPA tariffs** (9903.01.xx "fentanyl", 9903.02.xx "reciprocal", e.g. 9903.02.30 Japan 15%): still printed in Chapter 99, but **terminated**. *Learning Resources, Inc. v. Trump* (Feb 20, 2026); CBP stopped collecting for entries on or after Feb 24, 2026. Never add them.
@@ -207,10 +210,12 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 
 ## 5. Regime facts as of HTS 2026 Rev 20 (re-verify on each new revision)
 - De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).
-- Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. (The HTS names no Section 301 or "forced labor" action for note 52 — checked against the Rev 20 Ch. 99 PDF by the user, 2026-10-09.)
+- Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. (The Rev 20 Chapter 99 text contains neither "Section 301" nor "forced labor" anywhere, note 20 included — checked against the Ch. 99 PDF by the user, 2026-10-09.)
 - Japan 9903.05.48/.49 (12.5% combined); China 9903.05.31 (+12.5% additive).
 - Section 232 derivatives: note 16; 9903.82.09 = +25% (lists (c)(vi)–(viii), (xi)), full value, ≥15% metal-weight test.
-- China legacy 301: note 20; List 4B (9903.88.16) suspended.
+- China legacy lists: U.S. note 20 (Federal Register notices referenced there, e.g. 84 Fed. Reg. 43304). List 4A
+  (9903.88.15, +7.5%) active where the line is listed — cumulative with 9903.05.31 per note 52(a); List 4B (9903.88.16)
+  suspended.
 - IEEPA tariffs terminated (Feb 2026); Section 122 expired July 24, 2026.
 
 ---
@@ -246,3 +251,4 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 | P10 | Complete golf driver (JP) | 9506.31.0000 | 4.4% (JP: Free if claimed) | 9903.05.49 | 12.5% | N306836 |
 | P11 | Kitchen knife, steel, wood handle (JP) | 8211.92.9030 | 0.4¢ + 6.1% | 9903.82.09 (+25%, note 16(c)(vii)); exempt from 12.5% via .90 | 31.1% | none |
 | P12 | Recorded anime Blu-ray (JP) | 8523.49.4000 | Free | 9903.05.92 (informational) | 0% | H236026 (not yet read) |
+| P13 | Automatic watch, 21 jewels, steel bracelet (CN; verified 2026-10-08, rates-v3) | 9102.21.70 (component reporting) | $1.53 + 4.2% case + 9.8% band (AVE 5.7% @ $280) | 9903.05.31 (+12.5%, note 52) + 9903.88.15 (+7.5%, note 20(r)/(s)(i); not in List 4B; no in-effect exclusion), cumulative per note 52(a) | $72.09 @ $280 (case 230 / band 50) | none |

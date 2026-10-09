@@ -95,7 +95,10 @@ Part B2 (grounded classifier on the Rev 20 HTS index) DONE (2026-10-08): wrong �
 (baseline 8/10; beaten by one product, n = 11). See SPEC §4.1.
 rates-v2 DONE (2026-10-08): the watch is keyed by its component-reporting line 9102.21.70 (Ch. 91 Stat. Note 1); every rate key
 is checked against the HTS index; duty unchanged ($37.50 on $300).
-Next: seller UI (plan first — notes in the 2026-10-08 plan: grounded classifier in the service, progress state, seller
+Buyer agent DONE except the /agent page (2026-10-09): read/prepare-only tools, confirmed budget, injection withheld by code,
+official Ch. 99 wording, `pnpm agent:live` (JP $362.50 vs CN $377.09 vs JP-B over budget → PENDING proposal). SPEC §4.4 ACs met.
+rates-v3 DONE (2026-10-09): CN watch P13 (9903.05.31 + 9903.88.15, cumulative per note 52(a)); programs CH99_NOTE52 /
+CH99_NOTE20_LIST4A / CH99_NOTE20_LIST4B. Next: the /agent page (cards, proposal card, confirmed-budget field), then seller UI (plan first — notes in the 2026-10-08 plan: grounded classifier in the service, progress state, seller
 questions + ANSWER_CONTRADICTS, review queue, AG Grid Community review queue + orders/duty ledger), then the rough-cut demo video.
 
 Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
@@ -112,20 +115,24 @@ Carried over:
   make it required for a production server (not during `next build`: skip when `NEXT_PHASE === 'phase-production-build'`).
 - Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
-- Pending data (user, 2026-10-08): verified CN and EU rate rows for the same watch line (9102.21.70), via the sheet →
-  `pnpm rates:import`. Until then the buyer agent compares listings, not origins (SPEC §4.4 AC "≥2 origins" and DEMO
-  0:00–0:25 wait on this data); the agent needs no code change when the rows arrive.
+- Pending data (user): a verified EU row for the same watch line (9102.21.70) for DEMO 0:00–0:25 (JP / CN / EU). CN is done
+  (rates-v3, P13).
+- Next rates import (wording, from the user's 2026-10-09 correction): the Rev 20 Ch. 99 text never says "Section 301", note 20
+  included. The importer still writes the regime note "China legacy 301 List 4B (9903.88.16) suspended." and the ref
+  "U.S. note 20(r)/(s)(i) (List 4A)" (shown as a source at checkout / in the agent) — reword to note/heading numbers only
+  (cite the Federal Register notices note 20 references, e.g. 84 Fed. Reg. 43304, where a source is needed).
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 - rates-v2 DONE (2026-10-08): sheet M14 = 9102.21.70, V14 = 2026-10-08; the import (now 2026-rev20-v2) aborts unless every rate
   key is a real line in data/hts/2026-rev20.json (8-digit keys only with componentReporting). The current version is named in
   `src/domain/rates/current.ts`; v1 files stay as history (stored v1 quotes reference them and are refused as stale).
-  After the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v2` (pre-deploy re-seeds L-P03).
+  rates-v3 (2026-10-09) supersedes it: after the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v3`
+  (pre-deploy re-seeds L-P03 and L-P13).
 
 Polish backlog (Wk5, before the Nov 4 freeze):
-- Duty line labels: done for the checkout and the agent (official Ch. 99 heading text, quoted; no internal program label).
-  The program is still named `S301_FORCED_LABOR` in the rate data, code and tests; rates-v3 renames it `CH99_NOTE52` (the
-  importer assigns it; no sheet change). It is the Chapter 99 U.S. note 52 additional duty (9903.05.xx); the HTS names no
-  Section 301 or forced-labor action for it (user, Ch. 99 PDF, 2026-10-09).
+- Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3
+  renamed the programs after their HTS notes (CH99_NOTE52, CH99_NOTE20_LIST4A/4B).
+- Agent closing text: it said "none of these listings contained instructions" while L-T-INJ was flagged (live run 3) —
+  consider telling it in code/prompt when any search result was flagged.
 - Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
