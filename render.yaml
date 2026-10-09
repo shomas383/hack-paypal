@@ -61,6 +61,10 @@ services:
         sync: false
       - key: CLASSIFIER_DAILY_CEILING
         sync: false
+      - key: AGENT_LIMIT_PER_SESSION_PER_HOUR # buyer-agent runs per session per hour (IP: 2x)
+        value: "5"
+      - key: AGENT_DAILY_CEILING # buyer-agent runs per UTC day
+        value: "30"
       - key: PUBLIC_BASE_URL # public https origin; required in production (boot refuses without it). Not a secret.
         value: https://landed-hd19.onrender.com
       - key: TRUSTED_PROXY_HOPS # Render: one Cloudflare edge hop appended after the client (verified 2026-10-07)

@@ -24,6 +24,8 @@ export interface ServerEnv {
   trustedProxyHops: number;
   /** Top-candidate confidence below this → human review (SPEC §4.1). A probability, not money. */
   classifierReviewThreshold: number;
+  /** Buyer-agent run budget (checked before the first model call). IP limit = 2 × the session limit. */
+  agentLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
   /** Classifier call budget (checked before any LLM call). */
   classifierLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
 }
@@ -91,6 +93,10 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     quoteTtlSeconds: Number(positiveInt(raw, 'QUOTE_TTL_SECONDS')),
     trustedProxyHops: positiveIntOr(raw, 'TRUSTED_PROXY_HOPS', 1),
     classifierReviewThreshold: unitInterval(raw, 'CLASSIFIER_REVIEW_THRESHOLD', 0.8),
+    agentLimits: (() => {
+      const perSession = positiveIntOr(raw, 'AGENT_LIMIT_PER_SESSION_PER_HOUR', 5);
+      return { perSessionPerHour: perSession, perIpPerHour: perSession * 2, dailyCeiling: positiveIntOr(raw, 'AGENT_DAILY_CEILING', 30) };
+    })(),
     classifierLimits: {
       perSessionPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR', 10),
       perIpPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_IP_PER_HOUR', 20),

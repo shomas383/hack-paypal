@@ -14,6 +14,17 @@ const valid = {
   QUOTE_TTL_SECONDS: '900',
 };
 
+describe('parseServerEnv — buyer-agent limits', () => {
+  it('defaults to 5 runs per session per hour (IP: 2× that) and 30 per day', () => {
+    expect(parseServerEnv(valid).agentLimits).toEqual({ perSessionPerHour: 5, perIpPerHour: 10, dailyCeiling: 30 });
+  });
+
+  it('reads AGENT_LIMIT_PER_SESSION_PER_HOUR and AGENT_DAILY_CEILING as positive integers', () => {
+    expect(parseServerEnv({ ...valid, AGENT_LIMIT_PER_SESSION_PER_HOUR: '3', AGENT_DAILY_CEILING: '12' }).agentLimits).toEqual({ perSessionPerHour: 3, perIpPerHour: 6, dailyCeiling: 12 });
+    expect(() => parseServerEnv({ ...valid, AGENT_DAILY_CEILING: '0' })).toThrow(/AGENT_DAILY_CEILING must be a positive integer/);
+  });
+});
+
 describe('parseServerEnv — CLASSIFIER_REVIEW_THRESHOLD', () => {
   it('defaults to 0.80 and reads a decimal in [0, 1]', () => {
     expect(parseServerEnv(valid).classifierReviewThreshold).toBe(0.8);

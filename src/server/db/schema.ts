@@ -143,6 +143,8 @@ export const classifierCalls = pgTable(
   {
     id: bigserial('id', { mode: 'bigint' }).primaryKey(),
     at: ts('at').notNull().defaultNow(),
+    /** 'classifier' (SPEC §4.1) or 'agent' (one row per buyer-agent run, SPEC §4.4); each kind has its own limits. */
+    kind: text('kind').notNull().default('classifier'),
     sessionId: text('session_id').notNull(),
     ip: text('ip').notNull(),
     outcome: text('outcome').notNull(), // RESERVED | OK | ERROR | REFUSED_DAILY | REFUSED_SESSION | REFUSED_IP

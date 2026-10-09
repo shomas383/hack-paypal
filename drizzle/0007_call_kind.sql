@@ -1,0 +1,1 @@
+ALTER TABLE "classifier_calls" ADD COLUMN "kind" text DEFAULT 'classifier' NOT NULL;

@@ -109,6 +109,9 @@ Carried over:
   make it required for a production server (not during `next build`: skip when `NEXT_PHASE === 'phase-production-build'`).
 - Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
+- Pending data (user, 2026-10-08): verified CN and EU rate rows for the same watch line (9102.21.70), via the sheet →
+  `pnpm rates:import`. Until then the buyer agent compares listings, not origins (SPEC §4.4 AC "≥2 origins" and DEMO
+  0:00–0:25 wait on this data); the agent needs no code change when the rows arrive.
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 - rates-v2 DONE (2026-10-08): sheet M14 = 9102.21.70, V14 = 2026-10-08; the import (now 2026-rev20-v2) aborts unless every rate
   key is a real line in data/hts/2026-rev20.json (8-digit keys only with componentReporting). The current version is named in
