@@ -13,6 +13,20 @@
       "facts": {}
     },
     {
+      "id": "L-P03-B",
+      "sheet_ref": "P03",
+      "demo_variant_of": "P03",
+      "title": "Automatic diver watch, 1980s, stainless case, steel bracelet (Japan)",
+      "origin": "JP",
+      "hts10": "9102.21.70",
+      "price_minor": 38000,
+      "shipping_minor": 2500,
+      "value_split": { "case_minor": 32000, "band_minor": 6000 },
+      "facts": {},
+      "expected": { "duty_minor": 4750, "total_minor": 45250, "chapter99": "9903.05.49" },
+      "_note": "Demo variant of the verified P03 row (same origin, HTS line and rate row; not a golden case). Expected engine result, checked exactly by the seed and by src/domain/rates/demoVariant.test.ts: MFN $1.53 + 4.2% x $320 + 9.8% x $60 = $20.85 (AVE 5.49% < 12.5%) -> combined cap 12.5% x $380 = $47.50 (MFN $20.85 + 9903.05.49 $26.65); delivered $380 + $25 + $47.50 = $452.50 (over a $400 budget)."
+    },
+    {
       "id": "L-P11",
       "sheet_ref": "P11",
       "title": "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
