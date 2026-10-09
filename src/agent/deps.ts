@@ -5,6 +5,7 @@ import { createQuote, findQuoteForSession, listListings, sessionCapturedMinor } 
 import { db } from '@/server/db/client';
 import { auditLog, orders, purchaseProposals, quotes } from '@/server/db/schema';
 import { serverEnv } from '@/server/env';
+import { currentCh99, currentHtsIndex } from '@/server/hts';
 import { currentRateTable } from '@/server/rates';
 import { readOnlyToolkit } from './paypalReadOnly';
 import type { AgentDeps } from './tools';
@@ -50,6 +51,7 @@ export function agentDeps(): AgentDeps {
       toolkit ??= readOnlyToolkit({ clientId: serverEnv().paypalClientId, clientSecret: serverEnv().paypalClientSecret });
       return toolkit.getOrder(id);
     },
+    officialText: (code) => (code.startsWith('9903.') ? (currentCh99().headings[code] ?? null) : (currentHtsIndex().chains.get(code)?.join(' > ') ?? null)),
     now: () => new Date(),
   };
 }

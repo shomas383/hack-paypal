@@ -43,6 +43,8 @@ export interface AgentDeps {
   paypalOrderIdsForSession(sessionId: string): Promise<Set<string>>;
   /** PayPal Agent Toolkit get_order (read-only; actions.orders.get). */
   getPayPalOrder(paypalOrderId: string): Promise<unknown>;
+  /** Official text, verbatim: a Ch. 99 heading's description, or an HTS line's description chain. Null if unknown. */
+  officialText(code: string): string | null;
   now(): Date;
 }
 
@@ -75,7 +77,15 @@ function quoteSummary(q: QuoteRecord, ctx: AgentContext, deps: AgentDeps) {
     delivered_total: money(q.totalMinor),
     budget: money(ctx.budgetMinor),
     within_budget: q.totalMinor <= ctx.budgetMinor, // computed in code on the stored quote
-    duty_lines: q.lines.map((l) => ({ kind: l.kind, chapter99: l.chapter99 ?? null, amount: money(BigInt(l.amountMinor)), basis: l.basis, source: l.sourceRef })),
+    duty_lines: q.lines.map((l) => ({
+      kind: l.kind,
+      chapter99: l.chapter99 ?? null,
+      amount: money(BigInt(l.amountMinor)),
+      basis: l.basis,
+      source: l.sourceRef,
+      // Verbatim official text (HTS 2026 Rev. 20 export): the Ch. 99 heading, or the classified HTS line for MFN.
+      official_text: deps.officialText(l.chapter99 ?? q.hts10),
+    })),
     rate_version: q.rateVersion,
     expires_at: q.expiresAt.toISOString(),
   };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildHtsIndex, chainsOf, type ExportRow } from './buildIndex';
+import { buildCh99Lookup, buildHtsIndex, chainsOf, type ExportRow } from './buildIndex';
 
 const STAT_NOTE = [{ columns: ['stat', 'units'], value: 'See statistical note 1 to this chapter. ', type: 'endnote' }];
 // Shaped like the hts.usitc.gov exportList JSON, including rate fields that must never reach the index.
@@ -24,6 +24,26 @@ const sample: ExportRow[] = [
   row('9903', 0, 'Additional duties…'),
   row('9903.05.49', 1, 'Japan…'),
 ];
+
+describe('buildCh99Lookup — official Chapter 99 subchapter III heading text, description only', () => {
+  const rows = [
+    row('9903', 0, 'Subchapter III…'),
+    row('9903.05.49', 1, 'Except for products described in headings 9903.05.85–9903.05.92, articles the product of Japan, … as provided for in U.S. note 52 to this subchapter', { general: 'The duty provided in the applicable subheading + 12.5%' }),
+    row('9903.05.48.00', 1, 'not an 8-digit heading'),
+    row('9902.12.34', 1, 'subchapter II — not included'),
+    row('6203.42.45.11', 1, 'Blue denim (347)'),
+  ];
+  const lookup = buildCh99Lookup(rows, { hts_revision: '2026 Rev. 20', source: { url: 'u', exportedOn: 'd' } });
+
+  it('keeps 9903.xx.xx headings with their official description, verbatim', () => {
+    expect(lookup.headings).toEqual({ '9903.05.49': rows[1]!.description });
+    expect(lookup.hts_revision).toBe('2026 Rev. 20');
+  });
+
+  it('never carries rate columns or rate text', () => {
+    expect(JSON.stringify(lookup)).not.toMatch(/"general"|12\.5%|applicable subheading/);
+  });
+});
 
 describe('buildHtsIndex', () => {
   const idx = buildHtsIndex(sample, { hts_revision: '2026 Rev. 20', source: { url: 'u', exportedOn: '2026-10-07' } });

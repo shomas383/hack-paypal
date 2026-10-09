@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { expandHeading, validateHts10 } from '@/domain/classifier/hts';
 import { goldenFileName } from '@/domain/rates/current';
 import { checkRateKeysAgainstHts } from '@/domain/rates/htsKeys';
-import { currentHtsIndex, CURRENT_HTS_FILE } from './hts';
+import { CURRENT_CH99_FILE, currentCh99, currentHtsIndex, CURRENT_HTS_FILE } from './hts';
 import { currentRateTable } from './rates';
 
 // Spot checks against the COMMITTED index (data/hts/2026-rev20.json, built by pnpm hts:import).
@@ -55,6 +55,19 @@ describe('committed Rev 20 HTS index', () => {
     expect(watches.map((c) => c.code)).toEqual(['9102.21.10', '9102.21.25', '9102.21.30', '9102.21.50', '9102.21.70', '9102.21.90']);
     expect(watches.every((c) => c.componentReporting)).toBe(true);
     expect(validateHts10('9102.21.70', lookup)).toMatchObject({ ok: true, componentReporting: true });
+  });
+
+  it('Ch. 99 lookup: official heading text for every heading the current rate rows use; no rate columns', () => {
+    const ch99 = currentCh99();
+    expect(ch99.hts_revision).toBe(index.hts_revision);
+    expect(ch99.headings['9903.05.49']).toMatch(/the product of Japan.*U\.S\. note 52/);
+    expect(ch99.headings['9903.05.31']).toMatch(/the product of China/);
+    const used = currentRateTable().rows.flatMap((r) => [
+      ...r.additional.flatMap((a) => [a.chapter99, a.chapter99_at_or_above_cap].filter((x): x is string => !!x)),
+      ...r.not_applied.map((n) => n.chapter99),
+    ]);
+    expect(used.filter((h) => !ch99.headings[h])).toEqual([]);
+    expect(readFileSync(CURRENT_CH99_FILE, 'utf8')).not.toMatch(/"(general|special|other|additionalDuties)":/);
   });
 
   it('revision lock: the HTS index revision equals the rate table revision', () => {

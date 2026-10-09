@@ -41,7 +41,13 @@ export function fakeDeps(over: Partial<AgentDeps> = {}) {
         dutyMinor: duty,
         totalMinor: l.priceMinor + l.shippingMinor + duty,
         currency: 'USD',
-        lines: [{ kind: 'MFN', amountMinor: String(duty), basis: 'engine', sourceRef: 'verified rate row' }],
+        lines:
+          listingId === 'L-P03'
+            ? [
+                { kind: 'MFN', amountMinor: '1693', basis: '$1.53 each + 4.2% case + 9.8% band', sourceRef: '9102.21.70 General (HTS 2026 Rev. 20)' },
+                { kind: 'S301_FORCED_LABOR', chapter99: '9903.05.49', amountMinor: '2057', basis: 'combined cap 12.5%', sourceRef: '9903.05.49 — U.S. note 52; CSMS #69326983' },
+              ]
+            : [{ kind: 'MFN', amountMinor: String(duty), basis: 'engine', sourceRef: 'verified rate row' }],
         effectiveRatePpm: 0,
         createdAt: now,
         expiresAt: new Date(now.getTime() + 15 * 60_000),
@@ -63,6 +69,11 @@ export function fakeDeps(over: Partial<AgentDeps> = {}) {
     },
     paypalOrderIdsForSession: async () => new Set(['5O190127TN364715T']),
     getPayPalOrder: async (id) => ({ id, status: 'COMPLETED' }),
+    officialText: (code) =>
+      ({
+        '9903.05.49': 'Except for products described in headings 9903.05.85–9903.05.92, articles the product of Japan, … as provided for in U.S. note 52 to this subchapter',
+        '9102.21.70': 'Wrist watches… > With automatic winding: > Having over 17 jewels in the movement: > With strap, band or bracelet of textile material or of base metal…',
+      })[code] ?? null,
     now: () => now,
     ...over,
   };

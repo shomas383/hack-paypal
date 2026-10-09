@@ -100,6 +100,20 @@ export function buildHtsIndex(rows: ExportRow[], meta: Pick<HtsIndex, 'hts_revis
   return { hts_revision: meta.hts_revision, source: meta.source, nodes, codes };
 }
 
+export interface Ch99Lookup {
+  hts_revision: string;
+  source: HtsIndex['source'];
+  /** 8-digit subchapter III heading (9903.xx.xx) → its official description, verbatim. No rate columns. */
+  headings: Record<string, string>;
+}
+
+/** Official Chapter 99 subchapter III heading text for display and citation (reads htsno + description only). */
+export function buildCh99Lookup(rows: ExportRow[], meta: Pick<HtsIndex, 'hts_revision' | 'source'>): Ch99Lookup {
+  const headings: Record<string, string> = {};
+  for (const r of rows) if (/^9903\.\d{2}\.\d{2}$/.test(r.htsno)) headings[r.htsno] = r.description;
+  return { hts_revision: meta.hts_revision, source: meta.source, headings };
+}
+
 /** code → description chain (root first). */
 export function chainsOf(idx: HtsIndex): Map<string, string[]> {
   const chainOfNode = (n: number): string[] => {

@@ -5,10 +5,12 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { buildHtsIndex, chainsOf, type ExportRow } from '../src/domain/hts/buildIndex';
+import { buildCh99Lookup, buildHtsIndex, chainsOf, type ExportRow } from '../src/domain/hts/buildIndex';
 
 const SOURCE = join('data', 'source', 'hts', 'hts-2026-rev20-export.json');
 const OUT = join('data', 'hts', '2026-rev20.json');
+// Official Chapter 99 subchapter III heading text (9903.xx.xx → description), for citing duty lines verbatim. No rates.
+const OUT_CH99 = join('data', 'hts', '2026-rev20-ch99.json');
 // The export carries no revision field. The user downloaded it on 2026-10-07 while hts.usitc.gov showed 2026 Rev 20 as
 // current; the string matches the rate table's hts_revision exactly (locked by src/server/hts.test.ts).
 const META = {
@@ -38,16 +40,22 @@ function main() {
   assert(byCode.has('9006.53.0205'), '9006.53.0205 must be present');
   assert(byCode.get('9102.21.70')?.componentReporting === true, '9102.21.70 must be a component-reporting code');
 
+  const ch99 = buildCh99Lookup(rows, { hts_revision: idx.hts_revision, source: idx.source });
+  assert(/the product of Japan/.test(ch99.headings['9903.05.49'] ?? '') && /U\.S\. note 52/.test(ch99.headings['9903.05.49'] ?? ''), '9903.05.49 official text not as expected');
+  const ch99Json = JSON.stringify(ch99) + '\n';
+
   const json = JSON.stringify(idx) + '\n';
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, json);
+  writeFileSync(OUT_CH99, ch99Json);
 
   const ten = idx.codes.filter((c) => !c.componentReporting).length;
   const cr = idx.codes.length - ten;
   console.log(`source ${SOURCE} (${(buf.length / 1e6).toFixed(2)} MB, ${rows.length} rows) sha256 ${sha256.slice(0, 12)}…`);
   console.log(`wrote ${OUT}: ${idx.codes.length} codes (${ten} ten-digit, ${cr} component-reporting 8-digit), ${idx.nodes.length} nodes`);
   console.log(`size ${Buffer.byteLength(json)} bytes (${(Buffer.byteLength(json) / 1e6).toFixed(2)} MB) · content sha256 ${createHash('sha256').update(json).digest('hex').slice(0, 12)}`);
-  execFileSync('git', ['add', '--', OUT], { stdio: 'inherit' });
+  console.log(`wrote ${OUT_CH99}: ${Object.keys(ch99.headings).length} Ch. 99 subchapter III headings, ${Buffer.byteLength(ch99Json)} bytes`);
+  execFileSync('git', ['add', '--', OUT, OUT_CH99], { stdio: 'inherit' });
   console.log('staged (git add) — review with git diff --cached --stat, then commit.');
 }
 

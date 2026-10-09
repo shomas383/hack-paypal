@@ -3,6 +3,7 @@ import { formatDisplay } from '@/domain/money/format';
 import { usd } from '@/domain/money/money';
 import { CheckoutError, getCheckoutView } from '@/server/checkout';
 import { serverEnv } from '@/server/env';
+import { currentCh99, currentHtsIndex } from '@/server/hts';
 import { readSessionId } from '@/server/session';
 import { CheckoutClient } from './CheckoutClient';
 
@@ -40,11 +41,16 @@ export default async function CheckoutPage({ params }: { params: Promise<{ quote
                 {' '}· Ch.99 <span data-testid="ch99">{headings.join(', ')}</span>
               </div>
               <ul data-testid="duty-detail" style={{ fontSize: '0.85em', margin: '0.25rem 0' }}>
-                {q.lines.map((l, i) => (
-                  <li key={i}>
-                    {l.kind}{l.chapter99 ? ` (${l.chapter99})` : ''}: {fmt(BigInt(l.amountMinor))} — {l.basis} · source: {l.sourceRef}
-                  </li>
-                ))}
+                {q.lines.map((l, i) => {
+                  // Official wording, verbatim from the HTS 2026 Rev. 20 export (Ch. 99 heading, or the classified line).
+                  const official = l.chapter99 ? currentCh99().headings[l.chapter99] : currentHtsIndex().chains.get(q.hts10)?.at(-1);
+                  return (
+                    <li key={i} data-testid="duty-line-item">
+                      <strong>{l.chapter99 ?? `HTS ${q.hts10}`}</strong>: {fmt(BigInt(l.amountMinor))} — {l.basis} · source: {l.sourceRef}
+                      {official ? <div data-testid="official-text" style={{ color: '#555' }}>“{official}”</div> : null}
+                    </li>
+                  );
+                })}
               </ul>
             </td>
             <td data-testid="duty" style={{ textAlign: 'right', verticalAlign: 'top' }}><strong>{fmt(q.dutyMinor)}</strong></td>

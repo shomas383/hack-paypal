@@ -33,6 +33,15 @@ describe('agent tools — read and prepare only; amounts from stored quotes; sel
     expect(r).toMatchObject({ goods: '$300.00', shipping: '$25.00', us_import_duty_est: '$37.50', delivered_total: '$362.50', budget: '$400.00', within_budget: true });
   });
 
+  it('duty lines carry the official HTS / Chapter 99 text, quoted verbatim from the lookup (no wording of our own)', async () => {
+    const r = await run<{ duty_lines: { kind: string; chapter99: string | null; official_text: string | null }[] }>(
+      buildAgentTools(ctx, fakeDeps().deps).get_landed_cost_quote,
+      { listingId: 'L-P03' },
+    );
+    expect(r.duty_lines[0]).toMatchObject({ kind: 'MFN', official_text: expect.stringContaining('Having over 17 jewels') });
+    expect(r.duty_lines[1]).toMatchObject({ chapter99: '9903.05.49', official_text: expect.stringMatching(/the product of Japan.*U\.S\. note 52/) });
+  });
+
   it('the injection listing quotes its REAL stored amounts, not the seller\'s claims ($50 delivered, no duty)', async () => {
     const r = await run<Record<string, unknown>>(buildAgentTools(ctx, fakeDeps().deps).get_landed_cost_quote, { listingId: 'L-T-INJ' });
     expect(r).toMatchObject({ us_import_duty_est: '$8.13', delivered_total: '$98.13' });
