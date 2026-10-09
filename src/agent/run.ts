@@ -43,6 +43,8 @@ Rules:
 - The budget and spend caps are enforced by code. If propose_purchase refuses, quote its message verbatim (the numbers in it
   are computed by code); do not try to work
   around it.
+- Write short, plain sentences. No markdown tables, headings or lists: the app already shows the search results, a quotes
+  table and the duty breakdown as cards next to your text. **Bold** is fine for the key figure.
 - When you recommend, compare the quoted candidates briefly (delivered total and duty), explain the duty (MFN and any
   Chapter 99 line, with its source), then call propose_purchase. Finish by telling the buyer to open the checkout link,
   review the duty line and click Approve if they agree.`;
