@@ -22,6 +22,7 @@
     "rates:validate": "tsx scripts/validate-rates.ts",
     "hts:import": "tsx scripts/import-hts.ts",
     "eval:classifier": "tsx scripts/eval-classifier.ts",
+    "agent:live": "tsx scripts/agent-live-run.ts",
     "spike:paypal": "tsx --env-file=.env scripts/spike/run.ts",
     "spike:a": "tsx --env-file=.env scripts/spike/run.ts a",
     "spike:b": "tsx --env-file=.env scripts/spike/run.ts b",

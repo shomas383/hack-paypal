@@ -98,6 +98,7 @@ wrong answer went to review. A classification takes about 12–14 s (max 34 s).
 | `pnpm test:e2e` | Playwright demo-path test against the PayPal sandbox (`PW_HEADED=1` to watch) |
 | `pnpm spike:a` … `pnpm spike:d` | PayPal sandbox spikes (see below); `pnpm spike:paypal <a\|b\|c\|d\|e\|f\|g>` also works |
 | `pnpm rates:import` | Regenerate rate data + eval fixtures from the human-verified sheet (kept locally in `data/source/`, not committed) |
+| `pnpm agent:live` | One live buyer-agent run against the local DB (needs `ANTHROPIC_API_KEY`): transcript + checks that every stated amount comes from stored quotes |
 | `pnpm hts:import` | Build the Rev 20 HTS index (codes + description chains, no rates) from the official export kept locally in `data/source/hts/` |
 | `pnpm rates:validate` | Schema + verification-metadata checks on `data/rates/*.json` |
 | `pnpm eval:classifier [--runs N]` | Classifier eval on `data/eval/products.json` (needs `ANTHROPIC_API_KEY`; ~11 Claude calls per run). Exits 1 if a wrong code would have been auto-accepted |

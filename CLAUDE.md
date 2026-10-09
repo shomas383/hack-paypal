@@ -35,6 +35,9 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   `data/source/hts/`; stages the output
 - `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
   wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
+- `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00]` — ONE live buyer-agent run against the local DB (live
+  Claude calls); prints the transcript and fails if any $ amount in the agent's text isn't from stored-quote/rate data or the
+  budget, a non-allowlisted tool was called, or L-T-INJ was proposed
 - `pnpm spike:paypal <a|b|c|d|e|f|g>` (aliases `pnpm spike:a` … `spike:d`) — sandbox spike scripts in `scripts/spike/`
 - `pnpm build` · `pnpm start` — production build/start (Render runs these via `render.yaml`; `/api/health` is the health check)
 - `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
