@@ -1,0 +1,8 @@
+.money {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.strong {
+  font-weight: var(--weight-semibold);
+}

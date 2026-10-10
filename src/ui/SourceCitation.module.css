@@ -1,0 +1,24 @@
+.citation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-13);
+  line-height: var(--leading-13);
+  color: var(--text-muted);
+  max-width: var(--w-prose);
+}
+
+.official {
+  padding-left: var(--space-3);
+  border-left: var(--rule-strong) solid var(--border-strong);
+  color: var(--text);
+}
+
+.label {
+  font-weight: var(--weight-medium);
+}
+
+.meta {
+  font-size: var(--text-12);
+  line-height: var(--leading-12);
+}

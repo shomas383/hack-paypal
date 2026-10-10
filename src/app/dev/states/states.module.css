@@ -1,0 +1,43 @@
+.h1 {
+  font-size: var(--text-24);
+  line-height: var(--leading-24);
+  font-weight: var(--weight-semibold);
+}
+
+.lead {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+}
+
+.section {
+  padding: var(--space-6) 0;
+  border-bottom: var(--hairline) solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.section h2 {
+  font-size: var(--text-16);
+  line-height: var(--leading-16);
+  font-weight: var(--weight-semibold);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

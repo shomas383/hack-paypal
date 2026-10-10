@@ -1,0 +1,21 @@
+.skeleton {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: var(--radius-sm);
+  background: var(--selected);
+  opacity: 0;
+  animation: appear var(--dur-3) var(--ease) var(--skeleton-delay) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@keyframes appear {
+  to {
+    opacity: 1;
+  }
+}
