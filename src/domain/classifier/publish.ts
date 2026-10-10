@@ -1,7 +1,8 @@
 // Classification lifecycle (SPEC §4.1, §4.5). No classification is quotable by itself: it becomes a `listings` row only
 // through a recorded "Publish listing" action, and only once its HTS code is settled (auto-accepted, or accepted /
 // overridden by a reviewer). Review-routed results stay PENDING_REVIEW and are never auto-quoted.
-export type ClassificationStatus = 'PENDING_REVIEW' | 'AUTO_ACCEPTED' | 'ACCEPTED' | 'OVERRIDDEN' | 'PUBLISHED';
+// CLASSIFYING: the grounded run is in progress (seller console, polled); FAILED: the run errored (no result, not publishable).
+export type ClassificationStatus = 'CLASSIFYING' | 'FAILED' | 'PENDING_REVIEW' | 'AUTO_ACCEPTED' | 'ACCEPTED' | 'OVERRIDDEN' | 'PUBLISHED';
 
 export interface ClassificationInput {
   title: string;

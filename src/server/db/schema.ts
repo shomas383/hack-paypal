@@ -1,7 +1,18 @@
 // Drizzle schema (SPEC §5). Money is integer minor units in bigint columns (invariant 1); currency is USD.
 // `quotes` is immutable: the repository only inserts/reads and a DB trigger (migration 0001) rejects UPDATE/DELETE.
 import { bigint, bigserial, boolean, char, index, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import type { GroundedChoice } from '@/domain/classifier/grounded';
+import type { GroundedMeta, GroundedStage } from '@/domain/classifier/classifyGrounded';
+import type { HtsLine } from '@/domain/classifier/hts';
 import type { ClassificationInput, ClassificationStatus } from '@/domain/classifier/publish';
+
+/** What a grounded classification stores (choice, the official candidate lines it chose from, run meta). */
+export interface GroundedResult {
+  outcome: 'OK' | 'STOPPED' | 'INVALID_OUTPUT';
+  choice: GroundedChoice | null;
+  candidates: HtsLine[];
+  meta: GroundedMeta;
+}
 import type { ClassifierOutputT } from '@/domain/classifier/schema';
 import type { StoredLine } from '@/domain/quote/buildQuote';
 
@@ -127,6 +138,14 @@ export const classifications = pgTable('classifications', {
   needsReview: boolean('needs_review').notNull(),
   reasons: jsonb('reasons').$type<string[]>().notNull(),
   status: text('status').$type<ClassificationStatus>().notNull(),
+  /** 'b1' (single call, SPEC §4.1 B1) or 'grounded' (B2 on the Rev 20 index; the seller console). */
+  kind: text('kind').$type<'b1' | 'grounded'>().notNull().default('b1'),
+  /** Grounded runs: the latest REAL stage reported by classifyListingGrounded (polled by the console). */
+  stage: jsonb('stage').$type<GroundedStage | null>(),
+  /** Grounded runs: the verified choice, the expanded official lines (with chains) and run meta. No amounts. */
+  grounded: jsonb('grounded').$type<GroundedResult | null>(),
+  /** The classifier_calls reservation for this run (closed as OK / ERROR; an interrupted run is closed as ERROR). */
+  callId: bigint('call_id', { mode: 'bigint' }),
   hts10: text('hts10'),
   listingId: text('listing_id').references(() => listings.id),
   reviewedBy: text('reviewed_by'),

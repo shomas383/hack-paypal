@@ -71,7 +71,20 @@ const listingText = (l: ListingText) => [l.title, l.description].filter(Boolean)
 const userPrompt = (l: ListingText) =>
   [`Title: ${l.title}`, l.description ? `Description: ${l.description}` : null, `Country of origin: ${l.origin ?? 'unknown'}`].filter(Boolean).join('\n');
 
-export async function classifyListingGrounded(listing: ListingText, model: LanguageModel, opts: { threshold: number; idx: HtsLookup }): Promise<GroundedClassification> {
+/** Real progress, reported as each step starts (the seller console shows it; nothing is simulated). */
+export type GroundedStage =
+  | { stage: 'proposing' }
+  | { stage: 'matching'; headings: string[] }
+  | { stage: 'choosing'; headings: string[]; expanded: number };
+
+export async function classifyListingGrounded(
+  listing: ListingText,
+  model: LanguageModel,
+  opts: { threshold: number; idx: HtsLookup; onStage?: (s: GroundedStage) => void | Promise<void> },
+): Promise<GroundedClassification> {
+  const stage = async (s: GroundedStage) => {
+    await opts.onStage?.(s);
+  };
   const started = Date.now();
   const meta: GroundedMeta = { headings: [], invalidHeadings: [], expanded: 0, droppedQuotes: 0, calls: 0, usage: { input: 0, output: 0 }, ms: 0 };
   const originReasons = listing.origin ? [] : (['ORIGIN_UNKNOWN'] as const);
@@ -89,6 +102,7 @@ export async function classifyListingGrounded(listing: ListingText, model: Langu
   const isAnswerError = (e: unknown): e is Error => NoObjectGeneratedError.isInstance(e) || e instanceof ZodError;
 
   // 1. Headings.
+  await stage({ stage: 'proposing' });
   let h: z.infer<typeof Headings>;
   try {
     h = await call(SYSTEM_1, userPrompt(listing), Headings, 'hts_headings');
@@ -99,6 +113,7 @@ export async function classifyListingGrounded(listing: ListingText, model: Langu
   meta.headings = h.headings.map((x) => x.heading);
 
   // 2. Expand to real Rev 20 lines.
+  await stage({ stage: 'matching', headings: meta.headings });
   const lines = new Map<string, HtsLine>();
   for (const heading of meta.headings) {
     const expanded = expandHeading(heading, opts.idx);
@@ -110,6 +125,7 @@ export async function classifyListingGrounded(listing: ListingText, model: Langu
   if (lines.size > MAX_EXPANDED_LINES) return done({ kind: 'STOPPED', review: { needsReview: true, reasons: ['TOO_BROAD', ...originReasons] }, meta });
 
   // 3. Choose from the list only.
+  await stage({ stage: 'choosing', headings: meta.headings, expanded: lines.size });
   const candidates = [...lines.values()];
   const list = candidates.map((c, i) => `${i + 1}. ${c.code} — ${c.chain.join(' > ')}`).join('\n');
   let choice: GroundedChoice;
