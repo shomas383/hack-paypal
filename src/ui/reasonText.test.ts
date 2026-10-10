@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { reasonText } from './reasonText';
+import { classificationStatus, reasonShort, reasonText } from './reasonText';
+
+describe('short labels for the review queue', () => {
+  it('every routing reason and status has a label; status carries a tone (never colour alone: text + icon)', () => {
+    expect(reasonShort('MISSING_ATTRIBUTES')).toBe('Missing attributes');
+    expect(reasonShort('ANSWER_CONTRADICTS')).toBe('Answer contradicts');
+    expect(reasonShort('SOMETHING_NEW')).toBe('SOMETHING_NEW');
+    expect(classificationStatus('PENDING_REVIEW')).toEqual({ tone: 'warning', text: 'Needs review' });
+    expect(classificationStatus('PUBLISHED')).toEqual({ tone: 'success', text: 'Published' });
+    expect(classificationStatus('CLASSIFYING')).toEqual({ tone: 'progress', text: 'Classifying' });
+  });
+});
 
 const ctx = { confidence: 0.62, threshold: 0.8, missing: ['jewel count', 'strap material'] };
 
