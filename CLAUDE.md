@@ -151,5 +151,10 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   filter to the current rate version by default with a toggle for older orders.
 - Action rows: primary button first, consistently (review panel, publish dialog, checkout).
 - Ledger: wider Listing column (titles are truncated at 1280).
+- Agent final message: still 5 sentences in production (agent:live WARN); awkward wording "with the extra charge under
+  heading …" — tighten the prompt's final-message rule.
+- Agent search/quote mismatch (production 2026-10-10, investigated, fix proposed, not built): search_listings returns
+  zero-score listings to the model while /agent renders only match_score > 0, so the agent quoted a seller-published
+  Japanese-titled watch (L-C-bce3add4) that no rendered step showed, and dropped L-P03-B under the prompt's "at most 4".
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
