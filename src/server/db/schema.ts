@@ -152,6 +152,25 @@ export const classifierCalls = pgTable(
   (t) => [index('classifier_calls_at_idx').on(t.at)],
 );
 
+/** Seller console sessions (shared passcode; no accounts). The cookie holds the random id; expiry is checked server-side. */
+export const sellerSessions = pgTable('seller_sessions', {
+  id: uuid('id').primaryKey(),
+  createdAt: ts('created_at').notNull().defaultNow(),
+  expiresAt: ts('expires_at').notNull(),
+});
+
+/** Every seller passcode attempt (no passcode text stored); failures per IP in the window gate further attempts. */
+export const sellerLoginAttempts = pgTable(
+  'seller_login_attempts',
+  {
+    id: bigserial('id', { mode: 'bigint' }).primaryKey(),
+    at: ts('at').notNull().defaultNow(),
+    ip: text('ip').notNull(),
+    ok: boolean('ok').notNull(),
+  },
+  (t) => [index('seller_login_attempts_ip_at_idx').on(t.ip, t.at)],
+);
+
 export const auditLog = pgTable('audit_log', {
   id: bigserial('id', { mode: 'bigint' }).primaryKey(),
   at: ts('at').notNull().defaultNow(),

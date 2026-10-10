@@ -65,6 +65,8 @@ services:
         value: "5"
       - key: AGENT_DAILY_CEILING # buyer-agent runs per UTC day
         value: "30"
+      - key: SELLER_CONSOLE_PASSCODE # /seller passcode (>= 12 chars); set in the dashboard; unset = console disabled (404)
+        sync: false
       - key: PUBLIC_BASE_URL # public https origin; required in production (boot refuses without it). Not a secret.
         value: https://landed-hd19.onrender.com
       - key: TRUSTED_PROXY_HOPS # Render: one Cloudflare edge hop appended after the client (verified 2026-10-07)

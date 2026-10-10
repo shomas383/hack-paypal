@@ -28,6 +28,8 @@ export interface ServerEnv {
   agentLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
   /** Classifier call budget (checked before any LLM call). */
   classifierLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
+  /** Shared seller-console passcode (≥ 12 chars). Optional: without it /seller and /api/seller/* are 404. */
+  sellerConsolePasscode?: string;
 }
 
 type RawEnv = Record<string, string | undefined>;
@@ -82,6 +84,8 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
   const email = raw.PAYPAL_SANDBOX_BUYER_EMAIL?.trim();
   const webhookId = raw.PAYPAL_WEBHOOK_ID?.trim();
   const baseUrl = publicBaseUrl(raw);
+  const passcode = raw.SELLER_CONSOLE_PASSCODE?.trim();
+  if (passcode && passcode.length < 12) throw new Error('SELLER_CONSOLE_PASSCODE must be at least 12 characters');
   return {
     paypalApiBase: base,
     paypalClientId: required(raw, 'PAYPAL_CLIENT_ID'),
@@ -105,6 +109,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
     ...(email ? { sandboxBuyerEmail: email } : {}),
     ...(webhookId ? { paypalWebhookId: webhookId } : {}),
     ...(baseUrl ? { publicBaseUrl: baseUrl } : {}),
+    ...(passcode ? { sellerConsolePasscode: passcode } : {}),
   };
 }
 
