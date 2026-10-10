@@ -13,7 +13,9 @@ export type ReviewReason =
   | 'INVALID_CODE'
   | 'TOO_BROAD'
   | 'UNVERIFIED_EVIDENCE'
-  | 'INVALID_OUTPUT';
+  | 'INVALID_OUTPUT'
+  // seller answers (questions.ts): an answer rules out the proposed line
+  | 'ANSWER_CONTRADICTS';
 
 export interface ReviewDecision {
   needsReview: boolean;
