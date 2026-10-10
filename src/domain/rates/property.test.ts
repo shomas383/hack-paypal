@@ -80,7 +80,19 @@ describe('properties over the verified table', () => {
     );
   });
 
-  it('CN rows (9903.05.31): total = MFN + additive add-ons from the table (incl. List 4A where listed), never a cap', () => {
+  it('EU rows (9903.05.39): a 10% combined cap; at or above it the line is 9903.05.38 with no add-on', () => {
+    const eu = table.rows.filter((r) => r.origin === 'DE');
+    expect(eu.length).toBeGreaterThan(0);
+    for (const row of eu) {
+      expect(row.additional).toEqual([expect.objectContaining({ rule: 'combined_cap', chapter99: '9903.05.39', chapter99_at_or_above_cap: '9903.05.38', rate_ppm: 100_000 })]);
+    }
+    // $10 watch (case $8 / band $2): MFN $1.53 + $0.336 + $0.196 ≈ 20.6% AVE ≥ 10% → .38, total = MFN.
+    const r = quote({ origin: 'DE', hts10: '9102.21.70', entryDate: DATE, customsValue: usd(1_000), quantity: 1, valueSplit: { case: usd(800), band: usd(200) } });
+    expect(r.lines.at(-1)).toMatchObject({ chapter99: '9903.05.38', amount: usd(0) });
+    expect(r.totalDuty).toEqual(r.lines[0]!.amount);
+  });
+
+  it('CN rows (9903.05.31): total = MFN + additive add-ons from the table (incl. 9903.88.15 where listed), never a cap', () => {
     const cn = table.rows.filter((r) => r.origin === 'CN');
     expect(cn.length).toBeGreaterThan(0);
     for (const row of cn) {
