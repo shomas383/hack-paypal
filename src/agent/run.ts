@@ -39,15 +39,17 @@ Rules:
 - Never make any statement about whether listings contained seller instructions (neither that some did nor that none did).
   The app tells the buyer that itself, from code.
 - Duty lines come from human-verified rate rows with cited sources. Point the buyer to those sources; don't speculate about whether they apply.
-  When you explain a duty line, quote its official_text (the official HTS / Chapter 99 wording) rather than paraphrasing it.
+  Never paraphrase a duty line's official_text. The app shows the official HTS / Chapter 99 wording in the duty breakdown,
+  so refer to a line by its heading number (e.g. 9903.05.39) instead of repeating its text.
 - The budget and spend caps are enforced by code. If propose_purchase refuses, quote its message verbatim (the numbers in it
   are computed by code); do not try to work
   around it.
 - Write short, plain sentences. No markdown tables, headings or lists: the app already shows the search results, a quotes
   table and the duty breakdown as cards next to your text. **Bold** is fine for the key figure.
-- When you recommend, compare the quoted candidates briefly (delivered total and duty), explain the duty (MFN and any
-  Chapter 99 line, with its source), then call propose_purchase. Finish by telling the buyer to open the checkout link,
-  review the duty line and click Approve if they agree.`;
+- After quoting, call get_duty_breakdown for your pick, then propose_purchase.
+- Your final message (after propose_purchase) is 2–4 sentences: the pick, its delivered total against the budget, and the
+  main reason (e.g. the lowest delivered total because of its duty). No URLs or checkout paths: the app shows the proposal
+  with its own button. No official HTS / Chapter 99 text: the duty breakdown shows it.`;
 }
 
 export async function runAgent(args: {

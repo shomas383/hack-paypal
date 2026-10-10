@@ -1,5 +1,5 @@
-// DEV ONLY: replays the recorded live agent run (src/agent/__fixtures__/live-run-de-2026-10-10.ndjson, `pnpm agent:live`
-// on 2026-10-10) as the same NDJSON stream /api/agent sends, so design QA and /dev/states need no model calls.
+// DEV ONLY: replays the recorded live agent run (src/agent/__fixtures__/live-run-de-2026-10-10-short-final.ndjson, `pnpm agent:live`
+// on 2026-10-10 with the 2–4 sentence final-message prompt) as the same NDJSON stream /api/agent sends, so design QA and /dev/states need no model calls.
 // Production → 404 (devToolsEnabled). Query: ?delay=<ms between events, default 30> &hold=<emit N events, then keep the
 // stream open: a frozen "streaming" state> &fail=<emit N events, then an error event and close>.
 import { readFileSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { devToolsEnabled } from '@/server/devOnly';
 
 export const dynamic = 'force-dynamic';
 
-const FIXTURE = join(process.cwd(), 'src', 'agent', '__fixtures__', 'live-run-de-2026-10-10.ndjson');
+const FIXTURE = join(process.cwd(), 'src', 'agent', '__fixtures__', 'live-run-de-2026-10-10-short-final.ndjson');
 
 const int = (v: string | null, d: number) => (v !== null && /^\d+$/.test(v) ? Number(v) : d);
 

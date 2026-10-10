@@ -41,7 +41,7 @@ describe('runAgent — the tool loop (mock model)', () => {
       { tool: { name: 'get_landed_cost_quote', input: () => ({ listingId: 'L-P03' }) } },
       { tool: { name: 'get_duty_breakdown', input: (p) => ({ quoteId: quoteIdFor('L-P03')(p) }) } },
       { tool: { name: 'propose_purchase', input: (p) => ({ quoteId: quoteIdFor('L-P03')(p), reasoning: 'Only automatic diver watch within budget.' }) } },
-      { text: 'Open the checkout link, review the duty line and click Approve if you agree.' },
+      { text: 'I recommend L-P03 at $362.50 delivered, within your $400.00 budget. Review the duty lines and approve if you agree.' },
     ]);
     expect(events[0]).toEqual({ type: 'budget', budget: '$400.00' });
     expect(events.filter((e) => e.type === 'tool-call').map((e) => (e as { name: string }).name)).toEqual(['search_listings', 'get_landed_cost_quote', 'get_duty_breakdown', 'propose_purchase']);
