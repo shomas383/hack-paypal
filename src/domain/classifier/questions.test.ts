@@ -14,7 +14,7 @@ const LINES: HtsLine[] = [
 ];
 
 describe('buildQuestions (from the official chains of the chosen candidates; never from the model)', () => {
-  it('asks at the first level where the chosen candidates differ; options are the official texts + "None of these"', () => {
+  it('asks at the first level where the chosen candidates differ; options are the official texts (no "None of these")', () => {
     const qs = buildQuestions(LINES, ['9102.21.70', '9102.21.30']);
     expect(qs.choices).toEqual([
       {
@@ -106,17 +106,24 @@ describe('applySellerAnswers (routing reruns in code)', () => {
     expect(r.suggested).toBe('9102.21.30');
   });
 
-  it('"None of these" or "one of the excluded lines applies" → ANSWER_CONTRADICTS', () => {
-    expect(applySellerAnswers(qs, { 'level-2': 'none' }, null, ['9102.21.70', '9102.21.90', '9102.21.30'], []).reasons).toEqual(['ANSWER_CONTRADICTS']);
+  it('"one of the excluded lines applies" → ANSWER_CONTRADICTS', () => {
     expect(applySellerAnswers(qs, { 'level-2': 'o-0', 'level-3': 'o-0' }, false, ['9102.21.70', '9102.21.90', '9102.21.30'], []).reasons).toEqual(['ANSWER_CONTRADICTS']);
+  });
+
+  it('"Not sure" is no answer: nothing is recorded for it and MISSING_ATTRIBUTES stays open', () => {
+    // The seller answered level-2 and was not sure at level-3 (no entry for it).
+    const r = applySellerAnswers(qs, { 'level-2': 'o-0' }, true, ['9102.21.70', '9102.21.90', '9102.21.30'], [...base]);
+    expect(r.reasons).toEqual([...base]);
+    expect(r.needsReview).toBe(true);
   });
 
   it('partial answers never clear a reason', () => {
     expect(applySellerAnswers(qs, { 'level-2': 'o-0' }, null, ['9102.21.70', '9102.21.90', '9102.21.30'], [...base]).reasons).toEqual([...base]);
   });
 
-  it('unknown question or option ids are rejected', () => {
+  it('unknown question or option ids are rejected; "None of these" is not an answer (the official siblings are exhaustive)', () => {
     expect(() => applySellerAnswers(qs, { 'level-9': 'o-0' }, null, ['9102.21.70'], [])).toThrow(/unknown question/);
     expect(() => applySellerAnswers(qs, { 'level-2': 'o-7' }, null, ['9102.21.70'], [])).toThrow(/unknown option/);
+    expect(() => applySellerAnswers(qs, { 'level-2': 'none' }, null, ['9102.21.70'], [])).toThrow(/unknown option/);
   });
 });
