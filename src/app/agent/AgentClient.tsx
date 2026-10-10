@@ -3,11 +3,11 @@
 // /agent — the buyer agent UI (SPEC §4.4, docs/design/wireframes.md §1). Every number comes from a tool result (stored
 // quotes computed by the rate engine) or from code (within/over budget, the insight line, the completion summary); the
 // agent's streamed text is shown as text only. The seller-instructions notice is generated here from the search flags
-// (instructionNotice), never by the model. The agent can only PREPARE a purchase: approving and paying happen at checkout.
+// (withheldNotice over the whole catalog), never by the model. The agent can only PREPARE a purchase: approving and paying happen at checkout.
 import { Fragment, useState } from 'react';
 import { parseBudgetField, parseDeliveredBudget } from '@/domain/agent/checks';
 import { runSummary, type QuoteView } from '@/domain/agent/insight';
-import { instructionNotice } from '@/domain/agent/instructionNotice';
+import { withheldNotice } from '@/domain/agent/instructionNotice';
 import { usd } from '@/domain/money/money';
 import { formatUsd } from '@/lib/money';
 import { Button } from '@/ui/Button';
@@ -27,8 +27,8 @@ type SearchResult = { listingId: string; origin: string; goods: string; shipping
 
 type Item =
   | { kind: 'text'; text: string }
-  | { kind: 'search'; id: string; query: string; results?: SearchResult[]; error?: string }
-  | { kind: 'quotes'; rows: QuoteRow[] }
+  | { kind: 'search'; id: string; query: string; results?: SearchResult[]; catalogSize?: number; withheld?: number; error?: string }
+  | { kind: 'quotes'; rows: QuoteRow[]; pendingCompare?: string | undefined }
   | { kind: 'breakdown'; id: string; out?: Json; error?: string }
   | { kind: 'proposal'; id: string; reasoning: string; out?: Json; error?: string }
   | { kind: 'other'; id: string; name: string; out?: unknown; error?: string };
@@ -100,7 +100,12 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
         case 'tool-call': {
           const input = (e.input ?? {}) as Json;
           if (e.name === 'search_listings') next.push({ kind: 'search', id, query: String(input.query ?? '') });
-          else if (e.name === 'get_landed_cost_quote') {
+          else if (e.name === 'compare_landed_costs') {
+            // The comparison's rows arrive with its result; until then the quotes step shows as running.
+            const qi = next.findIndex((x) => x.kind === 'quotes');
+            if (qi >= 0) next[qi] = { ...(next[qi] as Extract<Item, { kind: 'quotes' }>), pendingCompare: id };
+            else next.push({ kind: 'quotes', rows: [], pendingCompare: id });
+          } else if (e.name === 'get_landed_cost_quote') {
             const qi = next.findIndex((x) => x.kind === 'quotes');
             const row: QuoteRow = { id, listingId: String(input.listingId ?? '') };
             if (qi >= 0) {
@@ -119,14 +124,23 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
           for (let i = 0; i < next.length; i++) {
             const it = next[i]!;
             if (it.kind === 'quotes') {
+              if (it.pendingCompare === id) {
+                // compare_landed_costs: one row per compared listing (already sorted by delivered total in code).
+                const compared = ((out?.compared ?? []) as Json[]).map((o, k) => ({ id: `${id}-${k}`, listingId: String(o.listingId), out: { listingId: String(o.listingId), ...o } as QuoteRow['out'] }));
+                const failed = err ?? (out?.error ? String(out.error) : undefined);
+                next[i] = { kind: 'quotes', rows: [...it.rows, ...compared, ...(failed ? [{ id, listingId: '(comparison)', error: failed }] : [])] };
+                continue;
+              }
               const ri = it.rows.findIndex((r) => r.id === id);
               if (ri >= 0) {
                 const rows = [...it.rows];
-                rows[ri] = { ...rows[ri]!, ...(out ? { out: { listingId: rows[ri]!.listingId, ...out } as QuoteRow['out'] } : {}), ...(err ? { error: err } : {}) };
-                next[i] = { kind: 'quotes', rows };
+                // A refused single quote (listing not shown in a search) is a failed row with the code's message.
+                const refused = out?.refused ? String(out.refused) : undefined;
+                rows[ri] = { ...rows[ri]!, ...(out && !refused ? { out: { listingId: rows[ri]!.listingId, ...out } as QuoteRow['out'] } : {}), ...(err || refused ? { error: err ?? refused } : {}) };
+                next[i] = { ...it, rows };
               }
             } else if ('id' in it && it.id === id) {
-              if (it.kind === 'search') next[i] = { ...it, ...(out ? { results: (out.results ?? []) as SearchResult[] } : {}), ...(err ? { error: err } : {}) };
+              if (it.kind === 'search') next[i] = { ...it, ...(out ? { results: (out.results ?? []) as SearchResult[], catalogSize: Number(out.catalog_size ?? 0), withheld: Number(out.withheld_instructions ?? 0) } : {}), ...(err ? { error: err } : {}) };
               else next[i] = { ...it, ...(out ? { out } : {}), ...(err ? { error: err } : {}) } as Item;
             }
           }
@@ -268,14 +282,15 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
               );
             }
             if (it.kind === 'search') {
-              const matching = it.results?.filter((r) => r.match_score > 0) ?? [];
-              const notice = it.results ? instructionNotice(it.results) : null;
+              // Rendered exactly as the tool returned it (the tool returns only matches; no second filter here).
+              const matching = it.results ?? [];
+              const notice = it.results ? withheldNotice(it.withheld) : null;
               return (
                 <ToolCallStep
                   key={i}
                   state={it.error ? 'failed' : it.results ? 'done' : 'running'}
                   title={<>Searched listings for &ldquo;{it.query}&rdquo;</>}
-                  meta={it.results ? `${matching.length} of ${it.results.length} match` : 'Searching…'}
+                  meta={it.results ? `${matching.length} of ${it.catalogSize || matching.length} match` : 'Searching…'}
                 >
                   {it.error ? <p className={s.failed}>This step failed: {it.error}</p> : null}
                   {it.results ? (
@@ -315,13 +330,13 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
               );
             }
             if (it.kind === 'quotes') {
-              const pending = it.rows.filter((r) => !r.out && !r.error).length;
+              const pending = it.rows.filter((r) => !r.out && !r.error).length + (it.pendingCompare ? 1 : 0);
               const version = it.rows.find((r) => r.out)?.out as Json | undefined;
               return (
                 <ToolCallStep
                   key={i}
                   state={pending ? 'running' : it.rows.some((r) => r.error) ? 'failed' : 'done'}
-                  title={`Quoted ${it.rows.length} ${it.rows.length === 1 ? 'listing' : 'listings'}`}
+                  title={it.pendingCompare && !it.rows.length ? 'Comparing landed costs…' : `Quoted ${it.rows.length} ${it.rows.length === 1 ? 'listing' : 'listings'}`}
                   meta={version?.rate_version ? `rate version ${String(version.rate_version)}` : 'Quoting…'}
                 >
                   <QuotesTable rows={it.rows} pending={0} />

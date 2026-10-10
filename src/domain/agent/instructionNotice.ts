@@ -1,10 +1,14 @@
 // Statements about seller instructions come ONLY from code (the search flags), never from the model. Run 3 showed the
 // model claiming "None of these listings contained any instructions" while the search had flagged L-T-INJ.
 
-/** The /agent notice, generated from search_listings' seller_text_contains_instructions flags (null when none). */
+/** The /agent notice from a count computed in code (search_listings' withheld_instructions, over the whole catalog). */
+export function withheldNotice(count: number | undefined): string | null {
+  return count && count > 0 ? `${count} listing(s) contained seller instructions; withheld.` : null;
+}
+
+/** The same notice from per-result flags (results that were returned). */
 export function instructionNotice(results: { seller_text_contains_instructions?: boolean }[]): string | null {
-  const n = results.filter((r) => r.seller_text_contains_instructions === true).length;
-  return n > 0 ? `${n} listing(s) contained seller instructions; withheld.` : null;
+  return withheldNotice(results.filter((r) => r.seller_text_contains_instructions === true).length);
 }
 
 /** Sentences in the agent's text that make any claim about seller/listing instructions (must be empty). */

@@ -1,5 +1,7 @@
-// DEV ONLY: replays the recorded live agent run (src/agent/__fixtures__/live-run-de-2026-10-10-short-final.ndjson, `pnpm agent:live`
-// on 2026-10-10 with the 2–4 sentence final-message prompt) as the same NDJSON stream /api/agent sends, so design QA and /dev/states need no model calls.
+// DEV ONLY: replays an agent run (src/agent/__fixtures__/replay-de-compare.ndjson) as the same NDJSON stream /api/agent
+// sends, so design QA, /dev/states and the replay e2e need no model calls. The fixture is the 2026-10-10 live run
+// (`pnpm agent:live`, same quotes and text) adapted to the current tool shapes: search_listings returns only matches plus
+// the whole-catalog withheld count, and the four single quotes are one compare_landed_costs call.
 // Production → 404 (devToolsEnabled). Query: ?delay=<ms between events, default 30> &hold=<emit N events, then keep the
 // stream open: a frozen "streaming" state> &fail=<emit N events, then an error event and close>.
 import { readFileSync } from 'node:fs';
@@ -8,7 +10,7 @@ import { devToolsEnabled } from '@/server/devOnly';
 
 export const dynamic = 'force-dynamic';
 
-const FIXTURE = join(process.cwd(), 'src', 'agent', '__fixtures__', 'live-run-de-2026-10-10-short-final.ndjson');
+const FIXTURE = join(process.cwd(), 'src', 'agent', '__fixtures__', 'replay-de-compare.ndjson');
 
 const int = (v: string | null, d: number) => (v !== null && /^\d+$/.test(v) ? Number(v) : d);
 
