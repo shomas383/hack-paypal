@@ -28,7 +28,16 @@ export function SourceCitation({
           {sources.join('; ')}
         </p>
       ) : null}
-      {meta.length ? <p className={s.meta}>{meta.join(' · ')}</p> : null}
+      {meta.length ? (
+        <p className={s.meta}>
+          {meta.map((m, i) => (
+            <span key={i} className={s.metaPart}>
+              {i ? ' · ' : ''}
+              {m}
+            </span>
+          ))}
+        </p>
+      ) : null}
     </div>
   );
 }

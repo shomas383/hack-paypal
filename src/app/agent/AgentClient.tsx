@@ -48,6 +48,19 @@ function Bold({ text }: { text: string }) {
 
 const budgetText = (minor: number) => formatUsd(usd(BigInt(minor)));
 
+const STOPPED = '…(stopped)';
+
+/** When a run stops early, the last (partial) agent text says so instead of ending mid-sentence. */
+function markStopped(items: Item[]): Item[] {
+  const i = items.map((it) => it.kind).lastIndexOf('text');
+  if (i < 0) return items;
+  const it = items[i] as Extract<Item, { kind: 'text' }>;
+  if (it.text.endsWith(STOPPED)) return items;
+  const next = [...items];
+  next[i] = { kind: 'text', text: `${it.text.trimEnd()}${STOPPED}` };
+  return next;
+}
+
 export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) {
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [budget, setBudget] = useState(() => {
@@ -121,7 +134,7 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
         }
         case 'error':
           setError(String(e.message));
-          break;
+          return markStopped(next);
         case 'done':
           setDone(e as unknown as Done);
           break;
@@ -161,6 +174,7 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
+      setItems(markStopped);
     } finally {
       setRunning(false);
     }
@@ -181,28 +195,13 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
         <Field id="msg" label="What are you looking for?">
           <Textarea data-testid="agent-message" value={message} onChange={(e) => onMessage(e.target.value)} disabled={running} rows={2} />
         </Field>
-        <div className={s.budgetRow}>
-          <Field
-            id="budget"
-            label="Budget, delivered (USD)"
-            prefix="$"
-            error={budgetError}
-            className={s.budgetField}
-          >
-            <Input
-              data-testid="agent-budget"
-              inputMode="decimal"
-              value={budget}
-              disabled={running}
-              onChange={(e) => {
-                setBudget(e.target.value);
-                setBudgetEdited(true);
-                setConfirmed(null);
-              }}
-            />
-          </Field>
-          <div className={s.budgetAction}>
-            {isConfirmed ? (
+        <Field
+          id="budget"
+          label="Budget, delivered (USD)"
+          prefix="$"
+          error={budgetError}
+          after={
+            isConfirmed ? (
               <span className={s.confirmedRow}>
                 <StatusBadge tone="success" data-testid="agent-budget-confirmed">
                   Budget confirmed: {budgetText(budgetMinor!)} delivered
@@ -215,9 +214,21 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
               <Button data-testid="agent-confirm-budget" disabled={budgetMinor === null || running} onClick={() => setConfirmed(budget)}>
                 Confirm budget
               </Button>
-            )}
-          </div>
-        </div>
+            )
+          }
+        >
+          <Input
+            data-testid="agent-budget"
+            inputMode="decimal"
+            value={budget}
+            disabled={running}
+            onChange={(e) => {
+              setBudget(e.target.value);
+              setBudgetEdited(true);
+              setConfirmed(null);
+            }}
+          />
+        </Field>
         <p className={s.hint}>
           {budgetMinor === null
             ? "Enter a budget to continue. The agent can't run without one."

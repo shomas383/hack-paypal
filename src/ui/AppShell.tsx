@@ -25,8 +25,10 @@ export function AppShell({ children, width = 'app', current }: { children: React
           </nav>
         </div>
       </header>
-      <main id="main" className={`${s.main} ${width === 'checkout' ? s.narrow : ''}`}>
-        {children}
+      {/* One container for every route: the wordmark and the content share the left edge. Checkout is a narrower
+          column inside it, left-aligned (not centred). */}
+      <main id="main" className={s.main}>
+        {width === 'checkout' ? <div className={s.narrow}>{children}</div> : children}
       </main>
     </>
   );

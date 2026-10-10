@@ -80,4 +80,5 @@
 
 .narrow {
   max-width: var(--w-checkout);
+  margin: 0;
 }

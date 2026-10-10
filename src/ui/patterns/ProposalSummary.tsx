@@ -48,7 +48,7 @@ export function ProposalSummary({
         Proposed purchase, not yet approved
       </h2>
       <p className={s.item}>
-        <span className={s.mono}>{listingId}</span>
+        <span className={s.id}>{listingId}</span>
         {origin ? ` (${origin})` : ''}
         {title ? ` · ${title}` : ''}
       </p>

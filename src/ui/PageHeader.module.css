@@ -20,5 +20,5 @@
 
 .lead {
   color: var(--text-muted);
-  max-width: var(--w-prose);
+  max-width: var(--measure);
 }

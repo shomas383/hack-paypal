@@ -16,6 +16,20 @@ export function splitSources(sourceRef: string): string[] {
   return refs.split(';').map((s) => s.trim()).filter(Boolean);
 }
 
+/**
+ * The base HTS line's official description chain (HTS 2026 Rev. 20 export), every level verbatim — never abbreviated or
+ * paraphrased — with the trailing ":" of each level removed, joined with " › ". Null when there is no chain.
+ */
+export function officialChain(levels: readonly string[] | undefined): string | null {
+  const parts = (levels ?? []).map((l) => l.trim().replace(/:$/, '')).filter(Boolean);
+  return parts.length ? parts.join(' › ') : null;
+}
+
+/** Same, from the agent tool's official_text (levels joined with " > "). */
+export function officialChainFromText(text: string | null | undefined): string | null {
+  return text ? officialChain(text.split(' > ')) : null;
+}
+
 const POLICY: Record<string, string> = {
   NO_APPROVAL: 'there was no recorded approval',
   APPROVAL_MISMATCH: 'the approved amount did not match the order',

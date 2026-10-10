@@ -10,10 +10,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.mono {
-  font-family: var(--font-mono);
-}
-
 .sep {
   color: var(--text-muted);
 }

@@ -88,6 +88,7 @@
   --w-app: 1200px;
   --w-checkout: 720px;
   --w-prose: 680px;
+  --measure: 68ch; /* prose line length inside full-width regions */
   --gutter: 16px;
 
   /* Motion */

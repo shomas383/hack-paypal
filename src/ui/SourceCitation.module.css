@@ -5,7 +5,7 @@
   font-size: var(--text-13);
   line-height: var(--leading-13);
   color: var(--text-muted);
-  max-width: var(--w-prose);
+  max-width: var(--measure);
 }
 
 .official {
@@ -21,4 +21,9 @@
 .meta {
   font-size: var(--text-12);
   line-height: var(--leading-12);
+}
+
+/* Each part (e.g. "verified 2026-10-08") stays on one line. */
+.metaPart {
+  white-space: nowrap;
 }

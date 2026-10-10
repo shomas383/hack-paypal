@@ -22,8 +22,7 @@
   color: var(--text-muted);
 }
 
-.mono {
-  font-family: var(--font-mono);
+.id {
   color: var(--text);
 }
 

@@ -1,5 +1,6 @@
+/* Full width of the step body: amounts end at the same right edge as the quotes table. */
 .breakdown {
-  max-width: var(--w-prose);
+  width: 100%;
 }
 
 .lines {

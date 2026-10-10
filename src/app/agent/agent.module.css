@@ -1,6 +1,7 @@
-/* /agent — task-first, no cards: hierarchy from type, spacing and 1 px rules (docs/design/brief.md). */
+/* /agent — task-first, no cards: hierarchy from type, spacing and 1 px rules (docs/design/brief.md).
+   ONE content width: every region (form, steps, tables, insight, breakdown, proposal, dividers) spans the page container,
+   so rules and money columns end at the same right edge. Only prose is held to --measure. */
 .page {
-  max-width: calc(var(--w-app) * 0.8);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
@@ -12,39 +13,17 @@
   gap: var(--space-4);
   padding-bottom: var(--space-6);
   border-bottom: var(--hairline) solid var(--border);
-  max-width: var(--w-prose);
 }
 
-.budgetRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-3) var(--space-4);
-}
-
-.budgetField {
-  flex: 0 1 12rem;
-}
-
-.budgetAction {
-  /* aligns with the input: label line + its gap */
-  padding-top: calc(var(--leading-14) + var(--space-1));
-  min-height: var(--control-h);
-  display: flex;
-  align-items: center;
-}
-
-@media (max-width: 479px) {
-  .budgetAction {
-    padding-top: 0;
-  }
+.request > * {
+  max-width: var(--measure);
 }
 
 .confirmedRow {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
-  min-height: var(--control-h);
+  gap: var(--space-1) var(--space-2);
 }
 
 .runRow {
@@ -65,7 +44,7 @@
   align-items: flex-start;
   gap: var(--space-2);
   color: var(--danger);
-  max-width: var(--w-prose);
+  max-width: var(--measure);
 }
 
 .log {
@@ -78,7 +57,6 @@
 .textItem {
   padding: var(--space-4) 0;
   border-top: var(--hairline) solid var(--border);
-  max-width: var(--w-prose);
 }
 
 .textItem + .textItem {
@@ -96,6 +74,7 @@
 }
 
 .text {
+  max-width: var(--measure);
   white-space: pre-wrap;
   font-size: var(--text-14);
   line-height: var(--leading-16);
@@ -143,6 +122,12 @@
 
 .table tbody th {
   font-weight: var(--weight-regular);
+}
+
+/* The last column ends on the shared right edge (no trailing padding). */
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
 }
 
 .num {

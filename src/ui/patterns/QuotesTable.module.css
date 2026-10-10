@@ -40,6 +40,12 @@
   font-weight: var(--weight-regular);
 }
 
+/* The last column ends on the shared right edge (no trailing padding). */
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+
 .num {
   text-align: right !important;
   font-variant-numeric: tabular-nums;

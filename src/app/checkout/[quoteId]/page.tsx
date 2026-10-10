@@ -7,7 +7,7 @@ import { serverEnv } from '@/server/env';
 import { currentCh99, currentHtsIndex } from '@/server/hts';
 import { readSessionId } from '@/server/session';
 import { AppShell } from '@/ui/AppShell';
-import { dutyLineLabel, splitSources } from '@/ui/dutyText';
+import { dutyLineLabel, officialChain, splitSources } from '@/ui/dutyText';
 import { LocalTime } from '@/ui/LocalTime';
 import { PageHeader } from '@/ui/PageHeader';
 import { LandedCostLedger } from '@/ui/patterns/LandedCostLedger';
@@ -63,8 +63,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ quote
         lines={q.lines.map((l) => ({
           label: dutyLineLabel(l, q.hts10),
           amount: usd(BigInt(l.amountMinor)),
-          // Official wording, verbatim from the HTS 2026 Rev. 20 export (Ch. 99 heading, or the classified line).
-          officialText: (l.chapter99 ? currentCh99().headings[l.chapter99] : currentHtsIndex().chains.get(q.hts10)?.at(-1)) ?? null,
+          // Official wording, verbatim from the HTS 2026 Rev. 20 export: the Ch. 99 heading, or the classified line's full chain.
+          officialText: (l.chapter99 ? currentCh99().headings[l.chapter99] : officialChain(currentHtsIndex().chains.get(q.hts10))) ?? null,
           sources: splitSources(l.sourceRef),
         }))}
         provenance={{ htsRevision: rateRow?.hts_revision, verifiedOn: rateRow?.verified_on, rateVersion: q.rateVersion }}

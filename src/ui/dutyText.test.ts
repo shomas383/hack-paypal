@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dutyLineLabel, policyReasonText, splitSources } from './dutyText';
+import { dutyLineLabel, officialChain, officialChainFromText, policyReasonText, splitSources } from './dutyText';
 
 describe('duty line display text (display only; amounts never pass through here)', () => {
   it('MFN line: "MFN · <hts> · <rate text>"', () => {
@@ -15,6 +15,22 @@ describe('duty line display text (display only; amounts never pass through here)
   it('sources: the refs after the heading, split on ";"', () => {
     expect(splitSources('9903.05.39 — U.S. note 52(k); CSMS #69326983')).toEqual(['U.S. note 52(k)', 'CSMS #69326983']);
     expect(splitSources('9102.21.70 General (HTS 2026 Rev. 20)')).toEqual(['9102.21.70 General (HTS 2026 Rev. 20)']);
+  });
+
+  it('description chain: official levels verbatim, trailing colons removed, joined with " › "', () => {
+    const chain = [
+      'Wrist watches, pocket watches and other watches, including stop watches, other than those of heading 9101:',
+      'Other wrist watches, whether or not incorporating a stop watch facility:',
+      'With automatic winding:',
+      'Having over 17 jewels in the movement:',
+      'With strap, band or bracelet of textile material or of base metal, whether or not gold- or silver-plated',
+    ];
+    const expected =
+      'Wrist watches, pocket watches and other watches, including stop watches, other than those of heading 9101 › Other wrist watches, whether or not incorporating a stop watch facility › With automatic winding › Having over 17 jewels in the movement › With strap, band or bracelet of textile material or of base metal, whether or not gold- or silver-plated';
+    expect(officialChain(chain)).toBe(expected);
+    // The agent tool sends the same chain joined with " > " (what the model quotes); the UI shows the same text.
+    expect(officialChainFromText(chain.join(' > '))).toBe(expected);
+    expect(officialChain([])).toBeNull();
   });
 
   it('policy reasons in plain words; unknown codes pass through', () => {
