@@ -19,6 +19,8 @@ next-env.d.ts
 coverage/
 playwright-report/
 test-results/
+# design QA screenshots (docs/design; reviewed locally, never committed)
+qa/
 
 # misc
 *.log
