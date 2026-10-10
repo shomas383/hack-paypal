@@ -5,8 +5,11 @@ import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { CURRENT_RATE_VERSION } from '../../src/domain/rates/current';
 
-// Every seeded listing except red-team fixtures is shown on /listings (the count follows the seed file).
-const SEEDED_VISIBLE = (JSON.parse(readFileSync('data/seed/listings.json', 'utf8')) as { listings: { test_fixture?: boolean }[] }).listings.filter((l) => !l.test_fixture).length;
+// Every seeded listing except red-team fixtures is shown on /listings (listings published from the seller console may add
+// more, so this checks each seeded id rather than a total).
+const SEEDED_VISIBLE = (JSON.parse(readFileSync('data/seed/listings.json', 'utf8')) as { listings: { id: string; test_fixture?: boolean }[] }).listings
+  .filter((l) => !l.test_fixture)
+  .map((l) => l.id);
 
 async function manual(popup: Page, why: string): Promise<void> {
   if (popup.isClosed()) return;
@@ -85,8 +88,9 @@ test.describe.configure({ mode: 'serial' });
 
 test('listings: every seeded (non-fixture) generic demo listing', async ({ page }) => {
   await page.goto('/listings');
-  expect(SEEDED_VISIBLE).toBe(8);
-  await expect(page.getByTestId('listings').locator('li')).toHaveCount(SEEDED_VISIBLE);
+  expect(SEEDED_VISIBLE).toHaveLength(8);
+  for (const id of SEEDED_VISIBLE) await expect(page.getByTestId(`listing-${id}`)).toBeVisible();
+  await expect(page.getByTestId('listing-L-T-INJ')).toHaveCount(0);
   await expect(page.getByText('flat $25.00 demo rate', { exact: false })).toBeVisible();
 });
 

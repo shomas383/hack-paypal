@@ -1,3 +1,38 @@
+import type { Tone } from './StatusBadge';
+
+const SHORT: Record<string, string> = {
+  LOW_CONFIDENCE: 'Low confidence',
+  MISSING_ATTRIBUTES: 'Missing attributes',
+  TOP2_DIFFER_6: 'Top two differ',
+  ORIGIN_UNKNOWN: 'Origin unknown',
+  MODEL_FLAGGED: 'Flagged for a check',
+  NO_CANDIDATES: 'No matching lines',
+  INVALID_CODE: 'Invalid code',
+  TOO_BROAD: 'Too broad',
+  UNVERIFIED_EVIDENCE: 'Unverified evidence',
+  INVALID_OUTPUT: 'Malformed answer',
+  ANSWER_CONTRADICTS: 'Answer contradicts',
+};
+
+/** Short label for the review-queue column. */
+export function reasonShort(code: string): string {
+  return SHORT[code] ?? code;
+}
+
+const STATUS: Record<string, { tone: Tone; text: string }> = {
+  CLASSIFYING: { tone: 'progress', text: 'Classifying' },
+  FAILED: { tone: 'danger', text: 'Failed' },
+  PENDING_REVIEW: { tone: 'warning', text: 'Needs review' },
+  AUTO_ACCEPTED: { tone: 'success', text: 'Auto-accepted' },
+  ACCEPTED: { tone: 'success', text: 'Accepted' },
+  OVERRIDDEN: { tone: 'info', text: 'Overridden' },
+  PUBLISHED: { tone: 'success', text: 'Published' },
+};
+
+export function classificationStatus(status: string): { tone: Tone; text: string } {
+  return STATUS[status] ?? { tone: 'neutral', text: status };
+}
+
 // Classification routing reasons (src/domain/classifier/review.ts) in plain words, with the run's own numbers.
 export function reasonText(code: string, ctx: { confidence: number | null; threshold: number; missing: string[] }): string {
   switch (code) {
