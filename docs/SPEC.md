@@ -207,10 +207,15 @@ AC:
 - Prompt example: "automatic diver watch under $400 delivered" (use generic names in the video — see HACKATHON.md). With
   "vintage" in the query the agent picks the only listing that claims an era (L-P03) and says so (live run, 2026-10-10).
 - Claude Opus 5.5 rejects forced `tool_choice` (`any`/`tool` → 400); use `auto` and name the tools in the system prompt.
-- Tools (built, `src/agent/tools.ts`; read and prepare only): `search_listings`, `get_landed_cost_quote(listingId)` (stored
-  quote via the rate engine), `get_duty_breakdown(quoteId)`, `propose_purchase(quoteId, reasoning)` (a PENDING proposal +
-  checkout link; budget and caps checked in code on the stored quote; not an approval), `get_order_status` (toolkit `get_order`,
-  this session's orders only). Comparing origins is done by quoting each candidate; no separate tool.
+- Tools (built, `src/agent/tools.ts`; read and prepare only): `search_listings(query)` (only matching listings, score then
+  id, plus `catalog_size` and the whole-catalog `withheld_instructions` count; /agent renders exactly this list),
+  `compare_landed_costs(query)` (the same query must have been searched; quotes the matches in search order, max 6, returns
+  them sorted by delivered total, over-budget rows included), `get_landed_cost_quote(listingId)` (stored quote via the rate
+  engine; refused for any id no search in the run returned), `get_duty_breakdown(quoteId)`, `propose_purchase(quoteId,
+  reasoning)` (a PENDING proposal + checkout link; budget and caps checked in code on the stored quote; not an approval),
+  `get_order_status` (toolkit `get_order`, this session's orders only). The model chooses the query, reads the breakdown,
+  explains and proposes; which listings are compared is decided by code (2026-10-10, after the production search/quote
+  mismatch).
 - PayPal Agent Toolkit 1.11.0: only `actions.orders.get` → `get_order`. Unit test asserts the tool list contains no
   approve/authorize/capture/void/refund/pay/create-order/dispute tool and no agent source imports a money-moving function.
 - Budget: the buyer-confirmed field (positive integer minor units), never from the model. "Delivered" = the stored quote total.

@@ -153,8 +153,12 @@ Polish backlog (Wk5, before the Nov 4 freeze):
 - Ledger: wider Listing column (titles are truncated at 1280).
 - Agent final message: still 5 sentences in production (agent:live WARN); awkward wording "with the extra charge under
   heading …" — tighten the prompt's final-message rule.
-- Agent search/quote mismatch (production 2026-10-10, investigated, fix proposed, not built): search_listings returns
-  zero-score listings to the model while /agent renders only match_score > 0, so the agent quoted a seller-published
-  Japanese-titled watch (L-C-bce3add4) that no rendered step showed, and dropped L-P03-B under the prompt's "at most 4".
+- Agent search/quote mismatch: DONE (2026-10-10, local) — search_listings returns only matches (+ whole-catalog withheld
+  count), get_landed_cost_quote refuses ids no search in the run returned, compare_landed_costs quotes all matches (max 6,
+  score then id) sorted by delivered total; agent:live checks quoted ⊆ searched, DE proposed, JP-B over-budget row.
+- Design note (not built): HTS-description matching for search. Match published listings on their official Rev 20
+  description chain (English, verbatim from the HTS index, no model translation) in addition to the title, so a seller who
+  lists in Japanese is found by a buyer agent searching in English (wanted for the video). Constraint: the demo query
+  "automatic diver watch under $400 delivered" must still return ≤ 6 listings (compare's cap) with DE (L-P14) as the pick.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
