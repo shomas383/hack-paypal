@@ -1,0 +1,15 @@
+.links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h);
+  font-weight: var(--weight-medium);
+}

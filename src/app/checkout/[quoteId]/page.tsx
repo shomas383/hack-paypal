@@ -1,11 +1,18 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { formatDisplay } from '@/domain/money/format';
 import { usd } from '@/domain/money/money';
+import { formatUsd } from '@/lib/money';
 import { CheckoutError, getCheckoutView } from '@/server/checkout';
 import { serverEnv } from '@/server/env';
 import { currentCh99, currentHtsIndex } from '@/server/hts';
 import { readSessionId } from '@/server/session';
+import { AppShell } from '@/ui/AppShell';
+import { dutyLineLabel, splitSources } from '@/ui/dutyText';
+import { LocalTime } from '@/ui/LocalTime';
+import { PageHeader } from '@/ui/PageHeader';
+import { LandedCostLedger } from '@/ui/patterns/LandedCostLedger';
 import { CheckoutClient } from './CheckoutClient';
+import s from './checkout.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,66 +27,63 @@ export default async function CheckoutPage({ params }: { params: Promise<{ quote
   }
   const { quote: q, rateRow } = view;
   const headings = q.lines.filter((l) => l.chapter99).map((l) => l.chapter99!);
-  const fmt = (m: bigint) => formatDisplay(usd(m));
+  const total = usd(q.totalMinor);
 
   return (
-    <main style={{ fontFamily: 'system-ui', maxWidth: 760, margin: '2rem auto', padding: '0 1rem' }}>
-      <p><a href="/listings">← Listings</a></p>
-      <h1>Landed cost</h1>
+    <AppShell width="checkout">
+      <PageHeader title="Review landed cost" back={<Link href="/listings">Listings</Link>} />
+
       {view.proposal ? (
-        <div data-testid="agent-proposal" role="note" style={{ border: '1px solid #9db4d6', background: '#f2f6fc', borderRadius: 8, padding: '0.6rem 0.8rem', margin: '0.5rem 0 1rem' }}>
-          <strong>Proposed by your agent.</strong> Delivered total {fmt(view.proposal.totalMinor)}, within your confirmed budget of{' '}
-          {fmt(view.proposal.budgetMinor)}. Review the duty lines below; approving and paying are yours to do.
-        </div>
+        <p data-testid="agent-proposal" role="note" className={s.banner}>
+          <strong>Proposed by your agent.</strong> Delivered total {formatUsd(usd(view.proposal.totalMinor))}, within your confirmed budget of{' '}
+          {formatUsd(usd(view.proposal.budgetMinor))}. Review the duty lines below. Approving and paying are up to you.
+        </p>
       ) : null}
-      <h2 data-testid="title">{q.title}</h2>
 
-      <table data-testid="breakdown" style={{ borderCollapse: 'collapse', width: '100%' }}>
-        <tbody>
-          <tr><td>Goods (customs value)</td><td data-testid="goods" style={{ textAlign: 'right' }}>{fmt(q.goodsMinor)}</td></tr>
-          <tr><td>Shipping (demo rate, not a carrier quote)</td><td data-testid="shipping" style={{ textAlign: 'right' }}>{fmt(q.shippingMinor)}</td></tr>
-          <tr data-testid="duty-line">
-            <td>
-              <strong>US import duty (est.)</strong>
-              <div style={{ fontSize: '0.85em' }}>
-                Origin {q.origin} · HTS <span data-testid="hts">{q.hts10}</span>
-                {rateRow?.component_reporting ? <span data-testid="component-reporting"> (component reporting, HTS Ch. 91 Stat. Note 1)</span> : null}
-                {' '}· Ch.99 <span data-testid="ch99">{headings.join(', ')}</span>
-              </div>
-              <ul data-testid="duty-detail" style={{ fontSize: '0.85em', margin: '0.25rem 0' }}>
-                {q.lines.map((l, i) => {
-                  // Official wording, verbatim from the HTS 2026 Rev. 20 export (Ch. 99 heading, or the classified line).
-                  const official = l.chapter99 ? currentCh99().headings[l.chapter99] : currentHtsIndex().chains.get(q.hts10)?.at(-1);
-                  return (
-                    <li key={i} data-testid="duty-line-item">
-                      <strong>{l.chapter99 ?? `HTS ${q.hts10}`}</strong>: {fmt(BigInt(l.amountMinor))} — {l.basis} · source: {l.sourceRef}
-                      {official ? <div data-testid="official-text" style={{ color: '#555' }}>“{official}”</div> : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            </td>
-            <td data-testid="duty" style={{ textAlign: 'right', verticalAlign: 'top' }}><strong>{fmt(q.dutyMinor)}</strong></td>
-          </tr>
-          <tr><td><strong>Total</strong></td><td data-testid="total" style={{ textAlign: 'right' }}><strong>{fmt(q.totalMinor)}</strong></td></tr>
-        </tbody>
-      </table>
+      <section className={s.item} aria-labelledby="item-title">
+        <h2 id="item-title" data-testid="title" className={s.itemTitle}>
+          {q.title}
+        </h2>
+        <p className={s.itemMeta}>
+          Origin {q.origin} · HTS <span data-testid="hts" className={s.mono}>{q.hts10}</span>
+          {rateRow?.component_reporting ? <span data-testid="component-reporting"> (component reporting, HTS Ch. 91 Stat. Note 1)</span> : null}
+        </p>
+      </section>
 
-      <p data-testid="disclaimer" style={{ fontSize: '0.85em' }}>
-        Estimated duties based on rate version <span data-testid="rate-version">{q.rateVersion}</span>
-        {rateRow ? ` (HTS ${rateRow.hts_revision}, verified ${rateRow.verified_on})` : ''}, sources:{' '}
-        {rateRow?.source_refs.map((s) => s.ref).join('; ') ?? q.rateRowId}. Not a customs ruling. Quote expires{' '}
-        {q.expiresAt.toISOString().slice(11, 16)} UTC.
+      <LandedCostLedger
+        goods={usd(q.goodsMinor)}
+        shipping={usd(q.shippingMinor)}
+        duty={usd(q.dutyMinor)}
+        total={total}
+        dutyMeta={
+          <>
+            Chapter 99: <span data-testid="ch99" className={s.mono}>{headings.join(', ')}</span>
+          </>
+        }
+        lines={q.lines.map((l) => ({
+          label: dutyLineLabel(l, q.hts10),
+          amount: usd(BigInt(l.amountMinor)),
+          // Official wording, verbatim from the HTS 2026 Rev. 20 export (Ch. 99 heading, or the classified line).
+          officialText: (l.chapter99 ? currentCh99().headings[l.chapter99] : currentHtsIndex().chains.get(q.hts10)?.at(-1)) ?? null,
+          sources: splitSources(l.sourceRef),
+        }))}
+        provenance={{ htsRevision: rateRow?.hts_revision, verifiedOn: rateRow?.verified_on, rateVersion: q.rateVersion }}
+      />
+
+      <p data-testid="disclaimer" className={s.disclaimer}>
+        Includes US import duty, estimated from verified rates and paid here at checkout (delivered duty paid). Not a customs ruling. Rate version{' '}
+        <span data-testid="rate-version">{q.rateVersion}</span>
+        {rateRow ? ` · HTS ${rateRow.hts_revision} · verified ${rateRow.verified_on}` : ''}. Quote expires at <LocalTime iso={q.expiresAt.toISOString()} />.
       </p>
 
       <CheckoutClient
         quoteId={q.id}
         clientId={serverEnv().publicPaypalClientId}
-        totalDisplay={fmt(q.totalMinor)}
-        orderCapDisplay={fmt(view.caps.perOrderMinor)}
+        totalDisplay={formatUsd(total)}
+        orderCapDisplay={formatUsd(usd(view.caps.perOrderMinor))}
         initiallyApproved={view.approved}
         initialOrder={view.order ? { status: view.order.status, captureId: view.order.captureId, reasons: view.order.policy?.reasons ?? [] } : null}
       />
-    </main>
+    </AppShell>
   );
 }

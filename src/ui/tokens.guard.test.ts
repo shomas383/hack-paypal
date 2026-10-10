@@ -7,14 +7,7 @@ import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = join(process.cwd(), 'src');
-const LEGACY = new Set<string>([
-  'src/app/agent/agent.module.css',
-  'src/app/agent/AgentClient.tsx',
-  'src/app/checkout/[quoteId]/page.tsx',
-  'src/app/checkout/[quoteId]/CheckoutClient.tsx',
-  'src/app/listings/page.tsx',
-  'src/app/page.tsx',
-]);
+const LEGACY = new Set<string>(['src/app/agent/agent.module.css', 'src/app/agent/AgentClient.tsx']);
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

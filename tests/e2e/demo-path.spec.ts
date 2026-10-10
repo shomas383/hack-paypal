@@ -1,8 +1,12 @@
 // Demo path (docs/DEMO.md 0:55–1:45, 2:15–2:45) end to end against the PayPal SANDBOX.
 // Buyer password: PAYPAL_SANDBOX_BUYER_PASSWORD in .env — never logged; traces/screenshots/video are off (playwright.config.ts).
 // Missing password or unmatched PayPal selectors → headed page.pause() so a human finishes the step.
+import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { CURRENT_RATE_VERSION } from '../../src/domain/rates/current';
+
+// Every seeded listing except red-team fixtures is shown on /listings (the count follows the seed file).
+const SEEDED_VISIBLE = (JSON.parse(readFileSync('data/seed/listings.json', 'utf8')) as { listings: { test_fixture?: boolean }[] }).listings.filter((l) => !l.test_fixture).length;
 
 async function manual(popup: Page, why: string): Promise<void> {
   if (popup.isClosed()) return;
@@ -79,9 +83,10 @@ async function approveInPopup(popup: Page): Promise<void> {
 
 test.describe.configure({ mode: 'serial' });
 
-test('listings: five generic demo listings', async ({ page }) => {
+test('listings: every seeded (non-fixture) generic demo listing', async ({ page }) => {
   await page.goto('/listings');
-  await expect(page.getByTestId('listings').locator('li')).toHaveCount(5);
+  expect(SEEDED_VISIBLE).toBe(8);
+  await expect(page.getByTestId('listings').locator('li')).toHaveCount(SEEDED_VISIBLE);
   await expect(page.getByText('flat $25.00 demo rate', { exact: false })).toBeVisible();
 });
 

@@ -14,7 +14,7 @@ const ICON: Record<Tone, IconName> = {
   progress: 'spinner',
 };
 
-export function StatusBadge({ tone, children, className, ...rest }: { tone: Tone; children: ReactNode; className?: string; 'data-testid'?: string }) {
+export function StatusBadge({ tone, children, className, ...rest }: { tone: Tone; children: ReactNode; className?: string | undefined; 'data-testid'?: string }) {
   return (
     <span {...rest} className={`${s.badge} ${s[tone]} ${className ?? ''}`}>
       <Icon name={ICON[tone]} />

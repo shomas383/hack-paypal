@@ -1,0 +1,34 @@
+.banner {
+  margin-bottom: var(--space-6);
+  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+  border-left: var(--rule-strong) solid var(--accent);
+  max-width: var(--w-prose);
+}
+
+.item {
+  margin-bottom: var(--space-6);
+}
+
+.itemTitle {
+  font-size: var(--text-20);
+  line-height: var(--leading-20);
+  font-weight: var(--weight-semibold);
+}
+
+.itemMeta {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: var(--leading-13);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.disclaimer {
+  margin-top: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: var(--leading-13);
+}

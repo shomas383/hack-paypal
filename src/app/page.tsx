@@ -1,9 +1,20 @@
+import Link from 'next/link';
+import { AppShell } from '@/ui/AppShell';
+import { PageHeader } from '@/ui/PageHeader';
+import s from './home.module.css';
+
 export default function Home() {
   return (
-    <main style={{ fontFamily: 'system-ui', maxWidth: 760, margin: '2rem auto', padding: '0 1rem' }}>
-      <h1>Landed</h1>
-      <p>Duty-aware checkout. Sandbox only — work in progress.</p>
-      <p><a href="/listings">Browse demo listings →</a></p>
-    </main>
+    <AppShell>
+      <PageHeader title="Landed" lead="Duty-aware checkout for cross-border purchases on PayPal. Sandbox only." />
+      <ul className={s.links}>
+        <li>
+          <Link href="/listings">Browse listings</Link>
+        </li>
+        <li>
+          <Link href="/agent">Shopping agent</Link>
+        </li>
+      </ul>
+    </AppShell>
   );
 }

@@ -181,6 +181,10 @@ table {
   border-collapse: collapse;
 }
 
+time {
+  white-space: nowrap;
+}
+
 :focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);

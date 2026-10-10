@@ -1,8 +1,15 @@
 'use client';
 // Approve (recorded) → PayPal v6 button → onApprove → server completes (authorize → policy → capture | void).
 // The browser never sends an amount: the order is built on the server from the stored quote.
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { loadCoreSdkScript } from '@paypal/paypal-js/sdk-v6';
+import { Button } from '@/ui/Button';
+import { policyReasonText } from '@/ui/dutyText';
+import { Icon } from '@/ui/Icon';
+import { Skeleton } from '@/ui/Skeleton';
+import { StatusBadge } from '@/ui/StatusBadge';
+import s from './checkout-client.module.css';
 
 interface Outcome {
   status: string;
@@ -19,6 +26,8 @@ interface Props {
   initialOrder: Outcome | null;
 }
 
+type Note = { kind: 'progress' | 'info' | 'error'; text: string; backLink?: boolean } | null;
+
 async function post<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body === undefined ? null : JSON.stringify(body) });
   const json = (await res.json()) as T & { error?: string };
@@ -26,22 +35,30 @@ async function post<T>(url: string, body?: unknown): Promise<T> {
   return json;
 }
 
+const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
 export function CheckoutClient(props: Props) {
   const [approved, setApproved] = useState(props.initiallyApproved);
+  const [approving, setApproving] = useState(false);
+  const [approvedAt, setApprovedAt] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(props.initialOrder);
-  const [status, setStatus] = useState('');
+  const [note, setNote] = useState<Note>(null);
+  const [sdkReady, setSdkReady] = useState(false);
   const [invoice, setInvoice] = useState<Record<string, string | null> | null>(null);
   const [invoicing, setInvoicing] = useState(false);
   const buttonHost = useRef<HTMLDivElement>(null);
 
   async function approve() {
-    setStatus('Recording approval…');
+    setApproving(true);
+    setNote(null);
     try {
       await post(`/api/quotes/${props.quoteId}/approve`);
       setApproved(true);
-      setStatus('Approved. Pay with PayPal to authorize the payment.');
+      setApprovedAt(new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date()));
     } catch (e) {
-      setStatus(`Approval refused: ${e instanceof Error ? e.message : String(e)}`);
+      setNote({ kind: 'error', text: `Approval refused. ${msg(e)}`, backLink: true });
+    } finally {
+      setApproving(false);
     }
   }
 
@@ -56,82 +73,144 @@ export function CheckoutClient(props: Props) {
       const sdk = await paypal.createInstance({ clientId: props.clientId, components: ['paypal-payments'] });
       const eligible = await sdk.findEligibleMethods();
       if (!eligible.isEligible('paypal')) {
-        setStatus('PayPal is not eligible in this browser.');
+        setNote({ kind: 'error', text: "PayPal isn't available in this browser. Try another browser or send a DDP invoice instead." });
         return;
       }
       const session = sdk.createPayPalOneTimePaymentSession({
         onApprove: async ({ orderId }) => {
-          setStatus('Buyer approved in PayPal — authorizing and running the policy gate…');
+          setNote({ kind: 'progress', text: 'Authorizing and running the policy checks…' });
           try {
             const r = await post<{ status: string; captureId: string | null; policy: { reasons: string[] } | null }>(`/api/orders/${orderId}/complete`);
             setOutcome({ status: r.status, captureId: r.captureId, reasons: r.policy?.reasons ?? [] });
-            setStatus('');
+            setNote(null);
           } catch (e) {
-            setStatus(`Completion failed: ${e instanceof Error ? e.message : String(e)}`);
+            setNote({ kind: 'error', text: `Completing the payment failed: ${msg(e)}. Nothing was captured; reload the page to check the order.` });
           }
         },
-        onCancel: () => setStatus('PayPal window closed — nothing was charged.'),
-        onError: (err) => setStatus(`PayPal error: ${err instanceof Error ? err.message : String(err)}`),
+        onCancel: () => setNote({ kind: 'info', text: 'PayPal window closed. Nothing was charged.' }),
+        onError: (err) => setNote({ kind: 'error', text: `PayPal reported an error: ${msg(err)}. Nothing was charged; try again.` }),
       });
       const button = document.createElement('paypal-button');
       button.setAttribute('data-testid', 'paypal-button');
       button.addEventListener('click', () => {
         // Don't await before start(): the popup needs the click's transient activation (PayPal v6 docs).
         const orderPromise = post<{ orderId: string }>(`/api/quotes/${props.quoteId}/paypal-order`);
-        session.start({ presentationMode: 'auto' }, orderPromise).catch((e: unknown) => setStatus(`PayPal start failed: ${String(e)}`));
+        session.start({ presentationMode: 'auto' }, orderPromise).catch((e: unknown) => setNote({ kind: 'error', text: `PayPal couldn't start: ${String(e)}. Nothing was charged; try again.` }));
       });
       host.replaceChildren(button);
-    })().catch((e: unknown) => setStatus(`PayPal SDK failed to load: ${String(e)}`));
+      setSdkReady(true);
+    })().catch((e: unknown) => setNote({ kind: 'error', text: `PayPal didn't load: ${String(e)}. Reload the page to try again.` }));
     return () => {
       cancelled = true;
       host.replaceChildren();
+      setSdkReady(false);
     };
   }, [approved, outcome?.status, props.clientId, props.quoteId]);
 
   async function sendInvoice() {
     if (invoicing) return;
     setInvoicing(true);
-    setStatus('Creating DDP invoice…');
+    setNote(null);
     try {
       setInvoice(await post<Record<string, string | null>>(`/api/quotes/${props.quoteId}/invoice`, {}));
-      setStatus('');
     } catch (e) {
-      setStatus(`Invoice failed: ${e instanceof Error ? e.message : String(e)}`);
+      setNote({ kind: 'error', text: `The invoice wasn't sent: ${msg(e)}.` });
     } finally {
       setInvoicing(false);
     }
   }
 
   return (
-    <section>
-      {!approved && (
-        <p>
-          <button type="button" data-testid="approve" onClick={approve}>
-            Approve purchase — {props.totalDisplay}
-          </button>{' '}
-          <span data-testid="spend-cap">Spend cap per order: {props.orderCapDisplay}</span>
+    <section className={s.actions} aria-label="Approve and pay">
+      {!approved && !outcome ? (
+        <div className={s.approveRow}>
+          <Button variant="primary" data-testid="approve" onClick={approve} loading={approving}>
+            Approve {props.totalDisplay} purchase
+          </Button>
+          <span data-testid="spend-cap" className={s.cap}>
+            Per-order cap: {props.orderCapDisplay}
+          </span>
+        </div>
+      ) : null}
+
+      {approved && !outcome ? (
+        <div className={s.pay}>
+          <StatusBadge tone="success">{approvedAt ? `Approved at ${approvedAt}.` : 'Approved.'} Pay with PayPal to authorize the payment.</StatusBadge>
+          <p className={s.payAmount}>You&rsquo;ll pay {props.totalDisplay} in the PayPal window.</p>
+          {!sdkReady ? <Skeleton width="100%" height="var(--touch-target)" className={s.paySkeleton} /> : null}
+          <div data-testid="paypal-button-container" ref={buttonHost} className={s.payHost} />
+        </div>
+      ) : null}
+
+      {outcome ? (
+        <div data-testid="outcome" className={s.outcome}>
+          {outcome.status === 'CAPTURED' ? (
+            <StatusBadge tone="success">
+              Payment <span data-testid="outcome-status">{outcome.status}</span> · {props.totalDisplay}
+            </StatusBadge>
+          ) : outcome.status === 'VOIDED' ? (
+            <StatusBadge tone="danger">
+              Payment <span data-testid="outcome-status">{outcome.status}</span>, nothing was charged.
+            </StatusBadge>
+          ) : (
+            <StatusBadge tone="neutral">
+              Payment <span data-testid="outcome-status">{outcome.status}</span>
+            </StatusBadge>
+          )}
+          {outcome.captureId ? (
+            <p className={s.small}>
+              Capture <code data-testid="capture-id">{outcome.captureId}</code>
+            </p>
+          ) : null}
+          <p className={s.small}>
+            {outcome.reasons.length ? (
+              <>
+                Policy: {outcome.reasons.map(policyReasonText).join('; ')} (<code data-testid="policy-reasons">{outcome.reasons.join(', ')}</code>).
+              </>
+            ) : (
+              'Policy: all checks passed.'
+            )}
+          </p>
+        </div>
+      ) : null}
+
+      {note?.kind === 'error' ? (
+        <div role="alert" className={s.error} data-testid="status">
+          <Icon name="x-circle" />
+          <span>
+            {note.text}
+            {note.backLink ? (
+              <>
+                {' '}
+                <Link href="/listings">Back to listings</Link>
+              </>
+            ) : null}
+          </span>
+        </div>
+      ) : (
+        <p role="status" className={s.status} data-testid="status">
+          {note ? note.text : ''}
         </p>
       )}
-      {approved && !outcome && <div data-testid="paypal-button-container" ref={buttonHost} style={{ maxWidth: 360 }} />}
-      {outcome && (
-        <div data-testid="outcome" style={{ border: '1px solid #999', padding: '0.75rem' }}>
-          Payment <strong data-testid="outcome-status">{outcome.status}</strong>
-          {outcome.captureId ? <> · capture <code data-testid="capture-id">{outcome.captureId}</code></> : null}
-          <div>Policy: {outcome.reasons.length ? <span data-testid="policy-reasons">{outcome.reasons.join(', ')}</span> : 'all checks passed'}</div>
-        </div>
-      )}
-      <p data-testid="status" aria-live="polite">{status}</p>
-      <hr />
-      <p>
-        <button type="button" data-testid="send-invoice" onClick={sendInvoice} disabled={invoicing}>Send DDP invoice instead</button>
-      </p>
-      {invoice && (
-        <div data-testid="invoice-result">
-          Invoice <code>{invoice.invoiceId}</code> · status <strong data-testid="invoice-status">{invoice.status}</strong> · total ${invoice.total}
-          {invoice.dutyLabel ? <div data-testid="invoice-duty">{invoice.dutyLabel}: ${invoice.dutyAmount}</div> : null}
-          {invoice.recipientViewUrl ? <div><a href={invoice.recipientViewUrl} target="_blank" rel="noreferrer">Buyer view</a></div> : null}
-        </div>
-      )}
+
+      <div className={s.invoice}>
+        <Button data-testid="send-invoice" onClick={sendInvoice} loading={invoicing}>
+          Send DDP invoice instead
+        </Button>
+        {invoice ? (
+          <div data-testid="invoice-result" className={s.small}>
+            Invoice <code>{invoice.invoiceId}</code> · status <strong data-testid="invoice-status">{invoice.status}</strong> · total ${invoice.total}
+            {invoice.dutyLabel ? <div data-testid="invoice-duty">{invoice.dutyLabel}: ${invoice.dutyAmount}</div> : null}
+            {invoice.recipientViewUrl ? (
+              <div>
+                <a href={invoice.recipientViewUrl} target="_blank" rel="noreferrer">
+                  Open the buyer&rsquo;s view of the invoice
+                </a>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
