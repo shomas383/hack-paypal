@@ -607,7 +607,7 @@ function main(): void {
     generated_from: { file: 'data/source/DDP_product_test_sheet_verify.xlsx', tab: 'Verify', sha256 },
     regime_notes: [
       'De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).',
-      'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. The HTS names no Section 301 action for note 52.',
+      'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983.',
       'China: 9903.88.15 (note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); 9903.88.16 (note 20(u)) is suspended.',
       'EU member states: 9903.05.39 (column 1 AVE < 10%) tops the total up to 10%; 9903.05.38 (≥ 10%) adds nothing; exemptions 9903.05.85–.92 and 9903.05.97 (note 52(j)(2)); AVE per note 52(k).',
       'IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',
