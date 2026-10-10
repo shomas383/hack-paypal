@@ -30,7 +30,7 @@ const quoteIdFor = (listingId: string) => (prompt: string) => {
 async function go(steps: Step[], budgetMinor = 40_000n) {
   const f = fakeDeps();
   const events: AgentEvent[] = [];
-  const done = await runAgent({ message: 'vintage automatic diver watch under $400 delivered', budgetMinor, sessionId: 's-1', model: scripted(steps), deps: f.deps, onEvent: (e) => void events.push(e) });
+  const done = await runAgent({ message: 'automatic diver watch under $400 delivered', budgetMinor, sessionId: 's-1', model: scripted(steps), deps: f.deps, onEvent: (e) => void events.push(e) });
   return { f, events, done };
 }
 

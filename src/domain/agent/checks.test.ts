@@ -3,14 +3,14 @@ import { checkProposal, looksLikeInstructions, parseBudgetField, parseDeliveredB
 
 describe('parseDeliveredBudget — pre-fills the budget field from the buyer message (the buyer confirms it)', () => {
   it('reads a qualified dollar amount', () => {
-    expect(parseDeliveredBudget('vintage automatic diver watch under $400 delivered')).toBe(40_000);
+    expect(parseDeliveredBudget('automatic diver watch under $400 delivered')).toBe(40_000);
     expect(parseDeliveredBudget('below $1,250.50 shipped')).toBe(125_050);
     expect(parseDeliveredBudget('a camera, max $99')).toBe(9_900);
     expect(parseDeliveredBudget('up to $ 300')).toBe(30_000);
   });
 
   it('returns null when there is no clear budget', () => {
-    expect(parseDeliveredBudget('vintage automatic diver watch')).toBeNull();
+    expect(parseDeliveredBudget('automatic diver watch')).toBeNull();
     expect(parseDeliveredBudget('a watch like the $400 one')).toBeNull(); // not qualified as a limit
   });
 });

@@ -16,7 +16,7 @@ describe('agent tools — read and prepare only; amounts from stored quotes; sel
     const { deps } = fakeDeps();
     const r = await run<{ results: { listingId: string; match_score: number; untrusted_seller_text: { description: string | null }; seller_text_contains_instructions: boolean }[] }>(
       buildAgentTools(ctx, deps).search_listings,
-      { query: 'vintage automatic diver watch' },
+      { query: 'automatic diver watch' },
     );
     expect(r.results[0]!.listingId).toMatch(/L-P03|L-BIG/);
     const inj = r.results.find((x) => x.listingId === 'L-T-INJ')!;

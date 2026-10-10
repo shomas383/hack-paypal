@@ -47,9 +47,9 @@ function Card({ n, title, children, className }: { n: number; title: string; chi
 }
 
 export function AgentClient() {
-  const [message, setMessage] = useState('vintage automatic diver watch under $400 delivered');
+  const [message, setMessage] = useState('automatic diver watch under $400 delivered');
   const [budget, setBudget] = useState(() => {
-    const m = parseDeliveredBudget('vintage automatic diver watch under $400 delivered');
+    const m = parseDeliveredBudget('automatic diver watch under $400 delivered');
     return m === null ? '' : (m / 100).toFixed(2);
   });
   const [budgetEdited, setBudgetEdited] = useState(false);

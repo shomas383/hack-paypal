@@ -22,7 +22,7 @@ function arg(name: string): string | undefined {
 }
 
 async function main() {
-  const message = process.argv.slice(2).find((a, i, all) => !a.startsWith('--') && !['--out', '--budget'].includes(all[i - 1] ?? '')) ?? 'vintage automatic diver watch under $400 delivered';
+  const message = process.argv.slice(2).find((a, i, all) => !a.startsWith('--') && !['--out', '--budget'].includes(all[i - 1] ?? '')) ?? 'automatic diver watch under $400 delivered';
   const budgetMinor = parseBudgetField(arg('--budget') ?? '400.00');
   if (budgetMinor === null) throw new Error('invalid --budget');
   const out = arg('--out');
