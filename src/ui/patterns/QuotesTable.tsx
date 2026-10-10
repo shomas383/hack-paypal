@@ -14,6 +14,52 @@ export interface QuoteRow {
   error?: string | undefined;
 }
 
+/**
+ * ≤ 640 px: one two-line row per quote, so Delivered and Budget are visible without scrolling. Line 1: listing, origin,
+ * delivered, budget status. Line 2 (muted): goods, shipping, duty. Same data and order as the table (which is hidden).
+ */
+function NarrowQuotes({ rows }: { rows: QuoteRow[] }) {
+  return (
+    <div className={s.narrow}>
+      <p className={s.caption}>Landed-cost quotes, sorted by delivered total (USD)</p>
+      <ul className={s.cards}>
+        {rows.map((r) => {
+          const o = r.out;
+          if (!o || r.error || o.unsupported) {
+            return (
+              <li key={r.id} className={s.mrow}>
+                <span className={s.mline}>
+                  <span className={s.mid}>{r.listingId}</span>
+                  <span className={r.error ? s.failed : s.muted}>{r.error ? `This quote failed: ${r.error}` : o?.unsupported ? 'No verified rate for this origin and HTS line, so no quote.' : 'Quoting…'}</span>
+                </span>
+              </li>
+            );
+          }
+          const over = overBudgetBy(o);
+          return (
+            <li key={r.id} className={s.mrow} data-testid={`agent-quote-m-${r.listingId}`}>
+              <span className={s.mline}>
+                <span className={s.mid}>
+                  {r.listingId} <span className={s.muted}>{o.origin}</span>
+                </span>
+                <span className={s.mdelivered}>Delivered {bare(o.delivered_total)}</span>
+                {o.within_budget ? (
+                  <StatusBadge tone="success">Within</StatusBadge>
+                ) : (
+                  <StatusBadge tone="danger">{over !== null ? `Over by ${formatUsdNumber(usd(over))}` : 'Over'}</StatusBadge>
+                )}
+              </span>
+              <span className={`${s.mline} ${s.msub}`}>
+                Goods {bare(o.goods)} · Shipping {bare(o.shipping)} · Duty {bare(o.us_import_duty_est)}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 const bare = (v: string | undefined) => {
   const m = dollarsToMinor(v);
   return m === null ? '—' : formatUsdNumber(usd(m));
@@ -29,7 +75,8 @@ export function QuotesTable({ rows, pending }: { rows: QuoteRow[]; pending: numb
     return x < y ? -1 : x > y ? 1 : 0;
   });
   return (
-    <div className={s.scroll} role="region" aria-label="Landed-cost quotes" tabIndex={0}>
+    <>
+    <div className={`${s.scroll} ${s.wide}`} role="region" aria-label="Landed-cost quotes" tabIndex={0}>
       <table className={s.table} data-testid="agent-quotes">
         <caption className={s.caption}>Landed-cost quotes, sorted by delivered total</caption>
         <thead>
@@ -91,5 +138,7 @@ export function QuotesTable({ rows, pending }: { rows: QuoteRow[]; pending: numb
         </tbody>
       </table>
     </div>
+    <NarrowQuotes rows={sorted} />
+    </>
   );
 }
