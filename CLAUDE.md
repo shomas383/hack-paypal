@@ -145,8 +145,11 @@ Carried over:
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3
   renamed the programs after their HTS notes (CH99_NOTE52, CH99_NOTE20_LIST4A/4B).
-- Base HTS line text (checkout + agent breakdown): show the short description chain, e.g. "Wrist watches › automatic winding ›
-  over 17 jewels › with strap, band or bracelet of… base metal", instead of only its last line.
-- Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
+- Base HTS line text: DONE (ui-refresh) — checkout and agent show the full official chain, every level verbatim, " › ".
+- Quote expiry: DONE (ui-refresh) — shown in the buyer's local time.
+- Ledger: legacy orders show the pre-rekey code 9102.21.7000 (rates v1). Show the "Rate version" column at all widths, or
+  filter to the current rate version by default with a toggle for older orders.
+- Action rows: primary button first, consistently (review panel, publish dialog, checkout).
+- Ledger: wider Listing column (titles are truncated at 1280).
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
