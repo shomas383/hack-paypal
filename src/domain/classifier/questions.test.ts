@@ -32,18 +32,55 @@ describe('buildQuestions (from the official chains of the chosen candidates; nev
     const qs = buildQuestions(LINES, ['9102.21.70', '9102.21.90', '9102.21.30']);
     expect(qs.choices.map((q) => [q.id, q.options.map((o) => o.text)])).toEqual([
       ['level-2', ['Over 17 jewels', 'Over 1 but not over 17 jewels']],
-      ['level-3', ['Strap of base metal', 'Other']],
+      ['level-3', ['Strap of base metal', 'Other (not: Strap of base metal)']],
     ]);
+  });
+
+  it('a bare "Other" option names the official siblings it is other than', () => {
+    const lines = [line('6203.42.4511', 'Trousers:', 'Of cotton:', 'Other'), line('6203.42.4016', 'Trousers:', 'Of cotton:', 'Recreational performance outerwear')];
+    expect(buildQuestions(lines, ['6203.42.4511', '6203.42.4016']).choices[0]!.options.map((o) => o.text)).toEqual(['Other (not: Recreational performance outerwear)', 'Recreational performance outerwear']);
   });
 
   it('no choice question with a single chosen candidate', () => {
     expect(buildQuestions(LINES, ['9102.21.70']).choices).toEqual([]);
   });
 
+  it('exclusions read from where each line departs from the top line’s chain (a bare "Other" is never shown alone)', () => {
+    const lines = [
+      ...LINES,
+      line('9102.21.25', H, 'Automatic:', 'Two to seven jewels:', 'Other'),
+      line('9102.21.50', H, 'Automatic:', 'Over 17 jewels:', 'Strap of base metal', 'Other'),
+    ];
+    const ex = buildQuestions(lines, ['9102.21.70', '9102.21.30']).exclusions;
+    expect(ex).toContainEqual({ code: '9102.21.25', text: 'Two to seven jewels › Other' });
+    // Departs at its last level with a bare "Other": name the official siblings it is other than.
+    expect(ex).toContainEqual({ code: '9102.21.90', text: 'Other (not: Strap of base metal)' });
+  });
+
+  it('exclusions skip whole branches a choice question already covers', () => {
+    const lines = [
+      line('6203.42.0300', 'Trousers:', 'Of cotton:', 'Recreational performance outerwear:', 'Down'),
+      line('6203.42.0505', 'Trousers:', 'Of cotton:', 'Recreational performance outerwear:', 'Other'),
+      line('6203.42.4016', 'Trousers:', 'Of cotton:', 'Recreational performance outerwear:', 'Shell'),
+      line('6203.42.4511', 'Trousers:', 'Of cotton:', 'Other:', 'Blue denim'),
+      line('6203.42.4506', 'Trousers:', 'Of cotton:', 'Other:', 'Corduroy'),
+    ];
+    const qs = buildQuestions(lines, ['6203.42.4511', '6203.42.4016']);
+    expect(qs.choices[0]!.options.map((o) => o.text)).toEqual(['Other (not: Recreational performance outerwear)', 'Recreational performance outerwear']);
+    // The recreational branch was asked about; only lines outside it are listed as exclusions.
+    expect(qs.exclusions).toEqual([{ code: '6203.42.4506', text: 'Corduroy' }]);
+  });
+
+  it('exclusions drop lines a choice question already asks about', () => {
+    const lines = [...LINES, line('9102.21.35', H, 'Automatic:', 'Over 1 but not over 17 jewels')];
+    // 9102.21.35's text equals the option "Over 1 but not over 17 jewels" from the choice question.
+    expect(buildQuestions(lines, ['9102.21.70', '9102.21.30']).exclusions.map((e) => e.code)).not.toContain('9102.21.35');
+  });
+
   it('exclusions: the other official lines under the top candidate’s subheading, by their last level', () => {
     expect(buildQuestions(LINES, ['9102.21.70', '9102.21.30']).exclusions).toEqual([
       { code: '9102.21.10', text: 'No jewels or only one jewel' },
-      { code: '9102.21.90', text: 'Other' },
+      { code: '9102.21.90', text: 'Other (not: Strap of base metal)' },
     ]);
     expect(buildQuestions(LINES, []).exclusions).toEqual([]);
   });
