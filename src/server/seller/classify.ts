@@ -82,6 +82,8 @@ export interface ClassificationView {
   input: { title: string; description?: string | undefined; origin: string | null };
   error: string | null;
   reasons: string[];
+  /** The review threshold the routing used (for "Confidence 0.62 is below the 0.80 threshold."). */
+  threshold: number;
   top: { hts10: string; confidence: number; rationale: string; evidence: string[]; chain: string[]; componentReporting: boolean } | null;
   others: { hts10: string; confidence: number; chain: string[] }[];
   separatingAttributes: { name: string; value_from_listing: string | null }[];
@@ -117,6 +119,7 @@ export async function getClassificationView(id: string, sellerSession: string, n
     input: { title: row.input.title, description: row.input.description, origin: row.input.origin },
     error: row.error,
     reasons: row.reasons,
+    threshold: serverEnv().classifierReviewThreshold,
     top: top
       ? { hts10: top.hts10, confidence: top.confidence, rationale: top.rationale, evidence: top.evidence, chain: chainOf(top.hts10), componentReporting: row.grounded?.candidates.find((c) => c.code === top.hts10)?.componentReporting ?? false }
       : null,

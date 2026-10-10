@@ -1,7 +1,7 @@
 // Labelled form field. The hint and the error are linked to the control (aria-describedby); an error sets aria-invalid
 // and sits directly under the control. Controls are 16 px (no iOS zoom) with --border-input (3:1). `after` puts an action
 // on the control's row (same height, bottom edges aligned), e.g. "Confirm budget".
-import { cloneElement, isValidElement, type InputHTMLAttributes, type ReactElement, type ReactNode, type TextareaHTMLAttributes } from 'react';
+import { cloneElement, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from 'react';
 import { Icon } from './Icon';
 import s from './Field.module.css';
 
@@ -64,10 +64,14 @@ export function Field({
   );
 }
 
-export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
+export function Input(props: ComponentProps<'input'>) {
   return <input {...props} className={`${s.control} ${props.className ?? ''}`} />;
 }
 
-export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Select(props: ComponentProps<'select'>) {
+  return <select {...props} className={`${s.control} ${s.select} ${props.className ?? ''}`} />;
+}
+
+export function Textarea(props: ComponentProps<'textarea'>) {
   return <textarea {...props} className={`${s.control} ${s.textarea} ${props.className ?? ''}`} />;
 }

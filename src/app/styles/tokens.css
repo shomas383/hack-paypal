@@ -68,6 +68,7 @@
 
   /* Shape */
   --hairline: 1px;
+  --underline-offset: 2px;
   --rule-strong: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -164,7 +165,7 @@ textarea {
 
 a {
   color: var(--accent);
-  text-underline-offset: 2px;
+  text-underline-offset: var(--underline-offset);
 }
 
 a:hover {

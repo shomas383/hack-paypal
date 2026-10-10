@@ -72,6 +72,11 @@
   }
 }
 
+.select {
+  appearance: auto;
+  cursor: pointer;
+}
+
 .textarea {
   min-height: calc(var(--control-h) * 2);
   resize: vertical;
