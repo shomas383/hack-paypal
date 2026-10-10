@@ -7,7 +7,7 @@ import { join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = join(process.cwd(), 'src');
-const LEGACY = new Set<string>(['src/app/agent/agent.module.css', 'src/app/agent/AgentClient.tsx']);
+const LEGACY = new Set<string>([]);
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

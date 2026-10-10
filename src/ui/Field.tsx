@@ -18,7 +18,7 @@ export function Field({
   hint?: ReactNode;
   error?: string | null | undefined;
   prefix?: string;
-  className?: string;
+  className?: string | undefined;
   children: ReactElement<{ id?: string | undefined; 'aria-describedby'?: string | undefined; 'aria-invalid'?: boolean | undefined }>;
 }) {
   const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-error` : null].filter(Boolean).join(' ') || undefined;

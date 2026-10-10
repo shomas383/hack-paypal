@@ -1,0 +1,38 @@
+.breakdown {
+  max-width: var(--w-prose);
+}
+
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.line {
+  padding: var(--space-2) 0;
+  border-bottom: var(--hairline) solid var(--border);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.label {
+  font-size: var(--text-13);
+  line-height: var(--leading-13);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.total {
+  padding-top: var(--space-2);
+  border-top: var(--hairline) solid var(--text);
+  margin-top: calc(-1 * var(--hairline));
+  font-weight: var(--weight-semibold);
+}

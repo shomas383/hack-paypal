@@ -1,29 +1,41 @@
 'use client';
 
-// /agent — the buyer agent UI (SPEC §4.4). Every number on the cards comes from a tool result (stored quotes computed by the
-// rate engine) or from code; the agent's streamed text is shown as text only. The seller-instructions notice is generated
-// here from the search flags (instructionNotice), never by the model. The agent can only PREPARE a purchase: the proposal
-// card links to the checkout, where the buyer approves and pays with PayPal.
-import { Fragment, useState, type ReactNode } from 'react';
+// /agent — the buyer agent UI (SPEC §4.4, docs/design/wireframes.md §1). Every number comes from a tool result (stored
+// quotes computed by the rate engine) or from code (within/over budget, the insight line, the completion summary); the
+// agent's streamed text is shown as text only. The seller-instructions notice is generated here from the search flags
+// (instructionNotice), never by the model. The agent can only PREPARE a purchase: approving and paying happen at checkout.
+import { Fragment, useState } from 'react';
 import { parseBudgetField, parseDeliveredBudget } from '@/domain/agent/checks';
+import { runSummary, type QuoteView } from '@/domain/agent/insight';
 import { instructionNotice } from '@/domain/agent/instructionNotice';
+import { usd } from '@/domain/money/money';
+import { formatUsd } from '@/lib/money';
+import { Button } from '@/ui/Button';
+import { Field, Input, Textarea } from '@/ui/Field';
+import { Icon } from '@/ui/Icon';
+import { PageHeader } from '@/ui/PageHeader';
+import { StatusBadge } from '@/ui/StatusBadge';
+import { DutyBreakdown, type BreakdownLine } from '@/ui/patterns/DutyBreakdown';
+import { InsightLine } from '@/ui/patterns/InsightLine';
+import { ProposalSummary } from '@/ui/patterns/ProposalSummary';
+import { QuotesTable, type QuoteRow } from '@/ui/patterns/QuotesTable';
+import { ToolCallStep } from '@/ui/patterns/ToolCallStep';
 import s from './agent.module.css';
 
 type Json = Record<string, unknown>;
 type SearchResult = { listingId: string; origin: string; goods: string; shipping: string; match_score: number; seller_text_contains_instructions: boolean; untrusted_seller_text: { title: string; description: string | null } };
-type DutyLine = { kind?: string; chapter99: string | null; amount: string; basis: string; source: string; official_text: string | null };
 
 type Item =
   | { kind: 'text'; text: string }
   | { kind: 'search'; id: string; query: string; results?: SearchResult[]; error?: string }
-  | { kind: 'quotes'; rows: { id: string; listingId: string; out?: Json; error?: string }[] }
+  | { kind: 'quotes'; rows: QuoteRow[] }
   | { kind: 'breakdown'; id: string; out?: Json; error?: string }
   | { kind: 'proposal'; id: string; reasoning: string; out?: Json; error?: string }
   | { kind: 'other'; id: string; name: string; out?: unknown; error?: string };
 
 type Done = { steps: number; usage: { input: number; output: number }; ms: number };
 
-const centsLabel = (minor: number) => `$${(minor / 100).toFixed(2)}`;
+const DEFAULT_MESSAGE = 'automatic diver watch under $400 delivered';
 
 function Bold({ text }: { text: string }) {
   const parts = text.split(/\*\*(.+?)\*\*/g);
@@ -34,23 +46,13 @@ function Bold({ text }: { text: string }) {
   );
 }
 
-function Card({ n, title, children, className }: { n: number; title: string; children: ReactNode; className?: string | undefined }) {
-  return (
-    <section className={`${s.card} ${className ?? ''}`}>
-      <h3 className={s.cardTitle}>
-        <span className={s.step}>{n}</span>
-        {title}
-      </h3>
-      {children}
-    </section>
-  );
-}
+const budgetText = (minor: number) => formatUsd(usd(BigInt(minor)));
 
-export function AgentClient() {
-  const [message, setMessage] = useState('automatic diver watch under $400 delivered');
+export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) {
+  const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const [budget, setBudget] = useState(() => {
-    const m = parseDeliveredBudget('automatic diver watch under $400 delivered');
-    return m === null ? '' : (m / 100).toFixed(2);
+    const m = parseDeliveredBudget(DEFAULT_MESSAGE);
+    return m === null ? '' : formatUsd(usd(BigInt(m))).slice(1).replace(/,/g, '');
   });
   const [budgetEdited, setBudgetEdited] = useState(false);
   const [confirmed, setConfirmed] = useState<string | null>(null);
@@ -61,13 +63,14 @@ export function AgentClient() {
 
   const budgetMinor = parseBudgetField(budget);
   const isConfirmed = confirmed !== null && confirmed === budget && budgetMinor !== null;
+  const budgetError = budget.trim() !== '' && budgetMinor === null ? 'Enter an amount like 400.00.' : null;
 
   function onMessage(v: string) {
     setMessage(v);
     setConfirmed(null);
     if (!budgetEdited) {
       const m = parseDeliveredBudget(v);
-      setBudget(m === null ? '' : (m / 100).toFixed(2));
+      setBudget(m === null ? '' : formatUsd(usd(BigInt(m))).slice(1).replace(/,/g, ''));
     }
   }
 
@@ -86,7 +89,7 @@ export function AgentClient() {
           if (e.name === 'search_listings') next.push({ kind: 'search', id, query: String(input.query ?? '') });
           else if (e.name === 'get_landed_cost_quote') {
             const qi = next.findIndex((x) => x.kind === 'quotes');
-            const row = { id, listingId: String(input.listingId ?? '') };
+            const row: QuoteRow = { id, listingId: String(input.listingId ?? '') };
             if (qi >= 0) {
               const q = next[qi] as Extract<Item, { kind: 'quotes' }>;
               next[qi] = { kind: 'quotes', rows: [...q.rows, row] };
@@ -106,7 +109,7 @@ export function AgentClient() {
               const ri = it.rows.findIndex((r) => r.id === id);
               if (ri >= 0) {
                 const rows = [...it.rows];
-                rows[ri] = { ...rows[ri]!, ...(out ? { out } : {}), ...(err ? { error: err } : {}) };
+                rows[ri] = { ...rows[ri]!, ...(out ? { out: { listingId: rows[ri]!.listingId, ...out } as QuoteRow['out'] } : {}), ...(err ? { error: err } : {}) };
                 next[i] = { kind: 'quotes', rows };
               }
             } else if ('id' in it && it.id === id) {
@@ -136,10 +139,10 @@ export function AgentClient() {
     setError(null);
     setRunning(true);
     try {
-      const res = await fetch('/api/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message, budget }) });
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message, budget }) });
       if (!res.ok || !res.body) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(j.error ?? `HTTP ${res.status}`);
+        setError(res.status === 429 ? `Run limit reached: ${j.error ?? 'try again later'}.` : (j.error ?? `the server answered ${res.status}`));
         return;
       }
       const reader = res.body.getReader();
@@ -163,248 +166,226 @@ export function AgentClient() {
     }
   }
 
-  let n = 0;
+  const quoteRows = items.flatMap((it) => (it.kind === 'quotes' ? it.rows : []));
+  const quoteViews = quoteRows.flatMap((r) => (r.out ? [r.out as QuoteView] : []));
+  const proposalItem = items.find((it): it is Extract<Item, { kind: 'proposal' }> => it.kind === 'proposal');
+  const proposalOut = proposalItem?.out;
+  const proposedQuote = proposalOut?.proposed === true ? quoteRows.find((r) => (r.out as Json | undefined)?.quoteId === proposalOut.quoteId)?.out : undefined;
+  const firstTextIndex = items.findIndex((it) => it.kind === 'text');
+
   return (
     <div className={s.page}>
-      <div className={s.wrap}>
-        <header className={s.header}>
-          <h1>
-            Shopping agent <span className={s.sandbox}>PayPal sandbox</span>
-          </h1>
-          <nav>
-            <a href="/listings">Listings</a>
-          </nav>
-        </header>
+      <PageHeader title="Shopping agent" lead="Compares delivered prices (goods, shipping and estimated US import duty) and prepares a purchase for you to approve." />
 
-        <section className={`${s.card} ${s.form}`}>
-          <label htmlFor="msg">What are you looking for?</label>
-          <textarea id="msg" data-testid="agent-message" value={message} onChange={(e) => onMessage(e.target.value)} disabled={running} />
-          <div className={s.row}>
-            <div className={s.budgetField}>
-              <label htmlFor="budget">Budget, delivered (USD)</label>
-              <div className={s.budgetInput}>
-                <span>$</span>
-                <input
-                  id="budget"
-                  data-testid="agent-budget"
-                  inputMode="decimal"
-                  value={budget}
-                  disabled={running}
-                  onChange={(e) => {
-                    setBudget(e.target.value);
-                    setBudgetEdited(true);
-                    setConfirmed(null);
-                  }}
-                />
-              </div>
-            </div>
+      <section className={s.request} aria-label="Request">
+        <Field id="msg" label="What are you looking for?">
+          <Textarea data-testid="agent-message" value={message} onChange={(e) => onMessage(e.target.value)} disabled={running} rows={2} />
+        </Field>
+        <div className={s.budgetRow}>
+          <Field
+            id="budget"
+            label="Budget, delivered (USD)"
+            prefix="$"
+            error={budgetError}
+            className={s.budgetField}
+          >
+            <Input
+              data-testid="agent-budget"
+              inputMode="decimal"
+              value={budget}
+              disabled={running}
+              onChange={(e) => {
+                setBudget(e.target.value);
+                setBudgetEdited(true);
+                setConfirmed(null);
+              }}
+            />
+          </Field>
+          <div className={s.budgetAction}>
             {isConfirmed ? (
-              <span className={s.confirmed} data-testid="agent-budget-confirmed">
-                ✓ Budget confirmed: {centsLabel(budgetMinor!)} delivered
+              <span className={s.confirmedRow}>
+                <StatusBadge tone="success" data-testid="agent-budget-confirmed">
+                  Budget confirmed: {budgetText(budgetMinor!)} delivered
+                </StatusBadge>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmed(null)} disabled={running}>
+                  Change
+                </Button>
               </span>
             ) : (
-              <button type="button" data-testid="agent-confirm-budget" className={`${s.btn} ${s.btnSecondary}`} disabled={budgetMinor === null || running} onClick={() => setConfirmed(budget)}>
+              <Button data-testid="agent-confirm-budget" disabled={budgetMinor === null || running} onClick={() => setConfirmed(budget)}>
                 Confirm budget
-              </button>
+              </Button>
             )}
-            <button type="button" data-testid="agent-run" className={`${s.btn} ${s.btnPrimary}`} disabled={!isConfirmed || running || message.trim().length < 3} onClick={run}>
-              {running ? 'Working…' : 'Find and compare'}
-            </button>
           </div>
-          <p className={s.hint}>
-            {budgetMinor === null
-              ? 'Enter a budget to continue. The agent cannot run without one.'
-              : 'Delivered = goods + shipping + estimated US import duty. Budget and spend caps are enforced by code, not by the agent.'}
-          </p>
-        </section>
+        </div>
+        <p className={s.hint}>
+          {budgetMinor === null
+            ? "Enter a budget to continue. The agent can't run without one."
+            : "Delivered = goods + shipping + estimated US import duty. The budget and spend caps are checked in code; the agent can't change them."}
+        </p>
+        <div className={s.runRow}>
+          <Button variant="primary" data-testid="agent-run" disabled={!isConfirmed || message.trim().length < 3} loading={running} onClick={run} aria-describedby={!isConfirmed ? 'run-why' : undefined}>
+            Run comparison
+          </Button>
+          {!isConfirmed && !running ? (
+            <span id="run-why" className={s.hint}>
+              Confirm the budget to run the comparison.
+            </span>
+          ) : null}
+        </div>
+      </section>
 
-        {error ? <p className={s.error} role="alert">{error}</p> : null}
+      {error ? (
+        <div className={s.error} role="alert">
+          <Icon name="x-circle" />
+          <span>The comparison stopped: {error.replace(/[.\s]+$/, '')}. Run it again; nothing was bought.</span>
+        </div>
+      ) : null}
 
-        {items.map((it, i) => {
-          if (it.kind === 'text') {
-            return (
-              <p key={i} className={s.text} data-testid="agent-text">
-                <Bold text={it.text} />
-              </p>
-            );
-          }
-          n++;
-          if (it.kind === 'search') {
-            const notice = it.results ? instructionNotice(it.results) : null;
-            return (
-              <Card key={i} n={n} title={`Searched listings — “${it.query}”`}>
-                {!it.results && !it.error ? <p className={s.muted}>Searching…</p> : null}
-                {it.error ? <p className={s.error}>{it.error}</p> : null}
-                {it.results ? (
-                  <table className={s.table} data-testid="agent-search">
-                    <thead>
-                      <tr>
-                        <th>Listing</th>
-                        <th>Origin</th>
-                        <th className={s.num}>Goods</th>
-                        <th className={s.num}>Shipping</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {it.results.filter((r) => r.match_score > 0).map((r) => (
-                        <tr key={r.listingId}>
-                          <td>
-                            <span className={s.code}>{r.listingId}</span> <span className={s.muted}>{r.untrusted_seller_text.title}</span>
-                          </td>
-                          <td>{r.origin}</td>
-                          <td className={s.num}>{r.goods}</td>
-                          <td className={s.num}>{r.shipping}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : null}
-                {it.results ? (
-                  <p className={`${s.small} ${s.muted}`}>
-                    {it.results.filter((r) => r.match_score > 0).length} matching of {it.results.length} listings in the catalog.
+      {items.length ? (
+        <div role="log" aria-label="Agent steps">
+        <ol className={s.log}>
+          {items.map((it, i) => {
+            if (it.kind === 'text') {
+              return (
+                <li key={i} className={s.textItem}>
+                  {i === firstTextIndex ? <span className={s.textLabel}>Agent&rsquo;s explanation</span> : null}
+                  <p className={s.text} data-testid="agent-text">
+                    <Bold text={it.text} />
                   </p>
-                ) : null}
-                {notice ? (
-                  <p className={s.notice} data-testid="agent-instruction-notice">
-                    {notice}
-                  </p>
-                ) : null}
-              </Card>
-            );
-          }
-          if (it.kind === 'quotes') {
-            return (
-              <Card key={i} n={n} title="Landed-cost quotes compared">
-                <table className={s.table} data-testid="agent-quotes">
-                  <thead>
-                    <tr>
-                      <th>Listing</th>
-                      <th>Origin</th>
-                      <th>HTS</th>
-                      <th className={s.num}>Goods</th>
-                      <th className={s.num}>Shipping</th>
-                      <th className={s.num}>US import duty (est.)</th>
-                      <th className={s.num}>Delivered</th>
-                      <th>Budget</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {it.rows.map((r) => {
-                      const o = r.out;
-                      if (!o) return (
-                        <tr key={r.id}>
-                          <td className={s.code}>{r.listingId}</td>
-                          <td colSpan={7} className={s.muted}>{r.error ?? 'Quoting…'}</td>
-                        </tr>
-                      );
-                      if (o.unsupported) return (
-                        <tr key={r.id}>
-                          <td className={s.code}>{r.listingId}</td>
-                          <td colSpan={7} className={s.muted}>Not quotable: {String(o.unsupported)}</td>
-                        </tr>
-                      );
-                      return (
-                        <tr key={r.id} data-testid={`agent-quote-${r.listingId}`}>
-                          <td className={s.code}>{r.listingId}</td>
-                          <td>{String(o.origin)}</td>
-                          <td className={s.code}>{String(o.hts)}</td>
-                          <td className={s.num}>{String(o.goods)}</td>
-                          <td className={s.num}>{String(o.shipping)}</td>
-                          <td className={s.num}>{String(o.us_import_duty_est)}</td>
-                          <td className={s.num}>
-                            <strong>{String(o.delivered_total)}</strong>
-                          </td>
-                          <td>{o.within_budget ? <span className={s.badgeOk}>✓ within</span> : <span className={s.badgeBad}>✗ over</span>}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                <p className={`${s.small} ${s.muted}`}>Amounts are stored quotes from the verified rate table; “within” is checked in code against your confirmed budget.</p>
-              </Card>
-            );
-          }
-          if (it.kind === 'breakdown') {
-            const o = it.out;
-            const lines = (o?.duty_lines ?? []) as DutyLine[];
-            return (
-              <Card key={i} n={n} title={o ? `Duty breakdown — ${String(o.listingId)} (${String(o.origin)})` : 'Duty breakdown'}>
-                {!o && !it.error ? <p className={s.muted}>Reading…</p> : null}
-                {it.error ? <p className={s.error}>{it.error}</p> : null}
-                {o ? (
-                  <div data-testid="agent-breakdown">
-                    {lines.map((l, j) => (
-                      <div key={j} className={s.dutyLine}>
-                        <div className={s.dutyHead}>
-                          <span>
-                            {l.chapter99 ? <>Chapter 99 heading <span className={s.code}>{l.chapter99}</span></> : <>HTS <span className={s.code}>{String(o.hts)}</span> (column 1 General)</>}
-                          </span>
-                          <span className={s.num}>{l.amount}</span>
-                        </div>
-                        <div className={`${s.small} ${s.muted}`}>
-                          {l.basis} · source: {l.source}
-                        </div>
-                        {l.official_text ? <blockquote className={s.official}>“{l.official_text}”</blockquote> : null}
-                      </div>
-                    ))}
-                    <div className={s.dutyHead} style={{ borderTop: '1px solid var(--line)', paddingTop: '0.5rem' }}>
-                      <span>US import duty (est.)</span>
-                      <span className={s.num}>{String(o.us_import_duty_est)}</span>
+                </li>
+              );
+            }
+            if (it.kind === 'search') {
+              const matching = it.results?.filter((r) => r.match_score > 0) ?? [];
+              const notice = it.results ? instructionNotice(it.results) : null;
+              return (
+                <ToolCallStep
+                  key={i}
+                  state={it.error ? 'failed' : it.results ? 'done' : 'running'}
+                  title={<>Searched listings for &ldquo;{it.query}&rdquo;</>}
+                  meta={it.results ? `${matching.length} of ${it.results.length} match` : 'Searching…'}
+                >
+                  {it.error ? <p className={s.failed}>This step failed: {it.error}</p> : null}
+                  {it.results ? (
+                    <div className={s.scroll} role="region" aria-label="Matching listings" tabIndex={0}>
+                      <table className={s.table} data-testid="agent-search">
+                        <caption className={s.caption}>Matching listings</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col">Listing</th>
+                            <th scope="col">Origin</th>
+                            <th scope="col" className={s.num}>Goods (USD)</th>
+                            <th scope="col" className={s.num}>Shipping (USD)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {matching.map((r) => (
+                            <tr key={r.listingId}>
+                              <th scope="row">
+                                <span className={s.mono}>{r.listingId}</span>
+                                <span className={s.sub}>{r.untrusted_seller_text.title}</span>
+                              </th>
+                              <td>{r.origin}</td>
+                              <td className={s.num}>{r.goods.replace(/^\$/, '')}</td>
+                              <td className={s.num}>{r.shipping.replace(/^\$/, '')}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                    <p className={`${s.small} ${s.muted}`}>
-                      HTS {String(o.hts_revision ?? '')}, rate row verified {String(o.verified_on ?? '')} · rate version {String(o.rate_version)}. Estimate, not a customs ruling.
-                    </p>
-                  </div>
-                ) : null}
-              </Card>
-            );
-          }
-          if (it.kind === 'proposal') {
-            const o = it.out;
-            const ok = o?.proposed === true;
+                  ) : null}
+                  {notice ? (
+                    <StatusBadge tone="warning" data-testid="agent-instruction-notice">
+                      {notice}
+                    </StatusBadge>
+                  ) : null}
+                </ToolCallStep>
+              );
+            }
+            if (it.kind === 'quotes') {
+              const pending = it.rows.filter((r) => !r.out && !r.error).length;
+              const version = it.rows.find((r) => r.out)?.out as Json | undefined;
+              return (
+                <ToolCallStep
+                  key={i}
+                  state={pending ? 'running' : it.rows.some((r) => r.error) ? 'failed' : 'done'}
+                  title={`Quoted ${it.rows.length} ${it.rows.length === 1 ? 'listing' : 'listings'}`}
+                  meta={version?.rate_version ? `rate version ${String(version.rate_version)}` : 'Quoting…'}
+                >
+                  <QuotesTable rows={it.rows} pending={0} />
+                  {!pending ? <InsightLine rows={it.rows.flatMap((r) => (r.out ? [r.out as QuoteView] : []))} /> : null}
+                </ToolCallStep>
+              );
+            }
+            if (it.kind === 'breakdown') {
+              const o = it.out;
+              return (
+                <ToolCallStep
+                  key={i}
+                  state={it.error ? 'failed' : o ? 'done' : 'running'}
+                  title={o ? `Read the duty breakdown for ${String(o.listingId)} (${String(o.origin)})` : 'Reading the duty breakdown…'}
+                  meta={o ? `HTS ${String(o.hts)}` : undefined}
+                >
+                  {it.error ? <p className={s.failed}>This step failed: {it.error}</p> : null}
+                  {o ? (
+                    <DutyBreakdown
+                      hts={String(o.hts)}
+                      lines={(o.duty_lines ?? []) as BreakdownLine[]}
+                      total={String(o.us_import_duty_est)}
+                      htsRevision={o.hts_revision ? String(o.hts_revision) : undefined}
+                      verifiedOn={o.verified_on ? String(o.verified_on) : undefined}
+                      rateVersion={o.rate_version ? String(o.rate_version) : undefined}
+                    />
+                  ) : null}
+                </ToolCallStep>
+              );
+            }
+            if (it.kind === 'proposal') {
+              const o = it.out;
+              return (
+                <ToolCallStep
+                  key={i}
+                  state={it.error ? 'failed' : o ? (o.proposed === true ? 'done' : 'failed') : 'running'}
+                  title={o?.proposed === true && proposedQuote ? `Prepared a purchase for ${proposedQuote.listingId} (${proposedQuote.origin ?? ''})` : o ? 'Tried to prepare a purchase' : 'Preparing a purchase…'}
+                >
+                  {it.error ? <p className={s.failed}>This step failed: {it.error}</p> : null}
+                </ToolCallStep>
+              );
+            }
             return (
-              <Card key={i} n={n} title={ok ? 'Proposed by your agent' : 'Proposal'} className={o && !ok ? s.refusal : s.proposal}>
-                {!o && !it.error ? <p className={s.muted}>Preparing…</p> : null}
-                {it.error ? <p className={s.error}>{it.error}</p> : null}
-                {o && ok ? (
-                  <div data-testid="agent-proposal">
-                    <div className={s.proposalTotal}>{String(o.delivered_total)}</div>
-                    <div className={s.muted}>delivered · your confirmed budget {String(o.budget)}</div>
-                    {it.reasoning ? (
-                      <p className={s.small}>
-                        <span className={s.muted}>Agent’s reasoning: </span>
-                        {it.reasoning}
-                      </p>
-                    ) : null}
-                    <p className={s.small}>
-                      Nothing is bought yet. Review the duty lines on the checkout, then approve and pay with your own PayPal login.
-                    </p>
-                    <a className={s.cta} href={String(o.checkoutUrl)} data-testid="agent-checkout-link">
-                      Review at checkout →
-                    </a>
-                  </div>
-                ) : null}
-                {o && !ok ? (
-                  <p data-testid="agent-refusal">
-                    <strong>Refused by code:</strong> {String(o.message)}
-                  </p>
-                ) : null}
-              </Card>
+              <ToolCallStep key={i} state={it.error ? 'failed' : it.out ? 'done' : 'running'} title={it.name}>
+                {it.error ? <p className={s.failed}>This step failed: {it.error}</p> : null}
+              </ToolCallStep>
             );
-          }
-          return (
-            <Card key={i} n={n} title={it.name}>
-              <pre className={s.small}>{JSON.stringify(it.out ?? it.error ?? 'Working…', null, 1)}</pre>
-            </Card>
-          );
-        })}
+          })}
+        </ol>
+        </div>
+      ) : null}
 
-        {done ? (
-          <p className={s.footer} data-testid="agent-done">
-            {done.steps} steps · {(done.ms / 1000).toFixed(1)} s · {done.usage.input.toLocaleString()} input / {done.usage.output.toLocaleString()} output tokens
-          </p>
-        ) : null}
-      </div>
+      {proposalOut ? (
+        <ProposalSummary
+          proposed={proposalOut.proposed === true}
+          listingId={proposedQuote?.listingId}
+          origin={proposedQuote?.origin}
+          title={(proposedQuote as { untrusted_seller_text?: { title?: string } } | undefined)?.untrusted_seller_text?.title}
+          delivered={proposalOut.delivered_total ? String(proposalOut.delivered_total) : undefined}
+          budget={proposalOut.budget ? String(proposalOut.budget) : undefined}
+          checkoutUrl={proposalOut.checkoutUrl ? String(proposalOut.checkoutUrl) : undefined}
+          reasoning={proposalItem?.reasoning}
+          refusal={proposalOut.message ? String(proposalOut.message) : undefined}
+        />
+      ) : null}
+
+      {done ? (
+        <p className={s.footer} data-testid="agent-done">
+          {done.steps} steps · {(done.ms / 1000).toFixed(1)} s · {done.usage.input.toLocaleString('en-US')} input / {done.usage.output.toLocaleString('en-US')} output tokens
+        </p>
+      ) : null}
+
+      <p role="status" className="sr-only">
+        {done ? runSummary(quoteViews, proposalOut?.proposed === true && proposedQuote ? { listingId: proposedQuote.listingId, delivered_total: String(proposalOut.delivered_total) } : null) : ''}
+      </p>
     </div>
   );
 }

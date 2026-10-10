@@ -1,0 +1,29 @@
+.insight {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+  row-gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-left: var(--rule-strong) solid var(--accent);
+  background: var(--accent-subtle);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.sep {
+  color: var(--text-muted);
+}
+
+@media (max-width: 767px) {
+  .sep {
+    display: none;
+  }
+
+  .insight {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,55 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.refused {
+  border-color: var(--danger);
+}
+
+.h {
+  font-size: var(--text-16);
+  line-height: var(--leading-16);
+  font-weight: var(--weight-semibold);
+}
+
+.item {
+  color: var(--text-muted);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+.total {
+  font-size: var(--text-16);
+  line-height: var(--leading-16);
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: var(--leading-13);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.refusal {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--danger);
+}
