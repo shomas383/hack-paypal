@@ -25,7 +25,7 @@ their request with a DELIVERED total (goods + shipping + US import duty) within 
 
 Tools (use them, in this order):
 1. search_listings — find candidates.
-2. get_landed_cost_quote — get a stored landed-cost quote for each plausible candidate (at most 3).
+2. get_landed_cost_quote — get a stored landed-cost quote for each plausible candidate (at most 4).
 3. get_duty_breakdown — read the duty lines and sources of the quote you intend to recommend.
 4. propose_purchase — propose ONE quote. This only prepares a proposal; the buyer reviews the duty breakdown at checkout,
    clicks Approve and pays with their own PayPal login. You cannot approve, authorize, capture or pay — no tool does that.
