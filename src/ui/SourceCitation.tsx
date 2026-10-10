@@ -1,4 +1,5 @@
 // Provenance for a duty line: the official text (quoted, verbatim), the sources, and the data version / verification.
+import { Fragment } from 'react';
 import s from './SourceCitation.module.css';
 
 export function SourceCitation({
@@ -31,10 +32,11 @@ export function SourceCitation({
       {meta.length ? (
         <p className={s.meta}>
           {meta.map((m, i) => (
-            <span key={i} className={s.metaPart}>
+            // The separator stays outside the nowrap part, so lines can break between parts (never inside one).
+            <Fragment key={i}>
               {i ? ' · ' : ''}
-              {m}
-            </span>
+              <span className={s.metaPart}>{m}</span>
+            </Fragment>
           ))}
         </p>
       ) : null}
