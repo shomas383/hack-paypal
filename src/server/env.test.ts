@@ -25,6 +25,25 @@ describe('parseServerEnv — buyer-agent limits', () => {
   });
 });
 
+describe('parseServerEnv — SELLER_CONSOLE_PASSCODE', () => {
+  it('is optional (the seller console is a 404 without it)', () => {
+    expect(parseServerEnv(valid).sellerConsolePasscode).toBeUndefined();
+    expect(parseServerEnv({ ...valid, SELLER_CONSOLE_PASSCODE: '   ' }).sellerConsolePasscode).toBeUndefined();
+  });
+
+  it('needs at least 12 characters when set; the error never echoes the value', () => {
+    expect(parseServerEnv({ ...valid, SELLER_CONSOLE_PASSCODE: 'long-enough-passcode' }).sellerConsolePasscode).toBe('long-enough-passcode');
+    let message = '';
+    try {
+      parseServerEnv({ ...valid, SELLER_CONSOLE_PASSCODE: 'short123' });
+    } catch (e) {
+      message = (e as Error).message;
+    }
+    expect(message).toMatch(/SELLER_CONSOLE_PASSCODE must be at least 12 characters/);
+    expect(message).not.toContain('short123');
+  });
+});
+
 describe('parseServerEnv — CLASSIFIER_REVIEW_THRESHOLD', () => {
   it('defaults to 0.80 and reads a decimal in [0, 1]', () => {
     expect(parseServerEnv(valid).classifierReviewThreshold).toBe(0.8);
