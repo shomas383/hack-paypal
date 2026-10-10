@@ -44,17 +44,58 @@ export function buildQuestions(lines: readonly HtsLine[], chosen: readonly strin
       const t = chain.get(c)![at];
       if (t) byText.set(t, [...(byText.get(t) ?? []), c]);
     }
-    const options = [...byText].map(([text, codes], i) => ({ id: `o-${i}`, text, codes }));
+    const parentOf = chain.get(group[0]!)!.slice(0, at);
+    const options = [...byText].map(([text, codes], i) => ({ id: `o-${i}`, text: withSiblings(text, parentOf, at, lines), codes }));
     choices.push({ id: `level-${at}`, text: 'Which description matches the item?', options });
     group = options.find((o) => o.codes.includes(top))?.codes ?? [];
+  }
+  const topChain = top ? (chain.get(top) ?? []) : [];
+  // A line that departs from the top line at a question's level, into one of that question's options (its official
+  // level text), is already covered by the question — it isn't asked again as an exclusion.
+  const covered = new Map<number, Set<string>>();
+  for (const q of choices) {
+    const at = Number(q.id.slice('level-'.length));
+    covered.set(at, new Set(q.options.flatMap((o) => o.codes.map((c) => chain.get(c)![at]!))));
   }
   const exclusions = top
     ? lines
         .filter((l) => l.code.startsWith(subheading(top)) && !chosen.includes(l.code))
+        .map((l) => ({ code: l.code, c: l.chain.map(level) }))
+        .filter(({ c }) => {
+          const at = c.findIndex((t, i) => t !== topChain[i]);
+          return !(at >= 0 && covered.get(at)?.has(c[at]!));
+        })
+        .map(({ code, c }) => ({ code, text: exclusionText(c, topChain, lines) }))
         .slice(0, MAX_EXCLUSIONS)
-        .map((l) => ({ code: l.code, text: level(l.chain.at(-1)) }))
     : [];
   return { choices, exclusions };
+}
+
+/**
+ * An excluded line, read from the level where its chain departs from the top line's chain (official text only). A bare
+ * "Other" at that level names the official sibling levels it is other than: "Other (not: A; B)".
+ */
+function exclusionText(c: string[], topChain: string[], lines: readonly HtsLine[]): string {
+  let at = c.findIndex((t, i) => t !== topChain[i]);
+  if (at < 0) at = c.length - 1;
+  const tail = c.slice(at);
+  tail[0] = withSiblings(tail[0] ?? '', c.slice(0, at), at, lines);
+  return tail.join(' › ');
+}
+
+/** "Other" at a chain level → "Other (not: A; B)", naming the official sibling levels under the same parent. */
+function withSiblings(text: string, parent: string[], at: number, lines: readonly HtsLine[]): string {
+  if (!/^other$/i.test(text)) return text;
+  const key = parent.join('\u0000');
+  const siblings = [
+    ...new Set(
+      lines
+        .map((l) => l.chain.map(level))
+        .filter((x) => x.slice(0, at).join('\u0000') === key && x[at] && !/^other$/i.test(x[at]!))
+        .map((x) => x[at]!),
+    ),
+  ];
+  return siblings.length ? `${text} (not: ${siblings.join('; ')})` : text;
 }
 
 const CLEARED_BY_ANSWERS = new Set(['MISSING_ATTRIBUTES', 'TOP2_DIFFER_6']);
