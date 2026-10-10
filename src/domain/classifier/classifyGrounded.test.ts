@@ -49,6 +49,22 @@ describe('classifyListingGrounded — headings → real Rev 20 lines → a choic
     expect(call2).toContain("Men's or boys' suits, trousers:");
   });
 
+  it('reports real progress stages in order: proposing → matching (headings) → choosing (n official lines)', async () => {
+    const stages: unknown[] = [];
+    await classifyListingGrounded(listing, model(headings('6203.42'), pick('6203.42.4511')), { ...opts, onStage: (s) => void stages.push(s) });
+    expect(stages).toEqual([
+      { stage: 'proposing' },
+      { stage: 'matching', headings: ['6203.42'] },
+      { stage: 'choosing', headings: ['6203.42'], expanded: 2 },
+    ]);
+  });
+
+  it('stops reporting at matching when nothing expands (no choosing stage, no second call)', async () => {
+    const stages: unknown[] = [];
+    await classifyListingGrounded(listing, model(headings('6203.43')), { ...opts, onStage: (s) => void stages.push(s) });
+    expect(stages).toEqual([{ stage: 'proposing' }, { stage: 'matching', headings: ['6203.43'] }]);
+  });
+
   it('call 2 naming a code outside the expanded list is INVALID_OUTPUT → review (the enum rejects it)', async () => {
     const r = await classifyListingGrounded(listing, model(headings('6203.42'), pick('6203.42.4011')), opts);
     expect(r).toMatchObject({ kind: 'INVALID_OUTPUT', stage: 2, review: { needsReview: true, reasons: ['INVALID_OUTPUT'] } });
