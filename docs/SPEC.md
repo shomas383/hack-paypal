@@ -90,11 +90,11 @@ AC:
 
 ### 4.2 Rate engine (deterministic)
 Method and rules for verifying a row: `docs/HTS_VERIFICATION_SPEC.md` (overrides this section where more precise).
-Input: `{ origin: ISO-3166 alpha-2 (EU members map to 'EU' program), hts10, entryDate, customsValue: Money(USD, goods only),
+Input: `{ origin: ISO-3166 alpha-2 (EU members: one verified row per member state, e.g. DE), hts10, entryDate, customsValue: Money(USD, goods only),
 quantity, valueSplit?: { case, band } (compound watch rates), facts?: Record<string, boolean> (row conditions, e.g.
 steel ≥15% of weight, informational material) }`. A missing split or fact the row needs → `UNSUPPORTED`.
 Output: `{ lines: [{ kind: 'MFN'|<program, e.g. the Chapter 99 U.S. note 52 additional duty (9903.05.xx); renamed CH99_NOTE52 in rates-v3>|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
-Data file schema (`data/rates/<version>.json`, current `2026-rev20-v3` — 11 rows incl. the CN watch; v1/v2 kept as history; the name is set in `src/domain/rates/current.ts`),
+Data file schema (`data/rates/<version>.json`, current `2026-rev20-v4` — 12 rows incl. the CN and DE watches; v1–v3 kept as history; the name is set in `src/domain/rates/current.ts`),
 one row per (hts10, origin); generated only by `scripts/import-verify-sheet.ts` from the human-verified sheet, never
 hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
 - The key (`hts10`) is a 10-digit statistical line, **or** an 8-digit line reported by component (HTS Ch. 91 Statistical
@@ -121,13 +121,16 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
 - Chapter 99 U.S. note 52 additional duty (9903.05.xx), effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983.
   - JP: **9903.05.49** if the col. 1 rate **or its AVE** (compound rates) is < 12.5% → total becomes 12.5% (add-on = 12.5% − base);
     **9903.05.48** if ≥ 12.5% → no add-on. It is a cap/top-up, not an additive surcharge.
-  - CN: **9903.05.31** = base **+ 12.5% (additive)**, plus any *active* legacy China list under U.S. note 20 (the Federal
-    Register notices note 20 references, e.g. 84 Fed. Reg. 43304), cumulative per note 52(a). Example (rates-v3, P13):
+  - CN: **9903.05.31** = base **+ 12.5% (additive)**, plus any *active* legacy China list under U.S. note 20 (cited by note
+    and heading numbers only; no Federal Register citation), cumulative per note 52(a). Example (rates-v3, P13):
     9102.21.70 → **9903.88.15** (note 20(r)/(s)(i), +7.5%) in addition to 9903.05.31. List 4B (9903.88.16) is **suspended** —
     don't add it. CSMS #69326983 states "articles the product of China will be assessed an
     additional ad valorem rate of duty of 12.5%"; one law-firm table's "13%" figure is superseded by the CSMS text.
-  - EU members (9903.05.38 ≥10% no change / .39 combined 10%) and GB (9903.05.81 +10%): **not yet read from the HTS** —
-    no rows until a human verifies them (HTS_VERIFICATION_SPEC §3 Step 4b).
+  - EU members: **9903.05.39** if the col. 1 rate or its AVE (note 52(k)) is < 10% → total becomes 10% (combined cap);
+    **9903.05.38** if ≥ 10% → no add-on. Exemptions also include **9903.05.97** (note 52(j)(2) EU list). Verified for DE
+    (rates-v4, P14, 2026-10-09): 9102.21.70 at $290 → MFN $16.51 + 9903.05.39 $12.49 = $29.00. The importer reads the cap
+    from the sheet and aborts unless it matches the official .39/.38 heading text. Other member states: no rows until verified.
+  - GB (9903.05.81 +10%): **not yet read from the HTS** — no rows until a human verifies them (HTS_VERIFICATION_SPEC §3 Step 4b).
   - Exemptions **9903.05.85–.92** must each be checked (`exemptions_checked`), including **.92 informational materials**
     (publications, films, recordings, CDs… "including but not limited to") — description-based, no HTS list.
 - Section 232 (steel/aluminum/copper): find the code's **note 16** subdivision; derivative steel (c)(vi)–(viii), (xi) →
@@ -136,7 +139,7 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
 - **IEEPA** tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but **terminated** (CBP stopped collecting for
   entries on/after Feb 24, 2026) — never add them. Section 122 10% surcharge expired July 24, 2026 — must NOT appear.
 - Rounding: compute in integers (ppm, micros); round half-up to the cent per duty line. For `combined_cap` the add-on line =
-  round(cap × value) − round(MFN line), so the total is exactly round(12.5% × value). (Estimate, not a CBP liquidation figure.)
+  round(cap × value) − round(MFN line), so the total is exactly round(cap × value) (12.5% JP, 10% EU). (Estimate, not a CBP liquidation figure.)
 - Engine is versioned: every quote stores `rateVersion`; capture re-checks that version is still current.
 Seeding:
 - Import the developer's verified sheet (Verify tab; HTS 2026 Rev. 20, verified 2026-10-05) into `data/rates/` and
@@ -147,7 +150,10 @@ Seeding:
 AC:
 - [x] Property tests: duty ≥ 0; JP non-exempt, non-232 total = max(MFN or AVE, 12.5%); CN total = MFN + 12.5%; unknown → UNSUPPORTED.
       (`src/domain/rates/property.test.ts`, 2026-10-06)
-- [ ] Property test: EU never exceeds max(MFN, 10%) — open until EU rows are verified.
+- [x] Property test: EU total = max(MFN, 10% × value); at or above the cap the line is 9903.05.38 with no add-on.
+      (`property.test.ts`: the combined-cap property now covers DE-9102.21.70, plus an EU case at $10 → .38, 2026-10-09)
+- [x] Golden (rates-v4): 13 OK cases incl. P14 DE $29.00 per line (MFN $16.51 + 9903.05.39 $12.49); buyer-facing refs and
+      regime notes contain no "List 4…" or "301" wording (test), 2026-10-09.
 - [x] Golden tests: every VERIFIED sheet row reproduces the sheet's total (column R) and Ch.99 heading exactly at the sheet price.
       (`src/domain/rates/golden.test.ts`: 11/11 + P07 UNSUPPORTED for JP and US, 2026-10-06)
 - [x] "Trust moment" fixture: stale pure-LLM answers (15% on Japan rows; 27.5% on P05, 15% on P09 China rows) are flagged
@@ -173,7 +179,8 @@ AC:
       and that the button renders only after the recorded Approve click, 2026-10-07.)
 
 ### 4.4 Buyer agent
-- Prompt example: "vintage automatic diver watch under $400 delivered" (use generic names in the video — see HACKATHON.md).
+- Prompt example: "automatic diver watch under $400 delivered" (use generic names in the video — see HACKATHON.md). With
+  "vintage" in the query the agent picks the only listing that claims an era (L-P03) and says so (live run, 2026-10-10).
 - Claude Opus 5.5 rejects forced `tool_choice` (`any`/`tool` → 400); use `auto` and name the tools in the system prompt.
 - Tools (built, `src/agent/tools.ts`; read and prepare only): `search_listings`, `get_landed_cost_quote(listingId)` (stored
   quote via the rate engine), `get_duty_breakdown(quoteId)`, `propose_purchase(quoteId, reasoning)` (a PENDING proposal +
@@ -187,7 +194,11 @@ AC:
 - Spend cap per order and per session enforced in `policy/` and in `propose_purchase`; runs rate-limited per session/IP/day.
 AC:
 - [x] Agent compares ≥2 origins with itemized duties and cites rate sources; asks for approval; never captures.
-      (`pnpm agent:live`, 2026-10-09, claude-opus-5-5: quoted JP L-P03 $362.50, CN L-P13 $377.09 (9903.05.31 + 9903.88.15),
+      (rates-v4, `pnpm agent:live`, 2026-10-10 UTC, claude-opus-5-5, "automatic diver watch under $400 delivered": quoted
+      all four watches — JP L-P03 $362.50, CN L-P13 $377.09, DE L-P14 $344.00, JP L-P03-B $452.50 (over budget); proposed
+      L-P14 as PENDING; quoted the official 9102.21.70 and 9903.05.39 texts and cited note 52(k) + CSMS; every $ amount from
+      stored quotes; no claim about seller instructions; 5 steps, 27.6k input / 1.4k output tokens, 14.4 s. It said CN costs
+      more "because its duty is $72.09" but did not spell out that CN has the lowest goods price.) Earlier run (`pnpm agent:live`, 2026-10-09, claude-opus-5-5: quoted JP L-P03 $362.50, CN L-P13 $377.09 (9903.05.31 + 9903.88.15),
       JP L-P03-B $452.50 (over budget); proposed L-P03 as PENDING; cited HTS line, Ch. 99 headings, notes, CSMS; every $
       amount stated came from stored quotes; 5 steps, 24.2k input / 1.7k output tokens, 21.3 s.) Caveat: its closing text
       said "none of these listings contained instructions" — true of the three watches, false of the catalog (L-T-INJ was

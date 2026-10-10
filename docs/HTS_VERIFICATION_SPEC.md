@@ -132,7 +132,7 @@ Exempt headings carry "The duty provided in the applicable subheading" (no add-o
 |---|---|---|
 | **Japan** | **9903.05.49** if col.1 rate (or **AVE**) **< 12.5%**; **9903.05.48** if ≥ 12.5% | .49 rate column "12.5%" = **total becomes 12.5%** → add-on Q = 0.125 − N. .48 = no change → Q = 0 (e.g. denim 16.6%) |
 | **China** | **9903.05.31** | "The duty provided in the applicable subheading **+ 12.5%**" → **additive** → Q = 0.125, **plus** any active legacy China list under note 20 (4d), cumulative per note 52(a) |
-| EU members | 9903.05.38 (≥10%, no change) / 9903.05.39 (combined 10%) | **Not yet read from the HTS in the reference run.** Read both heading texts before using them |
+| **EU members** | **9903.05.39** if col.1 rate (or **AVE**, note 52(k)) **< 10%**; **9903.05.38** if ≥ 10% | Read 2026-10-09 (user, Rev 20 Ch. 99 PDF): .39 "column 1 less than 10 percent … 10%" (p. 653); note 52(k): AVE = column 1 duty / customs value, and "the sum of the column 1 duty rate and the additional ad valorem rate of duty is 10 percent" (p. 606) → **combined cap**, like JP .49 at 10%. Check the note 52(j)(2) EU exemption list (**9903.05.97**, p. 578) as well as .85–.92. EU 9903.02.xx headings are IEEPA (terminated). Verified so far: **DE** (P14). Each further member state needs its own verified row |
 | UK | 9903.05.81 (+10%) | **Not yet read.** Read it before using |
 
 Other countries: search `9903.05` for "articles the product of <country>".
@@ -150,8 +150,8 @@ Other countries: search `9903.05` for "articles the product of <country>".
 7. A note list mentioning the code doesn't prove the heading still exists. Confirm the **heading row exists in the Rev's tariff table** (e.g. old aluminum list 9903.85.08 still appears in note text, but its heading row is gone in Rev 20, so it isn't collected).
 
 **4d. China legacy lists under U.S. note 20 (2018–19), China only.** The Rev 20 Chapter 99 text never says "Section 301"
-(not in note 20 either); when a source is needed, cite the Federal Register notices note 20 references (e.g. 84 Fed. Reg.
-43304). Anything buyer-facing uses heading and note numbers only.
+(not in note 20 either). Cite heading and note numbers only (e.g. "U.S. note 20(r)/(s)(i)"). No Federal Register citation:
+"84 Fed. Reg. 43304" appears in note 20's exclusion paragraphs, not in note 20(r) itself (user, 2026-10-09; rates-v4 refs).
 1. Grep the 8-digit code in **note 20**. Identify the subdivision header above the hit and its 9903.88.xx heading.
 2. Read that heading row and the subdivision's **compiler's notes**. Example: 9503.00.00 and 9504.50.00 are in note 20(u) → **9903.88.16 (List 4B) "[Compiler's note: provision suspended.]"** → don't add.
 3. Note 20 also contains **exclusion** lists (e.g. 20(z) / 9903.88.21). Check whether a hit is an inclusion or an exclusion.
@@ -252,3 +252,4 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 | P11 | Kitchen knife, steel, wood handle (JP) | 8211.92.9030 | 0.4¢ + 6.1% | 9903.82.09 (+25%, note 16(c)(vii)); exempt from 12.5% via .90 | 31.1% | none |
 | P12 | Recorded anime Blu-ray (JP) | 8523.49.4000 | Free | 9903.05.92 (informational) | 0% | H236026 (not yet read) |
 | P13 | Automatic watch, 21 jewels, steel bracelet (CN; verified 2026-10-08, rates-v3) | 9102.21.70 (component reporting) | $1.53 + 4.2% case + 9.8% band (AVE 5.7% @ $280) | 9903.05.31 (+12.5%, note 52) + 9903.88.15 (+7.5%, note 20(r)/(s)(i); not in List 4B; no in-effect exclusion), cumulative per note 52(a) | $72.09 @ $280 (case 230 / band 50) | none |
+| P14 | Automatic watch, 21 jewels, steel bracelet (DE; verified 2026-10-09, rates-v4) | 9102.21.70 (component reporting) | $1.53 + 4.2% case + 9.8% band (AVE 5.7% @ $290) | 9903.05.39 (combined 10%, note 52(k)); not in note 52(j)(2) (9903.05.97); no note 52(b) exemption; not in note 16 | 10%: $29.00 @ $290 (case 240 / band 50) = MFN $16.51 + $12.49 | none |

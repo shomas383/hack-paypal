@@ -101,7 +101,12 @@ compares JP $362.50 ✓ · CN $377.09 ✓ · JP-B $452.50 ✗ (over budget), pro
 agent" banner. SPEC §4.4 ACs met.
 rates-v3 DONE (2026-10-09): CN watch P13 (9903.05.31 + 9903.88.15, cumulative per note 52(a)); programs CH99_NOTE52 /
 CH99_NOTE20_LIST4A / CH99_NOTE20_LIST4B.
-Next: the EU watch row (P14), then the seller UI with AG Grid Community (plan first — notes in the 2026-10-08 plan: grounded
+rates-v4 DONE (2026-10-10): EU watch P14 (DE, 9903.05.39 combined 10%, note 52(k); the importer checks the sheet's cap
+against the official .39/.38 heading text); refs and regime notes cite heading and note numbers only (no "List 4A/4B", no
+"301", no FR citation). Seed L-P14. Demo query is now "automatic diver watch under $400 delivered": the agent quotes JP
+$362.50 · CN $377.09 · DE $344.00 · JP-B $452.50 ✗ and proposes DE (live run 2026-10-10). With "vintage" it picks JP L-P03
+(the only listing claiming an era) — DEMO optional second beat.
+Next: the seller UI with AG Grid Community (plan first — notes in the 2026-10-08 plan: grounded
 classifier in the service, progress state, review queue, seller questions + ANSWER_CONTRADICTS, orders/duty ledger), then the
 rough-cut demo video.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
@@ -121,25 +126,18 @@ Carried over:
   make it required for a production server (not during `next build`: skip when `NEXT_PHASE === 'phase-production-build'`).
 - Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
-- Pending data (user): a verified EU row for the same watch line (9102.21.70) for DEMO 0:00–0:25 (JP / CN / EU). CN is done
-  (rates-v3, P13).
-- Next rates import (wording, from the user's 2026-10-09 correction): the Rev 20 Ch. 99 text never says "Section 301", note 20
-  included. The importer still writes the regime note "China legacy 301 List 4B (9903.88.16) suspended." and the ref
-  "U.S. note 20(r)/(s)(i) (List 4A)" (shown as a source at checkout / in the agent) — reword to note/heading numbers only
-  (cite the Federal Register notices note 20 references, e.g. 84 Fed. Reg. 43304, where a source is needed).
 - VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
 - rates-v2 DONE (2026-10-08): sheet M14 = 9102.21.70, V14 = 2026-10-08; the import (now 2026-rev20-v2) aborts unless every rate
   key is a real line in data/hts/2026-rev20.json (8-digit keys only with componentReporting). The current version is named in
   `src/domain/rates/current.ts`; v1 files stay as history (stored v1 quotes reference them and are refused as stale).
-  rates-v3 (2026-10-09) supersedes it: after the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v3`
-  (pre-deploy re-seeds L-P03 and L-P13).
+  rates-v4 (2026-10-10) supersedes it: after the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v4`
+  (pre-deploy re-seeds the listings, incl. L-P14).
 
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3
   renamed the programs after their HTS notes (CH99_NOTE52, CH99_NOTE20_LIST4A/4B).
 - Base HTS line text (checkout + agent breakdown): show the short description chain, e.g. "Wrist watches › automatic winding ›
   over 17 jewels › with strap, band or bracelet of… base metal", instead of only its last line.
-- Reword "(List 4A)" and "China legacy 301 List 4B" at the next rates import (see Carried over).
 - Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

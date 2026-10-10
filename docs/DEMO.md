@@ -1,14 +1,27 @@
 # Demo script (target 2:45, hard max 2:59)
 Rule: every screen shown must be real, running software against PayPal sandbox. Generic product names on screen (no trademarks).
 
-0:00–0:25 Problem. "The US ended de minimis for every country. Same vintage Japanese automatic watch, three origins, three real
-landed prices." Show comparison card JP / CN / EU with itemized duty lines + source/date footnote.
+0:00–0:25 Problem. "The US ended de minimis for every country. Same automatic diver watch, three origins, three real
+landed prices." Show comparison card JP / CN / EU with itemized duty lines + source/date footnote (rates-v4, $25 demo shipping):
+- CN $280 → **$377.09** delivered (duty $72.09: MFN $16.09 + 9903.05.31 $35.00 + 9903.88.15 $21.00) — lowest goods price,
+  highest delivered total
+- DE $290 → **$344.00** (duty $29.00: MFN $16.51 + 9903.05.39 $12.49, EU combined 10%)
+- JP $300 → **$362.50** (duty $37.50: MFN $16.93 + 9903.05.49 $20.57, JP combined 12.5%)
+- JP-B $380 → **$452.50** (duty $47.50) — over a $400 budget
 
 0:25–0:55 Seller side. Japanese-language listing pasted → classifier returns HTS candidate + confidence + Japanese evidence spans.
 A second listing (missing material/age) lands in the review queue (AG Grid console). Reviewer accepts.
 
-0:55–1:45 Buyer agent. Prompt: "vintage automatic diver watch under $400 delivered." Agent searches, compares origins, explains
-duties (MFN + Chapter 99 U.S. note 52 additional duty (9903.05.xx), cited), proposes best option, and ASKS for approval. Checkout shows the landed-cost breakdown with
+0:55–1:45 Buyer agent (`/agent`). Prompt: "automatic diver watch under $400 delivered." Buyer confirms the $400.00 budget.
+Agent searches, quotes all four watches (JP / CN / DE / JP-B), explains duties (MFN + Chapter 99 U.S. note 52 additional duty
+(9903.05.xx), official text quoted, cited), and proposes **L-P14 (DE) at $344.00** as PENDING — the agent can't approve or
+pay. Point at the quotes card: CN has the lowest goods price ($280) but the highest delivered total within budget ($377.09);
+JP-B is over budget (✗, computed by code). The code-generated notice shows the injected test listing was withheld.
+(Live run 2026-10-10 UTC: DE proposed, 5 steps, ~14 s.) The checkout banner reads "Proposed by your agent".
+Optional second beat (if time allows): add "vintage" to the prompt. The agent then picks the only listing that claims an
+era (L-P03, "1990s", $362.50) and says that the age comes from the seller's listing, not from anything it checked. It
+honours stated preferences and doesn't invent product facts (live run 2026-10-10 UTC).
+Then the checkout. Checkout shows the landed-cost breakdown with
 "US import duty (est.)" + HTS + source BEFORE the PayPal button (PayPal's popup labels it only "Tax"). Human clicks Approve (spend cap visible) →
 PayPal sandbox approval popup → order shows item, shipping, and duty (as tax) matching quote → authorized → policy gate passes → captured.
 
