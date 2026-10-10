@@ -16,6 +16,9 @@ export const FAKE_LISTINGS: AgentListing[] = [
 /** Stored-quote amounts per listing (as the rate engine produced them for the seed): duty in minor units. */
 const DUTY: Record<string, bigint> = { 'L-P03': 3_750n, 'L-P05': 813n, 'L-T-INJ': 813n, 'L-BIG': 4_625n };
 
+/** Duty for listings outside DUTY (tests that add listings): a fixed stored-quote duty. */
+const OTHER_DUTY = 1_000n;
+
 export function fakeDeps(over: Partial<AgentDeps> = {}) {
   const quotes = new Map<string, QuoteRecord>();
   const proposals: { sessionId: string; quoteId: string; budgetMinor: bigint; totalMinor: bigint; reasoning: string }[] = [];
@@ -23,9 +26,9 @@ export function fakeDeps(over: Partial<AgentDeps> = {}) {
   const deps: AgentDeps = {
     listListings: async () => FAKE_LISTINGS,
     createQuote: async (listingId, sessionId) => {
-      const l = FAKE_LISTINGS.find((x) => x.id === listingId);
+      const l = (await (over.listListings ?? (async () => FAKE_LISTINGS))()).find((x) => x.id === listingId);
       if (!l) throw new Error(`unknown listing ${listingId}`);
-      const duty = DUTY[listingId]!;
+      const duty = DUTY[listingId] ?? OTHER_DUTY;
       const q: QuoteRecord = {
         id: randomUUID(),
         listingId,

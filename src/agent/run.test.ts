@@ -27,6 +27,9 @@ const quoteIdFor = (listingId: string) => (prompt: string) => {
   return m[1];
 };
 
+const results = (events: AgentEvent[], name: string) =>
+  events.filter((e): e is Extract<AgentEvent, { type: 'tool-result' }> => e.type === 'tool-result' && e.name === name).map((e) => e.output as Record<string, unknown>);
+
 async function go(steps: Step[], budgetMinor = 40_000n) {
   const f = fakeDeps();
   const events: AgentEvent[] = [];
@@ -35,16 +38,21 @@ async function go(steps: Step[], budgetMinor = 40_000n) {
 }
 
 describe('runAgent — the tool loop (mock model)', () => {
-  it('search → quote → breakdown → propose → closing text; events streamed; proposal is PENDING with a checkout link', async () => {
+  it('search → compare → breakdown → propose → closing text; events streamed; proposal is PENDING with a checkout link', async () => {
     const { f, events, done } = await go([
       { text: 'Searching. ', tool: { name: 'search_listings', input: () => ({ query: 'automatic diver watch' }) } },
-      { tool: { name: 'get_landed_cost_quote', input: () => ({ listingId: 'L-P03' }) } },
+      { tool: { name: 'compare_landed_costs', input: () => ({ query: 'automatic diver watch' }) } },
       { tool: { name: 'get_duty_breakdown', input: (p) => ({ quoteId: quoteIdFor('L-P03')(p) }) } },
       { tool: { name: 'propose_purchase', input: (p) => ({ quoteId: quoteIdFor('L-P03')(p), reasoning: 'Only automatic diver watch within budget.' }) } },
       { text: 'I recommend L-P03 at $362.50 delivered, within your $400.00 budget. Review the duty lines and approve if you agree.' },
     ]);
     expect(events[0]).toEqual({ type: 'budget', budget: '$400.00' });
-    expect(events.filter((e) => e.type === 'tool-call').map((e) => (e as { name: string }).name)).toEqual(['search_listings', 'get_landed_cost_quote', 'get_duty_breakdown', 'propose_purchase']);
+    expect(events.filter((e) => e.type === 'tool-call').map((e) => (e as { name: string }).name)).toEqual(['search_listings', 'compare_landed_costs', 'get_duty_breakdown', 'propose_purchase']);
+    // Invariant: every quoted listing appeared in a search result of this run.
+    const searchedIds = new Set(results(events, 'search_listings').flatMap((o) => (o.results as { listingId: string }[]).map((r) => r.listingId)));
+    const quotedIds = results(events, 'compare_landed_costs').flatMap((o) => (o.compared as { listingId: string }[]).map((r) => r.listingId));
+    expect(quotedIds).toEqual(['L-P03', 'L-BIG']);
+    expect(quotedIds.every((id) => searchedIds.has(id))).toBe(true);
     expect(done.proposal).toMatchObject({ proposed: true, delivered_total: '$362.50', checkoutUrl: expect.stringMatching(/^\/checkout\//) });
     expect(done.steps).toBe(5);
     expect(done.usage).toEqual({ input: 500, output: 50 });
@@ -52,8 +60,17 @@ describe('runAgent — the tool loop (mock model)', () => {
     expect(events.at(-1)?.type).toBe('done');
   });
 
+  it('a model that quotes a listing no search returned is refused (nothing is quoted)', async () => {
+    const { events } = await go([
+      { tool: { name: 'get_landed_cost_quote', input: () => ({ listingId: 'L-P03' }) } },
+      { text: 'done' },
+    ]);
+    expect(results(events, 'get_landed_cost_quote')).toEqual([{ listingId: 'L-P03', refused: 'Search first; only listings shown in a search can be quoted.' }]);
+  });
+
   it('an over-budget proposal is refused in code and reported; nothing is saved', async () => {
     const { f, events, done } = await go([
+      { tool: { name: 'search_listings', input: () => ({ query: 'automatic diver watch' }) } },
       { tool: { name: 'get_landed_cost_quote', input: () => ({ listingId: 'L-BIG' }) } },
       { tool: { name: 'propose_purchase', input: (p) => ({ quoteId: quoteIdFor('L-BIG')(p), reasoning: 'gold case' }) } },
       { text: 'That one is over your budget.' },
