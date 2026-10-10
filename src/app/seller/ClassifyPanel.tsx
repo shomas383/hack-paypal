@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { parseUsdInput } from '@/domain/seller/form';
+import { SELLER_SAMPLES } from '@/domain/seller/samples';
 import { Button } from '@/ui/Button';
 import { Disclosure } from '@/ui/Disclosure';
 import { officialChain } from '@/ui/dutyText';
@@ -32,24 +33,12 @@ type Errors = Partial<Record<keyof Form, string>>;
 
 const EMPTY: Form = { title: '', description: '', origin: 'JP', price: '', shipping: '25.00' };
 
-// Demo samples (generic, no brands). The Japanese watch should classify to 9102.21.70 (a verified JP rate row exists);
-// the denim leaves out the fibre content, which separates the 6203.42 lines.
-const SAMPLES: { label: string; form: Form }[] = [
-  {
-    label: 'Japanese watch listing',
-    form: {
-      title: '自動巻き ダイバーズウォッチ 21石 ステンレスケース ステンレスブレス 1990年代',
-      description: '自動巻きムーブメント（21石）。ケースとブレスレットはステンレススチール製。日本製。動作確認済み。',
-      origin: 'JP',
-      price: '300.00',
-      shipping: '25.00',
-    },
-  },
-  {
-    label: 'denim jeans',
-    form: { title: "Men's selvedge blue denim jeans", description: 'Straight leg, button fly, 32 x 32. Made in Japan.', origin: 'JP', price: '200.00', shipping: '25.00' },
-  },
-];
+// Demo samples (src/domain/seller/samples.ts, shared with `pnpm seller:seed`). Amounts shown as the seller types them.
+const dollars = (minor: number) => `${Math.trunc(minor / 100)}.${String(minor % 100).padStart(2, '0')}`;
+const SAMPLES: { label: string; form: Form }[] = SELLER_SAMPLES.map((x) => ({
+  label: x.label,
+  form: { title: x.title, description: x.description ?? '', origin: x.origin, price: dollars(x.priceMinor), shipping: dollars(x.shippingMinor) },
+}));
 
 function validate(f: Form): Errors {
   const e: Errors = {};
