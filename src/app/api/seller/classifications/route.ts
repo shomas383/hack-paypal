@@ -4,8 +4,19 @@ import { clientIp } from '@/server/limits/clientIp';
 import { serverEnv } from '@/server/env';
 import { requireSeller } from '@/server/seller/access';
 import { runGroundedClassification, startGroundedClassification } from '@/server/seller/classify';
+import { reviewQueue } from '@/server/seller/review';
 
 export const dynamic = 'force-dynamic';
+
+/** GET → the review queue: every grounded classification, most recently changed first. */
+export async function GET() {
+  try {
+    await requireSeller();
+    return NextResponse.json(await reviewQueue(), { headers: { 'cache-control': 'no-store' } });
+  } catch (e) {
+    return toJsonError(e);
+  }
+}
 
 /**
  * POST { title, description?, origin, priceMinor, shippingMinor } → 202 { id }. The grounded classifier runs after the

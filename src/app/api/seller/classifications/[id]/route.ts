@@ -5,12 +5,12 @@ import { getClassificationView } from '@/server/seller/classify';
 
 export const dynamic = 'force-dynamic';
 
-/** GET → the classification's real progress and, when finished, its result (this seller session only). */
+/** GET → the classification's real progress and, when finished, its result (any signed-in seller session). */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const seller = await requireSeller();
+    await requireSeller();
     const { id } = await params;
-    return NextResponse.json(await getClassificationView(id, seller), { headers: { 'cache-control': 'no-store' } });
+    return NextResponse.json(await getClassificationView(id), { headers: { 'cache-control': 'no-store' } });
   } catch (e) {
     return toJsonError(e);
   }

@@ -146,6 +146,9 @@ export const classifications = pgTable('classifications', {
   grounded: jsonb('grounded').$type<GroundedResult | null>(),
   /** The classifier_calls reservation for this run (closed as OK / ERROR; an interrupted run is closed as ERROR). */
   callId: bigint('call_id', { mode: 'bigint' }),
+  /** The routing reasons as the classifier decided them; `reasons` is the current set after seller answers. */
+  baseReasons: jsonb('base_reasons').$type<string[] | null>(),
+  updatedAt: ts('updated_at').notNull().defaultNow(),
   hts10: text('hts10'),
   listingId: text('listing_id').references(() => listings.id),
   reviewedBy: text('reviewed_by'),
@@ -169,6 +172,42 @@ export const classifierCalls = pgTable(
     outcome: text('outcome').notNull(), // RESERVED | OK | ERROR | REFUSED_DAILY | REFUSED_SESSION | REFUSED_IP
   },
   (t) => [index('classifier_calls_at_idx').on(t.at)],
+);
+
+/** A seller's answer to a code-generated question (a statement about the item, with the question and answer as shown). */
+export const sellerStatements = pgTable(
+  'seller_statements',
+  {
+    id: bigserial('id', { mode: 'bigint' }).primaryKey(),
+    classificationId: uuid('classification_id').notNull().references(() => classifications.id),
+    questionId: text('question_id').notNull(),
+    question: text('question').notNull(),
+    answer: text('answer').notNull(),
+    /** The option id ('o-0', 'none', or 'exclusions:none-apply' / 'exclusions:one-applies'). */
+    answerId: text('answer_id').notNull(),
+    sellerSession: uuid('seller_session').notNull(),
+    at: ts('at').notNull().defaultNow(),
+  },
+  (t) => [index('seller_statements_classification_idx').on(t.classificationId)],
+);
+
+/** Every recorded review action (who = seller session, when, why); undo marks it and restores the from-state. */
+export const classificationActions = pgTable(
+  'classification_actions',
+  {
+    id: bigserial('id', { mode: 'bigint' }).primaryKey(),
+    classificationId: uuid('classification_id').notNull().references(() => classifications.id),
+    action: text('action').$type<'accept' | 'override' | 'publish' | 'answers'>().notNull(),
+    fromStatus: text('from_status').$type<ClassificationStatus>().notNull(),
+    toStatus: text('to_status').$type<ClassificationStatus>().notNull(),
+    fromHts10: text('from_hts10'),
+    toHts10: text('to_hts10'),
+    reason: text('reason'),
+    sellerSession: uuid('seller_session').notNull(),
+    at: ts('at').notNull().defaultNow(),
+    undoneAt: ts('undone_at'),
+  },
+  (t) => [index('classification_actions_classification_idx').on(t.classificationId)],
 );
 
 /** Seller console sessions (shared passcode; no accounts). The cookie holds the random id; expiry is checked server-side. */

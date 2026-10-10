@@ -64,13 +64,13 @@ export async function runGroundedClassification(id: string, model: LanguageModel
     const grounded: GroundedResult = { outcome: r.kind, choice, candidates: r.kind === 'OK' ? r.candidates : [], meta: r.meta };
     await db
       .update(classifications)
-      .set({ status, grounded, needsReview: r.review.needsReview, reasons: r.review.reasons, hts10: status === 'AUTO_ACCEPTED' ? (top?.hts10 ?? null) : null, error: r.kind === 'INVALID_OUTPUT' ? r.error : null })
+      .set({ status, grounded, needsReview: r.review.needsReview, reasons: r.review.reasons, baseReasons: r.review.reasons, updatedAt: new Date(), hts10: status === 'AUTO_ACCEPTED' ? (top?.hts10 ?? null) : null, error: r.kind === 'INVALID_OUTPUT' ? r.error : null })
       .where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')));
     if (row.callId !== null) await finishClassifierCall(row.callId, 'OK');
     await db.insert(auditLog).values({ event: 'classification.created', entity: 'classification', entityId: id, sessionId: row.sessionId, data: { kind: 'grounded', status, reasons: r.review.reasons, hts10: top?.hts10 ?? null } });
   } catch (e) {
     const message = e instanceof Error ? e.message.slice(0, 300) : 'classification failed';
-    await db.update(classifications).set({ status: 'FAILED', error: message }).where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')));
+    await db.update(classifications).set({ status: 'FAILED', error: message, updatedAt: new Date() }).where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')));
     if (row.callId !== null) await finishClassifierCall(row.callId, 'ERROR');
   }
 }
@@ -89,11 +89,14 @@ export interface ClassificationView {
   separatingAttributes: { name: string; value_from_listing: string | null }[];
 }
 
-/** The seller's view of one classification (own session only). Closes out a run that was interrupted (e.g. a restart). */
-export async function getClassificationView(id: string, sellerSession: string, now = new Date()): Promise<ClassificationView> {
+/**
+ * The seller's view of one classification. Any signed-in seller session may read it (one shop, one shared passcode).
+ * Closes out a run that was interrupted (e.g. a restart).
+ */
+export async function getClassificationView(id: string, now = new Date()): Promise<ClassificationView> {
   if (!/^[0-9a-f-]{36}$/.test(id)) throw new CheckoutError(404, 'classification not found');
   const [row] = await db.select().from(classifications).where(eq(classifications.id, id));
-  if (!row || row.sessionId !== sellerSession || row.kind !== 'grounded') throw new CheckoutError(404, 'classification not found');
+  if (!row || row.kind !== 'grounded') throw new CheckoutError(404, 'classification not found');
 
   const choice = row.grounded?.choice ?? null;
   const ranked = choice ? [...choice.candidates].sort((a, b) => b.confidence - a.confidence) : [];
@@ -104,7 +107,7 @@ export async function getClassificationView(id: string, sellerSession: string, n
   if (progress.state === 'interrupted') {
     const closed = await db
       .update(classifications)
-      .set({ status: 'FAILED', error: 'interrupted' })
+      .set({ status: 'FAILED', error: 'interrupted', updatedAt: now })
       .where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')))
       .returning({ id: classifications.id });
     if (closed.length && row.callId !== null) await finishClassifierCall(row.callId, 'ERROR');
