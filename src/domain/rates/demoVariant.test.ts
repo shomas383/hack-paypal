@@ -41,6 +41,26 @@ describe('seed demo variants: engine result equals the declared expectation', ()
     expect(r.lines.map((l) => l.chapter99).filter(Boolean)).toContain(v.expected!.chapter99);
   });
 
+  it('the seeded watch comparison (DEMO): JP $362.50 · CN $377.09 · DE $344.00 · JP-B $452.50 delivered', () => {
+    const delivered = Object.fromEntries(
+      seed.listings
+        .filter((l) => l.hts10 === '9102.21.70')
+        .map((l) => {
+          const r = quoteDuty(loadVerifiedRates(), {
+            origin: l.origin,
+            hts10: l.hts10,
+            entryDate: '2026-10-09',
+            customsValue: usd(l.price_minor),
+            quantity: 1,
+            ...(l.value_split ? { valueSplit: { case: usd(l.value_split.case_minor), band: usd(l.value_split.band_minor) } } : {}),
+          });
+          if (r.kind !== 'OK') throw new Error(`${l.id}: ${r.reason}`);
+          return [l.id, Number(BigInt(l.price_minor + l.shipping_minor) + r.totalDuty.amountMinor)];
+        }),
+    );
+    expect(delivered).toEqual({ 'L-P03': 36_250, 'L-P03-B': 45_250, 'L-P13': 37_709, 'L-P14': 34_400 });
+  });
+
   it('L-P03-B math: MFN $1.53 + 4.2%×$320 + 9.8%×$60 = $20.85 (AVE 5.49% < 12.5%) → combined cap 12.5%×$380 = $47.50 → $452.50 delivered', () => {
     const r = quoteDuty(loadVerifiedRates(), { origin: 'JP', hts10: '9102.21.70', entryDate: '2026-10-08', customsValue: usd(38_000), quantity: 1, valueSplit: { case: usd(32_000), band: usd(6_000) } });
     if (r.kind !== 'OK') throw new Error(r.reason);

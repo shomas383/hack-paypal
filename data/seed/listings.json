@@ -38,6 +38,17 @@
       "facts": {}
     },
     {
+      "id": "L-P14",
+      "sheet_ref": "P14",
+      "title": "Automatic diver watch, 21 jewels, stainless case, steel bracelet (Germany)",
+      "origin": "DE",
+      "hts10": "9102.21.70",
+      "price_minor": 29000,
+      "shipping_minor": 2500,
+      "value_split": { "case_minor": 24000, "band_minor": 5000 },
+      "facts": {}
+    },
+    {
       "id": "L-P11",
       "sheet_ref": "P11",
       "title": "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
