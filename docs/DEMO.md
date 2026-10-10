@@ -9,8 +9,14 @@ landed prices." Show comparison card JP / CN / EU with itemized duty lines + sou
 - JP $300 → **$362.50** (duty $37.50: MFN $16.93 + 9903.05.49 $20.57, JP combined 12.5%)
 - JP-B $380 → **$452.50** (duty $47.50) — over a $400 budget
 
-0:25–0:55 Seller side. Japanese-language listing pasted → classifier returns HTS candidate + confidence + Japanese evidence spans.
-A second listing (missing material/age) lands in the review queue (AG Grid console). Reviewer accepts.
+0:25–0:55 Seller side (`/seller`, before the buyer agent). Paste the Japanese-language watch listing that leaves out the
+jewel count ("Use a sample: Japanese watch listing"; JP, $300) → Classify listing → the three real steps tick through
+("Proposed 1 heading: 9102.21" → "Matched 6 official lines" → "Chose 9102.21.70") → **Needs review**: confidence below
+0.80, "The listing doesn't say: jewel count in movement". Open it in the review queue (AG Grid): the choice question is
+built by code from the official HTS chain — pick "Having over 17 jewels in the movement" and confirm "None of these apply"
+→ Save answers (the jewel-count reason clears; the routing reran in code) → Accept classification (Undo toast) → Publish
+listing… with case $250 / band $50 → "Quotable: **$362.50** delivered at $300.00". Point out: codes come only from the
+official schedule; the model never sets a code it wasn't offered or any amount. (Live run 2026-10-10: exactly this.)
 
 0:55–1:45 Buyer agent (`/agent`). Prompt: "automatic diver watch under $400 delivered." Buyer confirms the $400.00 budget.
 Agent searches, quotes all four watches (JP / CN / DE / JP-B), explains duties (MFN + Chapter 99 U.S. note 52 additional duty

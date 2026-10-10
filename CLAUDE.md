@@ -37,7 +37,11 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
 - `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00]` — ONE live buyer-agent run against the local DB (live
   Claude calls); prints the transcript and fails if any $ amount in the agent's text isn't from stored-quote/rate data or the
-  budget, a non-allowlisted tool was called, or L-T-INJ was proposed
+  budget, a non-allowlisted tool was called, L-T-INJ was proposed, or the agent text has a checkout path / URL / quoted
+  official text (final message over 4 sentences only warns)
+- `pnpm seller:seed [--force]` — LIVE (2 Claude calls per sample): classifies the two seller demo samples
+  (`src/domain/seller/samples.ts`) so the review queue isn't empty; accepts/publishes nothing; skips samples already
+  classified. Never run by a deploy.
 - `pnpm spike:paypal <a|b|c|d|e|f|g>` (aliases `pnpm spike:a` … `spike:d`) — sandbox spike scripts in `scripts/spike/`
 - `pnpm build` · `pnpm start` — production build/start (Render runs these via `render.yaml`; `/api/health` is the health check)
 - `data/rates/` is guarded by `.claude/hooks/protect-rates.mjs`: Edit/Write and Bash/PowerShell commands that mention it are
@@ -106,9 +110,14 @@ against the official .39/.38 heading text); refs and regime notes cite heading a
 "301", no FR citation). Seed L-P14. Demo query is now "automatic diver watch under $400 delivered": the agent quotes JP
 $362.50 · CN $377.09 · DE $344.00 · JP-B $452.50 ✗ and proposes DE (live run 2026-10-10). With "vintage" it picks JP L-P03
 (the only listing claiming an era) — DEMO optional second beat.
-Next: the seller UI with AG Grid Community (plan first — notes in the 2026-10-08 plan: grounded
-classifier in the service, progress state, review queue, seller questions + ANSWER_CONTRADICTS, orders/duty ledger), then the
-rough-cut demo video.
+UI refresh + seller UI DONE on branch `ui-refresh` (2026-10-10, not merged/pushed yet): design system (docs/design/,
+tokens.css, IBM Plex, exact USD formatter, raw-value guard), buyer pages refreshed (axe clean, production-build screenshots);
+seller console `/seller` behind SELLER_CONSOLE_PASSCODE (≥ 12 chars; unset → 404): grounded classifier in the service with real
+progress, code-built seller questions from the official chains ("Other (not: …)", "none of these apply"), accept / override /
+undo / publish (case/band split; quotable only with a verified rate row), AG Grid Community review queue and orders/duty ledger
+with CSV. Migrations 0008–0010. `pnpm seller:seed` (live) exists, not run on Render. SPEC §4.1/§4.4/§4.5 ACs ticked.
+Next: go-live (merge ui-refresh, push, Render deploy runs migrations 0008–0010; set SELLER_CONSOLE_PASSCODE in Render; then
+`pnpm seller:seed` once), then polish and the demo video.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
 the official HTS export, add-on rules encoded per Chapter 99 program).
 

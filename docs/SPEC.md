@@ -86,7 +86,31 @@ AC:
       real component-reporting line `9102.21.70`. On a re-run, the B2 "strict" 10-digit count becomes 10/11 **only because of
       that correction**, not because of a classifier change; the component-reporting-excluded count (9/10) and every other
       number are unaffected. The offline baseline is unchanged (8/11 strict, 8/10 excluded).
-- [ ] Japanese listing classified end-to-end in the UI with confidence displayed; one seeded listing lands in review queue.
+- [x] Japanese listing classified end-to-end in the UI with confidence displayed; one seeded listing lands in review queue.
+      (Seller console, production build, 2026-10-10, claude-opus-5-5: the Japanese-language watch sample with the jewel count
+      left out → "Proposed 1 heading: 9102.21" → "Matched 6 official lines" → "Chose 9102.21.70 · confidence 0.55" → Needs
+      review; P08's title "Men's selvedge blue denim jeans, 100% cotton" → 6203.42.4511, confidence 0.88, Needs review
+      (recreational performance outerwear and compact yarns unknown). Earlier, the sample WITH "21石" auto-accepted at 0.90.)
+
+Grounded classifier in the service (seller console, 2026-10-10; `src/server/seller/classify.ts`):
+- `POST /api/seller/classifications` (seller session) reserves the classifier rate limit before any model call, stores a
+  CLASSIFYING row and runs the grounded classifier after the response (`next/server` `after()`). Each REAL stage is written
+  as it starts (proposing → matching (headings) → choosing (n official lines)); the console polls it. Nothing is simulated.
+  A run still CLASSIFYING after 90 s is closed as FAILED ("interrupted") and its reservation as ERROR.
+- Stored: the verified choice, the expanded official lines with their chains, run meta, the routing reasons as decided
+  (`base_reasons`) and the current reasons. AUTO_ACCEPTED sets the code; review leaves it empty.
+
+Seller questions (`src/domain/classifier/questions.ts`) — built by CODE from the official Rev 20 chains, never by the model:
+- Choice questions: "Which description matches the item?" at the first chain level where the chosen candidates differ; the
+  options are those levels' official text plus "None of these"; then one level deeper inside the top candidate's branch;
+  at most 3. A bare "Other" level names its official siblings: "Other (not: Recreational performance outerwear)".
+- Exclusions ("none of these apply"): the other official lines under the top candidate's subheading, read from the level
+  where each departs from the top line's chain, skipping branches a choice question already covers; one confirmation
+  ("None of these apply to this item." / "One of these applies.").
+- Answers are recorded as seller statements (the question and answer text as shown, who, when). The routing reruns in
+  code: answers only narrow the chosen codes; ruling out the top line (or an exclusion applying) adds ANSWER_CONTRADICTS and
+  suggests the single remaining line; MISSING_ATTRIBUTES / TOP2_DIFFER_6 clear only when every question is answered
+  consistently. LOW_CONFIDENCE, MODEL_FLAGGED etc. are never cleared by answers. No open reasons → the top line is settled.
 
 ### 4.2 Rate engine (deterministic)
 Method and rules for verifying a row: `docs/HTS_VERIFICATION_SPEC.md` (overrides this section where more precise).
@@ -192,6 +216,14 @@ AC:
 - Seller text is untrusted: passed only under `untrusted_seller_text`; text that reads like instructions is withheld by code
   (flag kept for the UI). Duty lines carry the official HTS / Ch. 99 wording (no program labels).
 - Spend cap per order and per session enforced in `policy/` and in `propose_purchase`; runs rate-limited per session/IP/day.
+- Final message (prompt): 2–4 sentences — the pick, its delivered total against the budget, the main reason; at most one
+  alternative (the quotes table shows the rest); no URLs or checkout paths (the proposal card has the button); no official
+  HTS / Ch. 99 text (the breakdown shows it). `pnpm agent:live` FAILS on a checkout path, a URL, quoted official text or an
+  untraceable amount, and WARNS above 4 sentences. Last run (2026-10-10): all checks pass, L-P14 $344.00 proposed, one
+  alternative named, WARN 5 sentences.
+- `/agent` shows every step as a row (search, quotes compared, duty breakdown with official text one disclosure away,
+  proposal), a code-computed insight line when the lowest goods price isn't the lowest delivered total, and one screen-reader
+  announcement at the end. Phones (≤ 640 px): quotes as two-line rows with Delivered and the budget status visible.
 AC:
 - [x] Agent compares ≥2 origins with itemized duties and cites rate sources; asks for approval; never captures.
       (rates-v4, `pnpm agent:live`, 2026-10-10 UTC, claude-opus-5-5, "automatic diver watch under $400 delivered": quoted
@@ -207,11 +239,38 @@ AC:
       (Mock-model test with a model that OBEYS the injection: no approve tool exists, a budget override fails schema
       validation, at most a PENDING proposal at the stored price; live runs never proposed L-T-INJ.)
 
-### 4.5 Seller console
-- Listings table (AG Grid community edition, optional — sponsor prize), review queue for flagged classifications
-  (accept/override HTS with reason), orders with predicted duty and status.
+### 4.5 Seller console (`/seller`)
+- Access: one shared passcode from env `SELLER_CONSOLE_PASSCODE` (≥ 12 chars). Unset → `/seller` and `/api/seller/*` are 404.
+  sha256 digests compared with `timingSafeEqual`; 5 failed attempts per IP per 15 min, then 429; an httpOnly session cookie
+  (random id in `seller_sessions`, 8 h). No passcode is stored. Any signed-in session sees every grounded classification
+  (one shop); "who" in the audit is the seller session.
+- Tabs (URL holds tab, filter, search and the open row): Classify (§4.1 with real progress), Review queue, Orders and duty.
+- Review queue (AG Grid Community): listing, origin, top code, confidence (number + bar), reasons, status (text + icon),
+  seller answers, updated; search and status filter; columns fit the width (full / panel open / phone).
+- Review panel: proposed line + official chain, reasons in plain words, the code-built questions (§4.1), and the recorded
+  actions, each with who / when / why (`classification_actions`):
+  - Accept: pending review or auto-accepted → ACCEPTED (optimistic, 6 s Undo).
+  - Override: only a code from that run's expanded Rev 20 lines, with a reason (optimistic, Undo).
+  - Undo: restores the recorded from-state only if nothing changed the row since; never across a publish.
+  - Publish: only from a settled code (auto-accepted / accepted / overridden), confirmed in a dialog. Component-reported
+    compound lines (watches) need the case and band values, which must add up to the price. Creates a listing that
+    **quotes only if a verified rate row exists** for its origin + code; otherwise `/listings` shows "No verified rate yet"
+    (never a guess).
+  Concurrent changes → 409 (conditional updates).
+- Orders and duty (AG Grid Community): every sandbox order with its stored quote — goods / shipping / duty / total (exact
+  formatter), HTS, Ch. 99 headings, rate version, status, PayPal order; pinned captured-duty sum (code); Export CSV (all
+  columns, data rows only, exact decimals). No buyer data.
+- Demo samples (`src/domain/seller/samples.ts`, also `pnpm seller:seed`): the Japanese-language watch without a jewel count
+  and P08's denim title.
 AC:
-- [ ] Reviewer override is persisted with who/when/why and changes subsequent quotes.
+- [x] Reviewer override is persisted with who/when/why and changes subsequent quotes. (Overrides are recorded actions with
+      the reason; publishing uses the settled code, and the listing quotes from that code's verified rate row. Unit tests:
+      transitions, override validation, undo; route tests: auth + strict bodies. Live: the watch was answered → accepted →
+      published with 250/50 → L-C-469846d7 quotable at $362.50.)
+- [x] Seller questions built by code from the official chains, answers recorded and the routing rerun (live, 2026-10-10:
+      watch → jewel-count question + exclusions, "jewel count" cleared, low confidence stayed; denim → two choice questions +
+      exclusions, all cleared → auto-accepted 6203.42.4511).
+- [x] Orders and duty ledger with CSV export (14 sandbox orders, captured duty $233.13, CSV of 14 rows, 2026-10-10).
 
 ### 4.6 DDP invoice path (PayPal Invoicing v2)
 - Draft invoice → send, with duty itemized (see docs/PAYPAL.md for field choice). For direct/repeat buyers.

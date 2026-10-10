@@ -6,8 +6,8 @@ duties included, before approving a PayPal payment.
 
 > **Sandbox only.** The app refuses to run unless `PAYPAL_ENV=sandbox`. Duty figures are estimates, not customs rulings.
 
-Status: Week 4 — walking skeleton of the demo path (listing → quote → checkout → PayPal sandbox → policy-gated capture; DDP invoice)
-plus deploy readiness (Render Blueprint, health check, verified webhook receiver).
+Status: buyer path (listing → quote → checkout → PayPal sandbox → policy-gated capture; DDP invoice), a read-only buyer agent
+(`/agent`), and the seller console (`/seller`: grounded classification, review, publish, orders and duty ledger).
 
 > **Demo data.** Seeded listings charge a **flat $25.00 demo shipping rate — not a carrier quote**. Shipping is excluded
 > from customs value, so it never changes the duty estimate.
@@ -24,7 +24,7 @@ cp .env.example .env        # fill in sandbox credentials
 pnpm install
 docker compose up -d
 pnpm db:migrate
-pnpm db:seed                # 5 demo listings
+pnpm db:seed                # demo listings (checked against the verified rate data)
 pnpm dev                    # http://localhost:3000 → /listings
 ```
 
@@ -35,6 +35,20 @@ Chapter 99 heading(s), sources and rate version — before any PayPal button →
 runs the capture policy, and captures (or voids). **Send DDP invoice instead** creates and sends a PayPal invoice with the duty
 itemized. End-to-end test: `PW_HEADED=1 pnpm test:e2e` (set `PAYPAL_SANDBOX_BUYER_PASSWORD` in `.env` to automate the
 PayPal login; if PayPal's popup changes, the test pauses so you can finish the login and press Resume).
+
+## Seller console (`/seller`)
+Set `SELLER_CONSOLE_PASSCODE` (at least 12 characters) to enable it; without it the console answers 404. One shared passcode,
+compared in constant time; 5 wrong attempts per IP lock sign-in for 15 minutes; the session is an httpOnly cookie (8 h).
+- **Classify.** Paste a listing in any language (incl. Japanese). The grounded classifier runs on the server and the page
+  shows its real steps: headings proposed → official Rev 20 lines matched → line chosen, with confidence and quoted evidence.
+- **Review queue** ([AG Grid](https://www.ag-grid.com/) Community). Items in review get questions **built by code from the
+  official HTS descriptions** (never by the AI), e.g. "Which description matches the item? Having over 17 jewels in the
+  movement / …", plus a "None of these apply" check. Answers rerun the routing. Accept, override (only official lines the run
+  matched, with a reason) and undo are recorded with who, when and why.
+- **Publish.** Only a settled code can be published; watches reported by component need the case and band values. A
+  published listing quotes **only if a verified rate row exists** — otherwise it shows "No verified rate yet".
+- **Orders and duty** (AG Grid Community): every sandbox order with goods, shipping, duty, HTS and Chapter 99 headings, a
+  captured-duty total, and **Export CSV**.
 
 ## How classification stays safe
 The AI proposes a code; the code decides what happens with it.
@@ -67,7 +81,8 @@ wrong answer went to review. A classification takes about 12–14 s (max 34 s).
 1. **Apply the Blueprint.** In Render, choose New → Blueprint and select this repo. Confirm the plan names and prices first.
 2. **Enter the `sync: false` values when prompted.** These are the PayPal sandbox credentials,
    `NEXT_PUBLIC_PAYPAL_CLIENT_ID`, `PAYPAL_SANDBOX_BUYER_EMAIL`, `ANTHROPIC_API_KEY`, the spend caps, the quote TTL, the classifier
-   threshold and the classifier limits.
+   threshold and the classifier limits, and `SELLER_CONSOLE_PASSCODE` (at least 12 characters; leave it unset and the seller
+   console doesn't exist: `/seller` and `/api/seller/*` answer 404).
    - `NEXT_PUBLIC_PAYPAL_CLIENT_ID` is baked into the build, so it must be set before the first build.
    - `DATABASE_URL` comes from the database automatically.
    - `render.yaml` fixes three values that aren't secrets: `PAYPAL_ENV`, `PAYPAL_API_BASE`, `TRUSTED_PROXY_HOPS=1`.
@@ -94,7 +109,8 @@ wrong answer went to review. A classification takes about 12–14 s (max 34 s).
 | `pnpm dev` | Run the app locally |
 | `pnpm test` | Vitest unit tests |
 | `pnpm typecheck` · `pnpm lint` | TypeScript (strict) · ESLint |
-| `pnpm db:migrate` · `pnpm db:seed` | Apply Drizzle migrations · seed the 5 demo listings |
+| `pnpm db:migrate` · `pnpm db:seed` | Apply Drizzle migrations · seed the demo listings |
+| `pnpm seller:seed [--force]` | **Live** (needs `ANTHROPIC_API_KEY`; 2 Claude calls per sample): classifies the two seller demo samples so the review queue isn't empty. Accepts and publishes nothing; skips samples already classified. Never run by a deploy |
 | `pnpm test:e2e` | Playwright demo-path test against the PayPal sandbox (`PW_HEADED=1` to watch) |
 | `pnpm spike:a` … `pnpm spike:d` | PayPal sandbox spikes (see below); `pnpm spike:paypal <a\|b\|c\|d\|e\|f\|g>` also works |
 | `pnpm rates:import` | Regenerate rate data + eval fixtures from the human-verified sheet (kept locally in `data/source/`, not committed) |
