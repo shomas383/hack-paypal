@@ -41,6 +41,7 @@ interface Detail {
 }
 
 const money = (minor: string) => formatUsd(usd(BigInt(minor)));
+const NOT_SURE = 'not-sure'; // UI-only choice: never sent, never recorded
 const timeFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const ACTION_TEXT: Record<string, string> = { accept: 'Accepted', override: 'Overridden', publish: 'Published', answers: 'Routing reran after answers' };
 
@@ -126,7 +127,8 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
   const st = classificationStatus(d.status);
   const missing = d.separatingAttributes.filter((a) => a.value_from_listing === null).map((a) => a.name);
   const settledCode = d.hts10 ?? d.top?.hts10 ?? null;
-  const canAccept = d.status === 'PENDING_REVIEW' || d.status === 'AUTO_ACCEPTED';
+  // Auto-accepted items are already settled: no Accept, Publish is the primary action (Override stays available).
+  const canAccept = d.status === 'PENDING_REVIEW';
   const canOverride = ['PENDING_REVIEW', 'AUTO_ACCEPTED', 'ACCEPTED', 'OVERRIDDEN'].includes(d.status) && d.expanded.length > 0;
   const canPublish = ['AUTO_ACCEPTED', 'ACCEPTED', 'OVERRIDDEN'].includes(d.status);
   const canAnswer = canOverride && (d.questions.choices.length > 0 || d.questions.exclusions.length > 0);
@@ -168,9 +170,10 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
 
   const saveAnswers = () =>
     act('answers', async () => {
-      const changed = Object.fromEntries(Object.entries(draft).filter(([k, v]) => d.answers[k] !== v));
+      // "Not sure" records nothing: only real answers that changed are sent.
+      const changed = Object.fromEntries(Object.entries(draft).filter(([k, v]) => v !== NOT_SURE && d.answers[k] !== v));
       apply(await call<Detail>(`/api/seller/classifications/${id}/answers`, { answers: changed, exclusionsApply: excl === d.exclusionsApply ? null : excl }));
-      setToast({ message: 'Answers saved. The routing reran.' });
+      setToast({ message: 'Answers saved. Review reasons updated.' });
     });
 
   const publish = (e: React.FormEvent) => {
@@ -255,13 +258,13 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
           <h3 id="q-h" className={s.h3}>
             Questions for the seller
           </h3>
-          <p className={s.muted}>Built by code from the official HTS descriptions. Your answers are recorded as statements.</p>
+          <p className={s.muted}>Built by code from the official HTS descriptions. Your answers are recorded as statements; &ldquo;Not sure&rdquo; records nothing.</p>
           {d.questions.choices.map((q) => (
             <fieldset key={q.id} className={s.fieldset}>
               <legend>{q.text}</legend>
-              {[...q.options, { id: 'none', text: 'None of these', codes: [] }].map((o) => (
+              {[...q.options, { id: NOT_SURE, text: 'Not sure', codes: [] }].map((o) => (
                 <label key={o.id} className={s.radio}>
-                  <input type="radio" name={q.id} value={o.id} checked={draft[q.id] === o.id} onChange={() => setDraft({ ...draft, [q.id]: o.id })} />
+                  <input type="radio" name={q.id} value={o.id} checked={(draft[q.id] ?? NOT_SURE) === o.id} onChange={() => setDraft({ ...draft, [q.id]: o.id })} />
                   <span>{o.text}</span>
                 </label>
               ))}
