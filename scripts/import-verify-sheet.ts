@@ -23,6 +23,8 @@ const SOURCE = join('data', 'source', 'DDP_product_test_sheet_verify.xlsx');
 // v2 (2026-10-08): the watch is keyed by its component-reporting 8-digit line 9102.21.70 (HTS Ch. 91 Stat. Note 1(d)).
 // v3 (2026-10-09): CN watch P13 (two Ch. 99 add-ons: 9903.05.31 + 9903.88.15, cumulative per note 52(a)); programs named
 // after their HTS note (CH99_NOTE52, CH99_NOTE20_LIST4A/4B) — the HTS names no Section 301 / forced-labor action for note 52.
+// v4 (2026-10-09): EU watch P14 (Germany, 9903.05.39, combined 10% cap per note 52(k)); output text cites heading and note
+// numbers only (no "List 4A/4B" / "301" wording).
 const VERSION = CURRENT_RATE_VERSION;
 const HTS_REVISION = CURRENT_HTS_REVISION;
 // Every rate key must be a real line in the official HTS index of the same revision (built by pnpm hts:import).
@@ -143,6 +145,7 @@ const GENERIC: Record<string, string> = {
   P11: "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
   P12: 'Anime series Blu-ray box set, Japanese release (commercially recorded)',
   P13: 'Automatic diver watch, 21 jewels, stainless case, steel bracelet (China)',
+  P14: 'Automatic diver watch, 21 jewels, stainless case, steel bracelet (Germany)',
 };
 
 /** Brand → generic replacements for free text (col W evidence, LLM notes). Printed for review on every run. */
@@ -184,6 +187,14 @@ const COMPOUND: Record<string, { text: string; components: Component[] }> = {
       { kind: 'ad_valorem', rate_ppm: 98_000, applies_to: 'band' },
     ],
   },
+  P14: {
+    text: '$1.53 each + 4.2% case + 9.8% band',
+    components: [
+      { kind: 'specific', amount_usd_micros: 1_530_000, per: 'each' },
+      { kind: 'ad_valorem', rate_ppm: 42_000, applies_to: 'case' },
+      { kind: 'ad_valorem', rate_ppm: 98_000, applies_to: 'band' },
+    ],
+  },
   P11: {
     text: '0.4¢ each + 6.1%',
     components: [
@@ -206,6 +217,7 @@ const FACTS: Record<string, { facts: Record<string, boolean>; evidence: string[]
 const GOLDEN_OVERRIDE: Record<string, { price_minor: number; value_split: { case_minor: number; band_minor: number }; evidence: string }> = {
   P03: { price_minor: 30_000, value_split: { case_minor: 25_000, band_minor: 5_000 }, evidence: 'AVE 5.6% at $300 (case 250 / band 50)' },
   P13: { price_minor: 28_000, value_split: { case_minor: 23_000, band_minor: 5_000 }, evidence: 'AVE 5.7% at $280 (case 230 / band 50)' },
+  P14: { price_minor: 29_000, value_split: { case_minor: 24_000, band_minor: 5_000 }, evidence: 'AVE 5.7% at $290 (case 240 / band 50)' },
 };
 
 /**
@@ -215,7 +227,7 @@ const GOLDEN_OVERRIDE: Record<string, { price_minor: number; value_split: { case
 const MULTI_CH99: Record<string, { heading: string; rate_ppm: number; text: string; ref: string; program: string }[]> = {
   P13: [
     { heading: '9903.05.31', rate_ppm: 125_000, text: '9903.05.31 +12.5%', ref: 'U.S. note 52', program: 'CH99_NOTE52' },
-    { heading: '9903.88.15', rate_ppm: 75_000, text: '9903.88.15 +7.5%', ref: 'U.S. note 20(r)/(s)(i) (List 4A)', program: 'CH99_NOTE20_LIST4A' },
+    { heading: '9903.88.15', rate_ppm: 75_000, text: '9903.88.15 +7.5%', ref: 'U.S. note 20(r)/(s)(i)', program: 'CH99_NOTE20_LIST4A' },
   ],
 };
 /** Phrases W must contain for a multi-heading CN row (the user's verification against the Ch. 99 PDF, 2026-10-09). */
@@ -224,9 +236,14 @@ const MULTI_CH99_EVIDENCE = ['note 20(r)', 'note 52(a)', 'not in List 4B', 'no i
 /** Exact expected duty where R × price isn't a whole cent (compound MFN + additive add-ons), asserted against W. */
 const EXACT_DUTY: Record<string, { text: string; duty_minor: number }> = {
   P13: { text: '= $72.09', duty_minor: 7_209 },
+  P14: { text: '= $29.00', duty_minor: 2_900 },
 };
 
-const ORIGIN: Record<string, string> = { Japan: 'JP', China: 'CN' };
+const ORIGIN: Record<string, string> = { Japan: 'JP', China: 'CN', Germany: 'DE' };
+/** EU member-state origins handled by the note 52 EU headings (9903.05.38 / .39). Add a member only after verifying it. */
+const EU_MEMBER = new Set(['DE']);
+/** Phrases W must contain for an EU 9903.05.39 row (the user's verification against the Ch. 99 PDF, 2026-10-09). */
+const EU_EVIDENCE = ['9903.05.39 combined 10%', 'note 52(k)', 'not in note 52(j)(2)', '9903.05.97', 'no note 52(b) exemption', 'not in note 16', 'IEEPA (terminated)'];
 /** Origins that only appear on rows that aren't verified (used for UNSUPPORTED golden cases, never for rate rows). */
 const NOT_VERIFIED_ORIGIN: Record<string, string> = { USA: 'US' };
 
@@ -381,6 +398,19 @@ function main(): void {
   const jpCaps = new Set(imported.filter((r) => r.origin === 'JP' && r.cells.get('O') === '9903.05.49').map((r) => r.total));
   assert(jpCaps.size === 1, `JP 9903.05.49 rows disagree on the combined total: ${[...jpCaps].join(', ')}`);
   const jpCap = [...jpCaps][0]!;
+  // EU cap likewise comes from the sheet (every EU .39 row totals the same rate), and must match the official heading text:
+  // .39 "… less than N percent", .38 "… equal to or greater than N percent" (Ch. 99 lookup).
+  const euRows = imported.filter((r) => EU_MEMBER.has(r.origin));
+  const euCaps = new Set(euRows.filter((r) => r.cells.get('O') === '9903.05.39').map((r) => r.total));
+  assert(euCaps.size <= 1, `EU 9903.05.39 rows disagree on the combined total: ${[...euCaps].join(', ')}`);
+  const euCap = [...euCaps][0];
+  if (euRows.length) {
+    assert(euCap !== undefined, 'EU rows present but none on 9903.05.39 — the cap cannot be read from the sheet');
+    const pctText = `${euCap / 10_000} percent`;
+    assert(euCap % 10_000 === 0, `EU cap ${euCap} ppm is not a whole percent`);
+    assert((ch99.headings['9903.05.39'] ?? '').includes(`less than ${pctText}`), `9903.05.39 official text lacks "less than ${pctText}" — sheet cap ≠ HTS`);
+    assert((ch99.headings['9903.05.38'] ?? '').includes(`equal to or greater than ${pctText}`), `9903.05.38 official text lacks "equal to or greater than ${pctText}"`);
+  }
 
   // Build rate rows, merging listings that share (origin, hts10).
   const rows = new Map<string, RateRow>();
@@ -456,14 +486,32 @@ function main(): void {
       }
       notApplied.push({
         program: 'CH99_NOTE20_LIST4B', chapter99: '9903.88.16',
-        reason: "9102.21.70 not listed in List 4B (note 20(u)); provision suspended (compiler's note)", ref: 'U.S. note 20(u)',
+        reason: "9102.21.70 not listed under 9903.88.16 (note 20(u)); provision suspended (compiler's note)", ref: 'U.S. note 20(u)',
       });
-      exemptRefs.push('note 20 (legacy China lists): List 4A active for this line, not in List 4B, no in-effect exclusion', 'note 16 (Section 232): 9102 not listed');
+      exemptRefs.push(
+        'note 20: 9903.88.15 (note 20(r)/(s)(i)) applies to this line; not listed under 9903.88.16 (note 20(u)); no in-effect exclusion',
+        'note 16 (Section 232): 9102 not listed',
+      );
       sources.push(
         { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(a) cumulative)' },
-        { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 20(r)/(s)(i) (List 4A)' },
+        { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 20(r)/(s)(i)' },
         { kind: 'csms', ref: 'CSMS #69326983' },
       );
+    } else if (EU_MEMBER.has(r.origin) && (o === '9903.05.39' || o === '9903.05.38')) {
+      // EU member state (note 52): combined 10% cap — .39 below it (top-up), .38 at or above it (no add-on); AVE per 52(k).
+      if (o === '9903.05.39') {
+        assert(r.base < euCap! || compound, `${where}: .39 but base ≥ cap`);
+        assert(r.total === euCap, `${where}: .39 total ≠ cap`);
+        for (const e of EU_EVIDENCE) assert(w.includes(e), `${where}: W lacks "${e}"`);
+      } else {
+        assert(r.base >= euCap! && r.addon === 0, `${where}: .38 needs base ≥ cap and no add-on`);
+      }
+      additional.push({
+        program: 'CH99_NOTE52', chapter99: '9903.05.39', chapter99_at_or_above_cap: '9903.05.38', rule: 'combined_cap',
+        rate_ppm: euCap!, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52(k); CSMS #69326983',
+      });
+      exemptRefs.push('9903.05.97 (note 52(j)(2) EU list) checked', 'note 16 (Section 232): 9102 not listed');
+      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(j)(2), 52(k))' }, { kind: 'csms', ref: 'CSMS #69326983' });
     } else if (r.origin === 'JP' && o === '9903.82.09') {
       assert(/note 16\(c\)\(vii\)/i.test(w) && /9903\.05\.90/.test(w), `${where}: W must cite note 16(c)(vii) and 9903.05.90`);
       additional.push(
@@ -560,9 +608,10 @@ function main(): void {
     regime_notes: [
       'De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).',
       'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. The HTS names no Section 301 action for note 52.',
-      'China: legacy List 4A (9903.88.15, note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); List 4B (9903.88.16) is suspended.',
+      'China: 9903.88.15 (note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); 9903.88.16 (note 20(u)) is suspended.',
+      'EU member states: 9903.05.39 (column 1 AVE < 10%) tops the total up to 10%; 9903.05.38 (≥ 10%) adds nothing; exemptions 9903.05.85–.92 and 9903.05.97 (note 52(j)(2)); AVE per note 52(k).',
       'IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',
-      'Section 122 10% surcharge expired July 24, 2026. China legacy 301 List 4B (9903.88.16) suspended.',
+      'Section 122 10% surcharge expired July 24, 2026.',
     ],
     rows: [...rows.values()],
   };
