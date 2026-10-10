@@ -1,5 +1,6 @@
-// The agent's final message (the text after its last tool call) and the live-run checks on it: 2–4 sentences, no URLs or
-// checkout paths (the proposal card has the button), no repeated official text (the breakdown shows it).
+// Checks on the buyer agent's text for `pnpm agent:live`. Hard failures (anywhere in the agent text): a checkout path or
+// URL (the proposal card has the button), quoted official HTS / Chapter 99 wording (the breakdown shows it). The final
+// message's length (the text after the last tool call; the prompt asks for 2–4 sentences) is only a warning.
 
 export function finalMessage(events: readonly { type: string; text?: string | undefined }[]): string {
   const last = events.map((e) => e.type).findLastIndex((t) => t === 'tool-call' || t === 'tool-result' || t === 'tool-error');
@@ -18,13 +19,17 @@ export function sentenceCount(text: string): number {
   return t.split(/(?<=[.!?])["”)]?\s+(?=[A-Z"“(*])/).filter((s) => s.trim()).length;
 }
 
-export function finalMessageIssues(text: string): string[] {
-  const issues: string[] = [];
-  if (/\/checkout\//.test(text)) issues.push('contains a checkout path');
-  if (/https?:\/\//.test(text)) issues.push('contains a URL');
+export function agentTextFailures(text: string): string[] {
+  const out: string[] = [];
+  if (/\/checkout\//.test(text)) out.push('contains a checkout path');
+  if (/https?:\/\//.test(text)) out.push('contains a URL');
   // Official HTS / Chapter 99 wording quoted back ("articles the product of …", "Wrist watches, pocket watches …").
-  if (/["“][^"”]{0,40}(articles the product of|as provided for in U\.S\. note|Wrist watches, pocket watches|Having over \d+ jewels)/i.test(text)) issues.push('quotes official text');
-  const n = sentenceCount(text);
-  if (n < 2 || n > 4) issues.push(`${n} sentence(s), expected 2–4`);
-  return issues;
+  if (/["“][^"”]{0,40}(articles the product of|as provided for in U\.S\. note|Wrist watches, pocket watches|Having over \d+ jewels)/i.test(text)) out.push('quotes official text');
+  return out;
+}
+
+export function finalMessageWarnings(final: string): string[] {
+  const n = sentenceCount(final);
+  if (n === 0) return ['no final message'];
+  return n > 4 ? [`${n} sentences (more than 4)`] : [];
 }

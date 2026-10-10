@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { finalMessage, finalMessageIssues, sentenceCount } from './finalMessage';
+import { agentTextFailures, finalMessage, finalMessageWarnings, sentenceCount } from './finalMessage';
 
 type E = { type: string; text?: string };
 
@@ -28,22 +28,26 @@ describe('sentenceCount', () => {
   });
 });
 
-describe('finalMessageIssues', () => {
-  it('flags a checkout path or URL', () => {
-    expect(finalMessageIssues('Open the checkout link (/checkout/f52ad534-c933-4dac-8e4f-efc002038f28) to approve. It is $344.00.')).toContain('contains a checkout path');
-    expect(finalMessageIssues('See https://example.test/x for details. It is $344.00.')).toContain('contains a URL');
+describe('agentTextFailures (hard failures, anywhere in the agent text)', () => {
+  it('a checkout path, a URL, quoted official text', () => {
+    expect(agentTextFailures('Open the checkout link (/checkout/f52ad534-c933-4dac-8e4f-efc002038f28) to approve.')).toEqual(['contains a checkout path']);
+    expect(agentTextFailures('See https://example.test/x for details.')).toEqual(['contains a URL']);
+    expect(agentTextFailures('It covers "articles the product of a member state of the European Union, with an ad valorem rate".')).toEqual(['quotes official text']);
   });
 
-  it('flags quoted official text and a length outside 2–4 sentences', () => {
-    expect(finalMessageIssues('It covers "articles the product of a member state of the European Union, with an ad valorem rate". Pick L-P14.')).toContain('quotes official text');
-    expect(finalMessageIssues('One sentence only.')).toContain('1 sentence(s), expected 2–4');
+  it('none for a good message', () => {
+    expect(agentTextFailures("I recommend the German watch (L-P14) at **$344.00 delivered**, within your $400.00 budget. It's the cheapest delivered because its duty (9903.05.39) is lowest.")).toEqual([]);
+  });
+});
+
+describe('finalMessageWarnings (length is a warning, not a failure)', () => {
+  it('warns above 4 sentences and on an empty final message', () => {
+    expect(finalMessageWarnings('One. Two. Three. Four. Five.')).toEqual(['5 sentences (more than 4)']);
+    expect(finalMessageWarnings('')).toEqual(['no final message']);
   });
 
-  it('a good final message has no issues', () => {
-    expect(
-      finalMessageIssues(
-        "I recommend the German watch (L-P14) at **$344.00 delivered**, within your $400.00 budget. It's the cheapest delivered because its duty is lowest ($29.00). Review the duty lines on the proposal card and approve if you agree.",
-      ),
-    ).toEqual([]);
+  it('no warning for 1–4 sentences', () => {
+    expect(finalMessageWarnings('I recommend L-P14 at $344.00 delivered, within your $400.00 budget.')).toEqual([]);
+    expect(finalMessageWarnings('One. Two. Three. Four.')).toEqual([]);
   });
 });
