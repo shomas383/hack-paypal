@@ -113,5 +113,9 @@ Each prints a PASS/FAIL table and exits non-zero on failure.
 - **f** — Invoicing v2: is create idempotent by `PayPal-Request-Id`? (No.) Drafts only, deleted afterwards.
 - **g** — Invoicing v2: is `invoice_number` unique and searchable? (Yes.) Drafts only, deleted afterwards.
 
+## Roadmap
+- **Automatic base-rate import (deferred).** Rate rows are human-verified today, one product line at a time. Next: import base
+  (MFN) rates from the official HTS export, and encode the add-on rules once per Chapter 99 program.
+
 ## License
 MIT — see [LICENSE](LICENSE).

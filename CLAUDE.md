@@ -95,11 +95,17 @@ Part B2 (grounded classifier on the Rev 20 HTS index) DONE (2026-10-08): wrong �
 (baseline 8/10; beaten by one product, n = 11). See SPEC §4.1.
 rates-v2 DONE (2026-10-08): the watch is keyed by its component-reporting line 9102.21.70 (Ch. 91 Stat. Note 1); every rate key
 is checked against the HTS index; duty unchanged ($37.50 on $300).
-Buyer agent DONE except the /agent page (2026-10-09): read/prepare-only tools, confirmed budget, injection withheld by code,
-official Ch. 99 wording, `pnpm agent:live` (JP $362.50 vs CN $377.09 vs JP-B over budget → PENDING proposal). SPEC §4.4 ACs met.
+Buyer agent + /agent page DONE and live (verified on Render 2026-10-09): read/prepare-only tools, confirmed budget, injection
+withheld by code (the seller-instruction notice comes from code), official Ch. 99 wording, cap refusals with numbers; the page
+compares JP $362.50 ✓ · CN $377.09 ✓ · JP-B $452.50 ✗ (over budget), proposes JP, and the checkout shows the "proposed by your
+agent" banner. SPEC §4.4 ACs met.
 rates-v3 DONE (2026-10-09): CN watch P13 (9903.05.31 + 9903.88.15, cumulative per note 52(a)); programs CH99_NOTE52 /
-CH99_NOTE20_LIST4A / CH99_NOTE20_LIST4B. Next: the /agent page (cards, proposal card, confirmed-budget field), then seller UI (plan first — notes in the 2026-10-08 plan: grounded classifier in the service, progress state, seller
-questions + ANSWER_CONTRADICTS, review queue, AG Grid Community review queue + orders/duty ledger), then the rough-cut demo video.
+CH99_NOTE20_LIST4A / CH99_NOTE20_LIST4B.
+Next: the EU watch row (P14), then the seller UI with AG Grid Community (plan first — notes in the 2026-10-08 plan: grounded
+classifier in the service, progress state, review queue, seller questions + ANSWER_CONTRADICTS, orders/duty ledger), then the
+rough-cut demo video.
+Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
+the official HTS export, add-on rules encoded per Chapter 99 program).
 
 Week 3 walking skeleton: DONE early (2026-10-07) — listing → quote → checkout (duty line before the button) → recorded Approve →
 PayPal v6 → authorize → `decideCapture()` → capture | void; DDP invoice. Headed e2e green; results in docs/PAYPAL.md.
@@ -131,8 +137,9 @@ Carried over:
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3
   renamed the programs after their HTS notes (CH99_NOTE52, CH99_NOTE20_LIST4A/4B).
-- Agent closing text: it said "none of these listings contained instructions" while L-T-INJ was flagged (live run 3) —
-  consider telling it in code/prompt when any search result was flagged.
+- Base HTS line text (checkout + agent breakdown): show the short description chain, e.g. "Wrist watches › automatic winding ›
+  over 17 jewels › with strap, band or bracelet of… base metal", instead of only its last line.
+- Reword "(List 4A)" and "China legacy 301 List 4B" at the next rates import (see Carried over).
 - Quote expiry is shown as `HH:MM UTC` (`src/app/checkout/[quoteId]/page.tsx`) — show it in the buyer's local time.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
