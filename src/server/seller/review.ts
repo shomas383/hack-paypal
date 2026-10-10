@@ -190,7 +190,7 @@ export async function answerQuestions(id: string, seller: string, body: { answer
   await db.transaction(async (tx) => {
     for (const [qid, oid] of Object.entries(body.answers)) {
       const q = qs.choices.find((x) => x.id === qid)!;
-      const text = oid === 'none' ? 'None of these' : q.options.find((o) => o.id === oid)!.text;
+      const text = q.options.find((o) => o.id === oid)!.text; // validated by applySellerAnswers above
       await tx.insert(sellerStatements).values({ classificationId: id, questionId: qid, question: q.text, answer: text, answerId: oid, sellerSession: seller });
     }
     if (body.exclusionsApply !== null && qs.exclusions.length) {

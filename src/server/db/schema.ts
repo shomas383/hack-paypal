@@ -183,7 +183,7 @@ export const sellerStatements = pgTable(
     questionId: text('question_id').notNull(),
     question: text('question').notNull(),
     answer: text('answer').notNull(),
-    /** The option id ('o-0', 'none', or 'exclusions:none-apply' / 'exclusions:one-applies'). */
+    /** The option id ('o-0', …, or 'exclusions:none-apply' / 'exclusions:one-applies'). "Not sure" records no statement. */
     answerId: text('answer_id').notNull(),
     sellerSession: uuid('seller_session').notNull(),
     at: ts('at').notNull().defaultNow(),

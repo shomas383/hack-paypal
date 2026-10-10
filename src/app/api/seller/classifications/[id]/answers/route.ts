@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 const Body = z.object({ answers: z.record(z.string().max(40), z.string().max(40)), exclusionsApply: z.boolean().nullable() }).strict();
 
-/** POST { answers: { questionId: optionId | 'none' }, exclusionsApply } → the detail after routing reruns in code. */
+/** POST { answers: { questionId: optionId } (questions the seller is not sure about are left out), exclusionsApply } → the detail after routing reruns in code. */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const seller = await requireSeller();

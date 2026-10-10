@@ -102,7 +102,8 @@ Grounded classifier in the service (seller console, 2026-10-10; `src/server/sell
 
 Seller questions (`src/domain/classifier/questions.ts`) — built by CODE from the official Rev 20 chains, never by the model:
 - Choice questions: "Which description matches the item?" at the first chain level where the chosen candidates differ; the
-  options are those levels' official text plus "None of these"; then one level deeper inside the top candidate's branch;
+  options are those levels' official text (exhaustive siblings, so there's no "None of these") plus "Not sure", which records
+  no statement and leaves MISSING_ATTRIBUTES open; then one level deeper inside the top candidate's branch;
   at most 3. A bare "Other" level names its official siblings: "Other (not: Recreational performance outerwear)".
 - Exclusions ("none of these apply"): the other official lines under the top candidate's subheading, read from the level
   where each departs from the top line's chain, skipping branches a choice question already covers; one confirmation
