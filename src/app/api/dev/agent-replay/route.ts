@@ -2,15 +2,21 @@
 // sends, so design QA, /dev/states and the replay e2e need no model calls. The fixture is the 2026-10-10 live run
 // (`pnpm agent:live`, same quotes and text) adapted to the current tool shapes: search_listings returns only matches plus
 // the whole-catalog withheld count, and the four single quotes are one compare_landed_costs call.
+// &fixture=ja replays src/agent/__fixtures__/replay-de-compare-ja.ndjson instead: an UNEDITED live run (2026-10-11 00:17 UTC,
+// claude-opus-5-5) recorded with `pnpm agent:live --exclude-listing L-C-8af89a9e --out …` against the local DB, so the
+// catalog (10 listings) has exactly one seller-published Japanese watch (L-C-469846d7), found through its official HTS
+// description — like production after the video. The excluded listing is the second local Japanese watch.
 // Production → 404 (devToolsEnabled). Query: ?delay=<ms between events, default 30> &hold=<emit N events, then keep the
-// stream open: a frozen "streaming" state> &fail=<emit N events, then an error event and close>.
+// stream open: a frozen "streaming" state> &fail=<emit N events, then an error event and close> &fixture=<default | ja>.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { devToolsEnabled } from '@/server/devOnly';
 
 export const dynamic = 'force-dynamic';
 
-const FIXTURE = join(process.cwd(), 'src', 'agent', '__fixtures__', 'replay-de-compare.ndjson');
+const dir = join(process.cwd(), 'src', 'agent', '__fixtures__');
+/** Allowlist: the query parameter picks a name, never a path. */
+const FIXTURES: Record<string, string> = { default: join(dir, 'replay-de-compare.ndjson'), ja: join(dir, 'replay-de-compare-ja.ndjson') };
 
 const int = (v: string | null, d: number) => (v !== null && /^\d+$/.test(v) ? Number(v) : d);
 
@@ -20,7 +26,9 @@ export async function POST(req: Request): Promise<Response> {
   const delay = Math.min(int(url.searchParams.get('delay'), 30), 2000);
   const hold = url.searchParams.has('hold') ? int(url.searchParams.get('hold'), 0) : null;
   const fail = url.searchParams.has('fail') ? int(url.searchParams.get('fail'), 0) : null;
-  const lines = readFileSync(FIXTURE, 'utf8').split('\n').filter((l) => l.trim());
+  const fixture = FIXTURES[url.searchParams.get('fixture') ?? 'default'];
+  if (!fixture) return new Response('Unknown fixture', { status: 400 });
+  const lines = readFileSync(fixture, 'utf8').split('\n').filter((l) => l.trim());
   const enc = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
