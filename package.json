@@ -24,6 +24,7 @@
     "hts:download": "tsx scripts/download-hts.ts",
     "hts:import": "tsx scripts/import-hts.ts",
     "eval:classifier": "tsx scripts/eval-classifier.ts",
+    "estimator:build": "tsx scripts/estimator-build.ts",
     "agent:live": "tsx scripts/agent-live-run.ts",
     "seller:seed": "tsx scripts/seller-seed.ts",
     "spike:paypal": "tsx --env-file=.env scripts/spike/run.ts",

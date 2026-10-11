@@ -10,6 +10,7 @@
 // G7 coverage: no in-force heading that can apply to the origin is left without a rule or a line             → origin blocked
 // G8 golden: automated-only estimates reproduce every verified case of the origin exactly (total and Ch. 99 headings),
 //    or refuse naming the same regime the verified row records; expected refusals refuse                     → origin blocked
+// GR (with reference rules) a drafted rule agrees with the reference rule for its heading                     → rule blocked
 // G9 the rate-text parser re-reads every verified row's General rate from the export to the stored components → all blocked
 import { quoteDuty } from '@/domain/rates/engine';
 import type { RateFile } from '@/domain/rates/schema';
@@ -22,7 +23,7 @@ import { estimateLine } from './estimate';
 import { overrideQuoteHolds, type VerifiedOverride, VERIFIED_OVERRIDES } from './headings';
 import { originOf, type OriginGroup } from './origin';
 import { toEngineMfn } from './rateText';
-import { RuleSchema, type Rule } from './rules';
+import { compareToReference, RuleSchema, type Rule } from './rules';
 
 export interface GoldenCase {
   id: string;
@@ -50,10 +51,12 @@ export interface GateInput {
   previousListCounts?: Record<string, number>;
   /** Origins the gate covers; a golden case of another origin is skipped. */
   origins: string[];
+  /** Reference rules: a rule that differs from the reference for its heading (origins, kind, numbers, scope, condition) is blocked (GR). */
+  reference?: Rule[];
 }
 
 export interface GateCheck {
-  id: 'G0' | 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'G7' | 'G8' | 'G9';
+  id: 'G0' | 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'G7' | 'G8' | 'G9' | 'GR';
   subject: string;
   pass: boolean;
   detail: string;
@@ -199,6 +202,11 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
         if (named && !listed.some((t) => c.replace(/\./g, '').startsWith(t))) outside.push(c);
       }
       fail('G6', r.id, outside.length === 0, `lines with a footnote to ${r.heading} outside ${r.scope.list}: ${outside.slice(0, 10).join(', ')}`);
+    }
+    // GR
+    if (input.reference) {
+      const diffs = compareToReference(r, input.reference.find((x) => x.heading === r.heading));
+      fail('GR', r.id, diffs.length === 0, diffs.join('; ') || 'matches the reference rule');
     }
     if (reasons.length) blockedRules.push({ rule: r, id: r.id, reasons });
     else accepted.push(r);

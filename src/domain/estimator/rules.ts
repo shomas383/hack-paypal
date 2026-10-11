@@ -51,3 +51,28 @@ export const RulesFileSchema = z.strictObject({
 
 export type Rule = z.infer<typeof RuleSchema>;
 export type RulesFile = z.infer<typeof RulesFileSchema>;
+
+/**
+ * Where a drafted rule differs from the reference rule for the same heading: origins, kind, numbers, scope, and whether it
+ * has a condition (a fact's name is reported apart by `factNameDiff`; G8 catches a wrong name for a fact verified rows use).
+ */
+export function compareToReference(drafted: Rule, reference: Rule | undefined): string[] {
+  if (!reference) return [`no reference rule for ${drafted.heading}`];
+  const diffs: string[] = [];
+  const field = (name: string, a: unknown, b: unknown) => {
+    if (JSON.stringify(a) !== JSON.stringify(b)) diffs.push(`${name}: drafted ${JSON.stringify(a)} ≠ reference ${JSON.stringify(b)}`);
+  };
+  field('origins', [...drafted.origins].sort(), [...reference.origins].sort());
+  field('kind', drafted.kind, reference.kind);
+  field('rate_ppm', drafted.rate_ppm, reference.rate_ppm);
+  field('cap_heading_at_or_above', drafted.cap_heading_at_or_above, reference.cap_heading_at_or_above);
+  field('scope', drafted.scope, reference.scope);
+  field('condition', drafted.condition !== undefined, reference.condition !== undefined);
+  return diffs;
+}
+
+export function factNameDiff(drafted: Rule, reference: Rule | undefined): string | null {
+  const a = drafted.condition?.fact;
+  const b = reference?.condition?.fact;
+  return a && b && a !== b ? `${drafted.heading}: fact "${a}" (reference "${b}")` : null;
+}
