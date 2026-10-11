@@ -63,6 +63,13 @@ describe('estimateViewOf (on the committed excerpts)', () => {
     const after = estimateViewOf(row({ classification, input: answered }), data, verified, '2026-10-11');
     expect(after.candidates[0]!.outcome).toMatchObject({ kind: 'ESTIMATE', source: 'verified', dutyMinor: 2900, ddpTotalMinor: 29000 + 2500 + 2900 });
     expect(Number(usd(2900).amountMinor)).toBe(2900);
+    // Each Chapter 99 line carries its heading's official text (from the export), for the page's official-text section.
+    const o = after.candidates[0]!.outcome;
+    if (o.kind !== 'ESTIMATE') throw new Error('expected an estimate');
+    const ch99 = o.lines.find((l) => l.chapter99 === '9903.05.39');
+    expect(ch99?.officialText).toBe(data.headings['9903.05.39']!.chain);
+    expect(ch99?.officialText).toMatch(/European Union/);
+    expect(o.lines.find((l) => !l.chapter99)?.officialText).toBeUndefined();
   });
 
   it('READY with a stopped classification: no candidates, the reason is shown', () => {

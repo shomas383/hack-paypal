@@ -4,6 +4,7 @@
 import { usd } from '@/domain/money/money';
 import type { RateFile } from '@/domain/rates/schema';
 import type { EstimatorData } from './data';
+import type { HeadingTable } from './headings';
 import { DISCLOSURE_TEXT, estimateVerifiedFirst, sourceLabel, type CantReason, type Estimate } from './estimate';
 import type { EstimateInputRecord } from './request';
 
@@ -17,7 +18,10 @@ export interface LineView {
   label: string;
   chapter99?: string;
   amountMinor: number;
+  /** The engine's exact basis text ("combined cap 12.5% (base or AVE below cap)"). */
   basis: string;
+  /** Chapter 99 lines: the heading's official text (unnumbered parent rows + its own description), from the export. */
+  officialText?: string;
 }
 
 export type OutcomeView =
@@ -42,7 +46,7 @@ export interface CandidateView extends CandidateIn {
 
 const cents = (m: { amountMinor: bigint }) => Number(m.amountMinor);
 
-function outcome(e: ReturnType<typeof estimateVerifiedFirst>, priceAndShipping: number): OutcomeView {
+function outcome(e: ReturnType<typeof estimateVerifiedFirst>, priceAndShipping: number, headings: HeadingTable): OutcomeView {
   if (e.kind === 'CANT_ESTIMATE') return { kind: 'CANT_ESTIMATE', reason: e.reason, detail: e.detail, refs: e.refs };
   const est: Estimate = e;
   const duty = cents(est.result.totalDuty);
@@ -53,7 +57,10 @@ function outcome(e: ReturnType<typeof estimateVerifiedFirst>, priceAndShipping: 
     dutyMinor: duty,
     ddpTotalMinor: priceAndShipping + duty,
     effectiveRatePpm: est.result.effectiveRatePpm,
-    lines: est.result.lines.map((l) => ({ label: l.kind === 'MFN' ? 'General rate' : l.kind, ...(l.chapter99 ? { chapter99: l.chapter99 } : {}), amountMinor: cents(l.amount), basis: l.basis })),
+    lines: est.result.lines.map((l) => {
+      const official = l.chapter99 ? headings[l.chapter99]?.chain : undefined;
+      return { label: l.kind === 'MFN' ? 'General rate' : l.kind, ...(l.chapter99 ? { chapter99: l.chapter99 } : {}), amountMinor: cents(l.amount), basis: l.basis, ...(official ? { officialText: official } : {}) };
+    }),
     ifYes: est.ifYes.map((y) => ({ fact: y.question.fact, question: y.question.text, heading: y.question.heading, dutyMinor: cents(y.result.totalDuty), ddpTotalMinor: priceAndShipping + cents(y.result.totalDuty) })),
     disclosures: est.disclosures.map((d) => DISCLOSURE_TEXT[d]),
   };
@@ -134,6 +141,7 @@ export function estimateCandidates(candidates: CandidateIn[], input: EstimateInp
         verified,
       ),
       p.sellingPriceMinor + (p.shippingMinor ?? 0),
+      data.headings,
     ),
   }));
 }

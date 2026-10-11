@@ -76,3 +76,55 @@ export function separatingLevels(chains: string[][]): string[] | null {
 /** The disclosures every estimate carries beyond the estimator's own (what it never includes). */
 export const NOT_INCLUDED =
   'Not included: Section 232 and other Chapter 99 duties the estimator doesn’t model (lines they name are refused, not estimated), antidumping and countervailing duties, the merchandise and harbor maintenance fees, and carrier brokerage or other fees.';
+
+/** Whose combined rate a note 52 cap is, by origin (DE is covered as an EU member, note 52(k)). */
+const RATE_OF: Record<string, string> = { JP: 'Japan’s', DE: 'the EU’s' };
+const cap = (s: string) => `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
+
+/**
+ * The rate engine's basis text in plain words for the duty table ("combined cap 12.5% (base or AVE below cap)" →
+ * "Japan's 12.5% combined rate applies (heading 9903.05.49)"). Every number comes from the engine's text; an unrecognised
+ * basis is returned as written. The exact text stays on the page in the official-text section.
+ */
+export function plainBasis(line: { label: string; chapter99?: string | undefined; basis: string }, origin: string): string {
+  const b = line.basis;
+  const h = line.chapter99;
+  const whose = RATE_OF[origin] ?? 'the';
+  if (!h) {
+    if (b === 'Free') return 'General rate: free';
+    const adv = /^(\d+(?:\.\d+)?%) of customs value$/.exec(b);
+    return `General rate: ${adv ? `${adv[1]} of the price` : b}`;
+  }
+  const below = /^combined cap (\d+(?:\.\d+)?%) \(base or AVE below cap\)$/.exec(b);
+  if (below) return `${cap(whose)} ${below[1]} combined rate applies (heading ${h})`;
+  const above = /^base ≥ (\d+(?:\.\d+)?%) cap — no add-on$/.exec(b);
+  if (above) return `The General rate is already at least ${whose} ${above[1]} combined rate, so heading ${h} adds nothing`;
+  const add = /^\+(\d+(?:\.\d+)?%) of full customs value$/.exec(b);
+  if (add) return `Heading ${h} adds ${add[1]} of the price`;
+  if (b === 'exempt — no add-on') return `Heading ${h} applies: no additional duty`;
+  return b;
+}
+
+const orList = (xs: string[]) => (xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} or ${xs.at(-1)}`);
+/** A fact name mid-sentence: "Fiber content" → "fiber content"; an acronym ("UV filter") is kept. */
+const fact = (n: string) => (/^[A-Z][a-z]/.test(n) ? `${n.charAt(0).toLowerCase()}${n.slice(1)}` : n);
+const andList = (xs: string[]) => (xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs.at(-1)}`);
+
+/** Routing reasons that mean "not certain which line" (review.ts); the rest are shown by the result itself. */
+const UNCERTAIN = new Set(['LOW_CONFIDENCE', 'TOP2_DIFFER_6', 'MISSING_ATTRIBUTES', 'MODEL_FLAGGED', 'INVALID_CODE', 'UNVERIFIED_EVIDENCE', 'TOO_BROAD']);
+
+/** The classifier's routing reasons as one plain sentence (never the codes), or null when it was certain. */
+export function reasonText(reasons: string[], separating: { name: string; value_from_listing: string | null }[]): string | null {
+  if (!reasons.some((r) => UNCERTAIN.has(r))) return null;
+  const missing = separating.filter((s) => s.value_from_listing === null).map((s) => fact(s.name));
+  return missing.length
+    ? `Not certain which line applies — the description doesn’t say ${orList(missing)}.`
+    : 'Not certain which line applies — compare the official descriptions below with the product.';
+}
+
+/** When every candidate line comes to the same duty: what would pick the line, and that it doesn't change the estimate. */
+export function sameDutyText(separating: { name: string; value_from_listing: string | null }[], levels: string[] | null): string | null {
+  if (separating.length) return `The exact line depends on ${andList(separating.map((s) => fact(s.name)))}, but the estimate is the same either way.`;
+  if (levels) return `The exact line depends on whether it is ${orList(levels.map((l) => `“${l}”`))}, but the estimate is the same either way.`;
+  return null;
+}
