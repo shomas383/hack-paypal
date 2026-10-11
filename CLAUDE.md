@@ -81,6 +81,12 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 11. Exact pinned dependency versions (no `^`, `~`, `latest`). Commit the lockfile. ASK before adding any dependency.
 12. Never circumvent a hook or permission rule (no path splitting, encoding, alternate tools or indirection). If a guard
     blocks something you need, stop and ask me.
+13. `.env` is never read, with ONE approved exception: the secret scan's rule 3 (`pnpm secrets:scan`) reads it at runtime
+    to compare added lines against local secret values. Conditions:
+    - `src/guards/secretScan.ts` and `scripts/secret-scan.ts` never print, log or return secret values or matched text
+      (file:line + rule only); the no-leak test in `src/guards/secretScan.test.ts` stays.
+    - Any change to those two files needs my explicit approval before commit; show me the diff first.
+    - Never run the scanner with its output redirected to a file that gets committed.
 
 ## Workflow
 - Non-trivial change (multi-file, unclear approach, PayPal/rates/policy code): use plan mode first; show me the plan.
