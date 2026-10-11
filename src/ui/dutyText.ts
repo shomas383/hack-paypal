@@ -10,7 +10,7 @@ export function dutyLineLabel(line: { chapter99?: string | null | undefined; bas
   return `${line.chapter99} · ${short}`;
 }
 
-/** The source refs of a line ("9903.05.39 — U.S. note 52(k); CSMS #…" → ["U.S. note 52(k)", "CSMS #…"]). */
+/** The source refs of a line ("9903.05.31 — U.S. note 52; note 20(u)" → ["U.S. note 52", "note 20(u)"]). */
 export function splitSources(sourceRef: string): string[] {
   const refs = sourceRef.includes(' — ') ? sourceRef.slice(sourceRef.indexOf(' — ') + 3) : sourceRef;
   return refs.split(';').map((s) => s.trim()).filter(Boolean);

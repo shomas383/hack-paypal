@@ -119,7 +119,7 @@ Input: `{ origin: ISO-3166 alpha-2 (EU members: one verified row per member stat
 quantity, valueSplit?: { case, band } (compound watch rates), facts?: Record<string, boolean> (row conditions, e.g.
 steel ≥15% of weight, informational material) }`. A missing split or fact the row needs → `UNSUPPORTED`.
 Output: `{ lines: [{ kind: 'MFN'|<program, e.g. the Chapter 99 U.S. note 52 additional duty (9903.05.xx); renamed CH99_NOTE52 in rates-v3>|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
-Data file schema (`data/rates/<version>.json`, current `2026-rev20-v4` — 12 rows incl. the CN and DE watches; v1–v3 kept as history; the name is set in `src/domain/rates/current.ts`),
+Data file schema (`data/rates/<version>.json`, current `2026-rev20-v5` — 12 rows incl. the CN and DE watches; v1–v4 kept as history (v5 = v4 minus the CSMS citation, rates unchanged); the name is set in `src/domain/rates/current.ts`),
 one row per (hts10, origin); generated only by `scripts/import-verify-sheet.ts` from the human-verified sheet, never
 hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
 - The key (`hts10`) is a 10-digit statistical line, **or** an 8-digit line reported by component (HTS Ch. 91 Statistical
@@ -136,7 +136,7 @@ hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
   9903.88.15, cumulative per note 52(a)); every applied Ch. 99 heading must be in the official Ch. 99 lookup and not marked
   suspended. Programs are named after their HTS note (v3): `CH99_NOTE52`, `CH99_NOTE20_LIST4A`, `CH99_NOTE20_LIST4B`,
   `S232_DERIVATIVE_STEEL`. Buyer-facing text shows heading and note numbers, never program names.
-- `effective_from`, `effective_to|null`, `source_refs[]` (HTS line, Ch.99 heading, U.S. note, CSMS), `ruling`
+- `effective_from`, `effective_to|null`, `source_refs[]` (HTS line, Ch.99 heading, U.S. note; v1–v4 also cited CSMS, removed in v5 — no verified sheet row backs it), `ruling`
   (number + supports/analogy/none), `verified_by`, `verified_on`.
 Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
 - Base rate: the **General** column. Special-program rates (e.g. JP agreement → Free if claimed) are recorded in notes only;

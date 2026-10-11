@@ -142,8 +142,9 @@ Carried over:
 - rates-v2 DONE (2026-10-08): sheet M14 = 9102.21.70, V14 = 2026-10-08; the import (now 2026-rev20-v2) aborts unless every rate
   key is a real line in data/hts/2026-rev20.json (8-digit keys only with componentReporting). The current version is named in
   `src/domain/rates/current.ts`; v1 files stay as history (stored v1 quotes reference them and are refused as stale).
-  rates-v4 (2026-10-10) supersedes it: after the Render deploy, `/api/health` should show `rateVersion: 2026-rev20-v4`
-  (pre-deploy re-seeds the listings, incl. L-P14).
+  rates-v4 (2026-10-10) supersedes it; rates-v5 (polish-1, 2026-10-10) = v4 minus the CSMS citation (rates unchanged; a
+  published version's content never changes, so any change to generated data is a new version). After the Render deploy,
+  `/api/health` should show `rateVersion: 2026-rev20-v5` (pre-deploy re-seeds the listings, incl. L-P14).
 
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3
@@ -168,7 +169,6 @@ Polish backlog (Wk5, before the Nov 4 freeze):
 - HTS match line: DONE (polish-1) — deepestLevels(): one level per matched term (9102.21.70 → 2 bullets).
 - /agent layout: DONE (polish-1) — quote table fits 721–1280 px (id ellipsis + title; two-line rows ≤ 720 px); search
   table right gutter at ≤ 640 px; notices singular/plural.
-- Open question (polish-1 A): the CSMS #69326983 source ref on note 52 rows (incl. P14 / 9903.05.39) is hardcoded in
-  scripts/import-verify-sheet.ts, not in any verified sheet row — decide keep / drop / move into the sheet.
+- CSMS citation: REMOVED in rates-v5 (polish-1) — no verified sheet row backed it; note 52 / heading citations kept.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

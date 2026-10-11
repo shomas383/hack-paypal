@@ -1,0 +1,845 @@
+{
+  "version": "2026-rev20-v5",
+  "hts_revision": "2026 Rev. 20",
+  "generated_from": {
+    "file": "data/source/DDP_product_test_sheet_verify.xlsx",
+    "tab": "Verify",
+    "sha256": "4b0abd3061ddcdc703a0b0221eccb37c49c4354a60e8f0f1036d15b6c7d3d6ff"
+  },
+  "regime_notes": [
+    "De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).",
+    "Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026.",
+    "China: 9903.88.15 (note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); 9903.88.16 (note 20(u)) is suspended.",
+    "EU member states: 9903.05.39 (column 1 AVE < 10%) tops the total up to 10%; 9903.05.38 (≥ 10%) adds nothing; exemptions 9903.05.85–.92 and 9903.05.97 (note 52(j)(2)); AVE per note 52(k).",
+    "IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.",
+    "Section 122 10% surcharge expired July 24, 2026."
+  ],
+  "rows": [
+    {
+      "id": "JP-9504.40.0000",
+      "hts10": "9504.40.0000",
+      "origin": "JP",
+      "listings": [
+        "P01",
+        "P02"
+      ],
+      "description": "Japanese-language trading card game booster box (sealed) / Graded collectible trading card in a sealed slab (Japanese)",
+      "mfn": {
+        "type": "free"
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.49",
+          "chapter99_at_or_above_cap": "9903.05.48",
+          "rule": "combined_cap",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9504.40.00 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9504.40.00"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.49"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": "N352819",
+        "status": "supports",
+        "note": "also N359352 (supports, P02)"
+      },
+      "evidence": "Rev 20. Base Free. 9903.05.49 → 12.5% total (note 52). Not in .90 (metals/vehicles/wood/pharma/semis). Other exemptions .85–.92 checked. | P02: N359352: slabbed/sleeved TCG cards stay 9504.40.0000 Free; CBP rejected 4911.99.6000. Ruling doesn't cover Ch.99 → 9903.05.49 → 12.5% total (Rev 20).",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-9102.21.70",
+      "hts10": "9102.21.70",
+      "component_reporting": true,
+      "origin": "JP",
+      "listings": [
+        "P03"
+      ],
+      "description": "1990s Japanese automatic diver watch, 21 jewels, stainless case, steel bracelet",
+      "mfn": {
+        "type": "compound",
+        "text": "$1.53 each + 4.2% case + 9.8% band",
+        "components": [
+          {
+            "kind": "specific",
+            "amount_usd_micros": 1530000,
+            "per": "each"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 42000,
+            "applies_to": "case"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 98000,
+            "applies_to": "band"
+          }
+        ]
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.49",
+          "chapter99_at_or_above_cap": "9903.05.48",
+          "rule": "combined_cap",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9102.21.70 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9102.21.70"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.49"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "Automatic diver watch: automatic movement, 21 jewels, steel case + steel bracelet, made in Japan. 9102.21.70 General: $1.53 each + 4.2% case + 9.8% band (Rev 20). AVE 5.6% at $300 (case 250 / band 50). 9903.05.49 → 12.5% total. Not in 52(f) steel list.    | HTS 9102.21.70 is component-reported (Ch. 91 Statistical Note 1(d), HTS 2026 Rev. 20): 10 movement / 20 case / 30 strap, band or bracelet. There is no 9102.21.7000.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-08",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-9006.53.0205",
+      "hts10": "9006.53.0205",
+      "origin": "JP",
+      "listings": [
+        "P04"
+      ],
+      "description": "Vintage 35mm SLR film camera with 50mm lens",
+      "mfn": {
+        "type": "free"
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.49",
+          "chapter99_at_or_above_cap": "9903.05.48",
+          "rule": "combined_cap",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9006.53.02 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9006.53.02"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.49"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "35mm SLR + 50mm lens, made in Japan; classified as camera (GRI 3(b)). 9006.53.02.05 \"SLR\", General Free (Rev 20). Sheet had outdated 9006.53.0110. 9903.05.49 → 12.5%.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "CN-9503.00.0090",
+      "hts10": "9503.00.0090",
+      "origin": "CN",
+      "listings": [
+        "P05"
+      ],
+      "description": "Articulated PVC collectible figure, ages 15+",
+      "mfn": {
+        "type": "free"
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.31",
+          "rule": "additive",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [
+        {
+          "program": "CH99_NOTE20_LIST4B",
+          "chapter99": "9903.88.16",
+          "reason": "suspended (compiler's note)",
+          "ref": "U.S. note 20(u)"
+        }
+      ],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)",
+          "note 20 (legacy China lists) checked"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9503.00.00 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9503.00.00"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.31"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52; note 20(u)"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "Articulated PVC figure, made in China, labeled 15+ → 9503.00.00.90. Free (Rev 20). 9903.05.31 = base + 12.5%. Legacy 301 List 4B (9903.88.16, note 20(u)) SUSPENDED. Not in exemptions .85–.92 (checked note 52(b),(c),(f)). IEEPA terminated.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-9507.30.6000",
+      "hts10": "9507.30.6000",
+      "origin": "JP",
+      "listings": [
+        "P06"
+      ],
+      "description": "High-end spinning fishing reel (valued over $8.45)",
+      "mfn": {
+        "type": "ad_valorem",
+        "rate_ppm": 39000
+      },
+      "special_note": "Special column: Free under the JP agreement if claimed. Policy uses General (no FTA claim assumed).",
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.49",
+          "chapter99_at_or_above_cap": "9903.05.48",
+          "rule": "combined_cap",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9507.30.60 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9507.30.60"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.49"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "Spinning reel, made in Japan, >$8.45. 9507.30.60.00 General 3.9% (Free under JP agreement if claimed). 9903.05.49 → 12.5% total either way. Not in note 16 (232) or 52(b). Old aluminum list 9903.85.08 not in Rev 20 tariff table.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-6203.42.4511",
+      "hts10": "6203.42.4511",
+      "origin": "JP",
+      "listings": [
+        "P08"
+      ],
+      "description": "Men's selvedge blue denim jeans, 100% cotton",
+      "mfn": {
+        "type": "ad_valorem",
+        "rate_ppm": 166000
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.49",
+          "chapter99_at_or_above_cap": "9903.05.48",
+          "rule": "combined_cap",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "6203.42.45 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=6203.42.45"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.48"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": "N026921",
+        "status": "none",
+        "note": "listed on the sheet; not used as support"
+      },
+      "evidence": "Men's 100% cotton blue denim jeans, made in Japan. 6203.42.45.11 (Other → men's trousers → blue denim), General 16.6% (Rev 20). Sheet's 6203.42.4011 renumbered; LLM's .4511 correct. Base ≥12.5% → 9903.05.48, no add-on. Total 16.6%.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "CN-9504.50.0000",
+      "hts10": "9504.50.0000",
+      "origin": "CN",
+      "listings": [
+        "P09"
+      ],
+      "description": "Handheld video game console (early 2000s)",
+      "mfn": {
+        "type": "free"
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.31",
+          "rule": "additive",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [
+        {
+          "program": "CH99_NOTE20_LIST4B",
+          "chapter99": "9903.88.16",
+          "reason": "suspended (compiler's note)",
+          "ref": "U.S. note 20(u)"
+        }
+      ],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)",
+          "note 20 (legacy China lists) checked"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9504.50.00 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9504.50.00"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.31"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52; note 20(u)"
+        }
+      ],
+      "ruling": {
+        "number": "N320537",
+        "status": "analogy",
+        "note": "analogy only (different product)"
+      },
+      "evidence": "Handheld console, origin China (label). 9504.50.00.00 Free (Rev 20); ruling N320537 (TV-connected fitness game console, 2021) → 9504.50.0000 — supports heading for home video game consoles; not a handheld, analogy only. 9903.05.31 = base + 12.5%. Legacy 301 List 4B (9903.88.16) SUSPENDED. Not in note 16 or 52(b). Total 12.5%.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-9506.31.0000",
+      "hts10": "9506.31.0000",
+      "origin": "JP",
+      "listings": [
+        "P10"
+      ],
+      "description": "Complete golf driver",
+      "mfn": {
+        "type": "ad_valorem",
+        "rate_ppm": 44000
+      },
+      "special_note": "Special column: Free under the JP agreement if claimed. Policy uses General (no FTA claim assumed).",
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.49",
+          "chapter99_at_or_above_cap": "9903.05.48",
+          "rule": "combined_cap",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9506.31.00 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9506.31.00"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.49"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": "N306836",
+        "status": "supports"
+      },
+      "evidence": "Complete golf driver, made in Japan. 9506.31.00.00 General 4.4% (Free under JP agreement if claimed) (Rev 20). Ruling N306836 (2019): complete club → 9506.31.0000 at 4.4%; club parts (grip) → 9506.39. 9903.05.49 → 12.5% total. Not in note 16 (232) or 52(b).",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-8211.92.9030",
+      "hts10": "8211.92.9030",
+      "origin": "JP",
+      "listings": [
+        "P11"
+      ],
+      "description": "Japanese gyuto chef's knife, stainless steel blade, natural wood handle",
+      "mfn": {
+        "type": "compound",
+        "text": "0.4¢ each + 6.1%",
+        "components": [
+          {
+            "kind": "specific",
+            "amount_usd_micros": 4000,
+            "per": "each"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 61000,
+            "applies_to": "full_value"
+          }
+        ]
+      },
+      "special_note": "Plastic handle would be 8211.92.20 (4.6%) — different row, not verified.",
+      "additional": [
+        {
+          "program": "S232_DERIVATIVE_STEEL",
+          "chapter99": "9903.82.09",
+          "rule": "additive",
+          "rate_ppm": 250000,
+          "basis": "full_value",
+          "conditions": [
+            {
+              "fact": "steel_weight_share_ge_15pct",
+              "required_value": true,
+              "ref": "note 16(c): metal ≥15% of weight"
+            },
+            {
+              "fact": "steel_us_melted_poured_ge_85pct",
+              "required_value": false,
+              "ref": "note 16(e): else 9903.82.06"
+            }
+          ],
+          "ref": "note 16(c)(vii) derivative steel"
+        },
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.90",
+          "rule": "exempt",
+          "rate_ppm": 0,
+          "basis": "full_value",
+          "conditions": [],
+          "ref": "note 52(f)(1): Section 232 article"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)",
+          "note 16 (Section 232) checked"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "8211.92.90 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=8211.92.90"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.82.09"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 16(c)(vii); note 52(f)(1)"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "Japanese gyuto, stainless steel, natural wood handle, made in Japan; steel >15% of weight. 8211.92.90.30 (fixed blade, non-plastic handle, kitchen) 0.4¢ each + 6.1% (Rev 20). Note 16(c)(vii) derivative steel → 9903.82.09 = base + 25% on FULL value (note 16(c)). Exempt from 12.5% via 9903.05.90/note 52(f)(1). Not US-melted steel → not 9903.82.06. Plastic handle would be 8211.92.20 (4.6%).",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "JP-8523.49.4000",
+      "hts10": "8523.49.4000",
+      "origin": "JP",
+      "listings": [
+        "P12"
+      ],
+      "description": "Anime series Blu-ray box set, Japanese release (commercially recorded)",
+      "mfn": {
+        "type": "free"
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.92",
+          "rule": "exempt",
+          "rate_ppm": 0,
+          "basis": "full_value",
+          "conditions": [
+            {
+              "fact": "informational_material",
+              "required_value": true,
+              "ref": "9903.05.92: films, compact disks, CD-ROMs… \"including but not limited to\""
+            }
+          ],
+          "ref": "U.S. note 52"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "8523.49.40 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=8523.49.40"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.92"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52"
+        }
+      ],
+      "ruling": {
+        "number": "H236026",
+        "status": "none",
+        "note": "cited, not yet read"
+      },
+      "evidence": "Commercially recorded anime series on Blu-ray (sound + image, proprietary format), made in Japan. 8523.49.40.00 Free (Rev 20; .50 also Free). Exempt from note 52 via 9903.05.92 \"informational materials\" (films, CDs, CD-ROMs, \"including but not limited to\") — description-based, no HTS list. Total 0%. Sheet's 12.5% missed .92 (only checked 52(b) list). Ruling H236026 not yet read.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-05",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "CN-9102.21.70",
+      "hts10": "9102.21.70",
+      "component_reporting": true,
+      "origin": "CN",
+      "listings": [
+        "P13"
+      ],
+      "description": "Automatic diver watch, 21 jewels, stainless case, steel bracelet (China)",
+      "mfn": {
+        "type": "compound",
+        "text": "$1.53 each + 4.2% case + 9.8% band",
+        "components": [
+          {
+            "kind": "specific",
+            "amount_usd_micros": 1530000,
+            "per": "each"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 42000,
+            "applies_to": "case"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 98000,
+            "applies_to": "band"
+          }
+        ]
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.31",
+          "rule": "additive",
+          "rate_ppm": 125000,
+          "basis": "full_value",
+          "conditions": [],
+          "ref": "U.S. note 52"
+        },
+        {
+          "program": "CH99_NOTE20_LIST4A",
+          "chapter99": "9903.88.15",
+          "rule": "additive",
+          "rate_ppm": 75000,
+          "basis": "full_value",
+          "conditions": [],
+          "ref": "U.S. note 20(r)/(s)(i)"
+        }
+      ],
+      "not_applied": [
+        {
+          "program": "CH99_NOTE20_LIST4B",
+          "chapter99": "9903.88.16",
+          "reason": "9102.21.70 not listed under 9903.88.16 (note 20(u)); provision suspended (compiler's note)",
+          "ref": "U.S. note 20(u)"
+        }
+      ],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)",
+          "note 20: 9903.88.15 (note 20(r)/(s)(i)) applies to this line; not listed under 9903.88.16 (note 20(u)); no in-effect exclusion",
+          "note 16 (Section 232): 9102 not listed"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9102.21.70 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9102.21.70"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.31"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.88.15"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52 (incl. 52(a) cumulative)"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 20(r)/(s)(i)"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "HTS 2026 Rev. 20. 9102.21.70 General: $1.53 each + 4.2% case + 9.8% band (component reporting, Ch. 91 Stat. Note 1(d)). AVE 5.7% at $280 (case 230 / band 50). Product of China: 9903.05.31 +12.5% (additive, note 52); 9903.88.15 +7.5% (List 4A, note 20(r); 9102.21.70 listed in note 20(s)(i), Ch. 99 PDF p. 340; heading row active). Checked: not in List 4B (9903.88.16 suspended, PDF p. 342-345); no in-effect exclusion; cumulative per note 52(a); not in note 16 (no Section 232); no note 52(b) exemption (9903.05.85-.92 checked). Duty at $280: $16.09 + $35.00 + $21.00 = $72.09.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-08",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    },
+    {
+      "id": "DE-9102.21.70",
+      "hts10": "9102.21.70",
+      "component_reporting": true,
+      "origin": "DE",
+      "listings": [
+        "P14"
+      ],
+      "description": "Automatic diver watch, 21 jewels, stainless case, steel bracelet (Germany)",
+      "mfn": {
+        "type": "compound",
+        "text": "$1.53 each + 4.2% case + 9.8% band",
+        "components": [
+          {
+            "kind": "specific",
+            "amount_usd_micros": 1530000,
+            "per": "each"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 42000,
+            "applies_to": "case"
+          },
+          {
+            "kind": "ad_valorem",
+            "rate_ppm": 98000,
+            "applies_to": "band"
+          }
+        ]
+      },
+      "additional": [
+        {
+          "program": "CH99_NOTE52",
+          "chapter99": "9903.05.39",
+          "chapter99_at_or_above_cap": "9903.05.38",
+          "rule": "combined_cap",
+          "rate_ppm": 100000,
+          "basis": "full_value",
+          "compare": "ave",
+          "conditions": [],
+          "ref": "U.S. note 52(k)"
+        }
+      ],
+      "not_applied": [],
+      "exemptions_checked": {
+        "done": true,
+        "refs": [
+          "9903.05.85–.92 checked (note 52(b), 52(c), 52(f) lists; .92 by description)",
+          "9903.05.97 (note 52(j)(2) EU list) checked",
+          "note 16 (Section 232): 9102 not listed"
+        ]
+      },
+      "source_refs": [
+        {
+          "kind": "hts_line",
+          "ref": "9102.21.70 General (HTS 2026 Rev. 20)",
+          "url": "https://hts.usitc.gov/reststop/search?keyword=9102.21.70"
+        },
+        {
+          "kind": "ch99_heading",
+          "ref": "9903.05.39"
+        },
+        {
+          "kind": "us_note",
+          "ref": "Ch. 99 Subch. III U.S. note 52 (incl. 52(j)(2), 52(k))"
+        }
+      ],
+      "ruling": {
+        "number": null,
+        "status": "none"
+      },
+      "evidence": "HTS 2026 Rev. 20. 9102.21.70 General: $1.53 each + 4.2% case + 9.8% band (component reporting, Ch. 91 Stat. Note 1(d)). AVE 5.7% at $290 (case 240 / band 50). Product of Germany (EU member state): 9903.05.39 combined 10% (column 1 AVE less than 10 percent; note 52(k): AVE = column 1 duty / customs value, and the sum of the column 1 rate and the additional rate is 10 percent). Checked: not in note 52(j)(2) EU exemption list (9903.05.97, Ch. 99 PDF p. 578); no note 52(b) exemption (9903.05.85-.92 checked); not in note 16 (no Section 232); EU headings 9903.02.xx are IEEPA (terminated). Duty at $290: $16.51 + $12.49 = $29.00.",
+      "verified_by": "Shoma",
+      "verified_on": "2026-10-09",
+      "hts_revision": "2026 Rev. 20",
+      "effective_from": "2026-09-28",
+      "effective_to": null
+    }
+  ]
+}

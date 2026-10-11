@@ -44,7 +44,7 @@ the sources, the rate version and the verified date sit one disclosure away ("Of
 
      - Below it, a code-generated notice (warning text with an icon, no fill): "1 listing contained seller instructions;
        withheld." (from `instructionNotice()`).
-   - **Step 2.** "Quoted 4 listings" · meta "rate version 2026-rev20-v4". **QuotesTable**, caption "Landed-cost quotes,
+   - **Step 2.** "Quoted 4 listings" · meta "rate version 2026-rev20-v5". **QuotesTable**, caption "Landed-cost quotes,
      sorted by delivered total". Money headers carry "(USD)".
 
      | Listing | Origin | HTS | Goods | Shipping | Duty (est.) | Delivered | Budget |
@@ -68,8 +68,8 @@ the sources, the rate version and the verified date sit one disclosure away ("Of
      - The quoted official text. For 9903.05.39: "Except for products described in headings 9903.05.85–9903.05.92 and
        9903.05.97, articles the product of a member state of the European Union, with an ad valorem (or ad valorem
        equivalent) rate of duty under column 1 less than 10 percent, as provided for in U.S. note 52 to this subchapter".
-     - The sources: U.S. note 52(k); CSMS #69326983.
-     - "HTS 2026 Rev. 20 · verified 2026-10-09 · rate version 2026-rev20-v4".
+     - The sources: U.S. note 52(k).
+     - "HTS 2026 Rev. 20 · verified 2026-10-09 · rate version 2026-rev20-v5".
    - **Step 4.** "Prepared a purchase for L-P14 (DE)", which leads to region 4.
    - **Agent text.** Streams between the steps as plain paragraphs, labelled "Agent's explanation" once. Only
      `**bold**` is rendered.
@@ -131,7 +131,7 @@ the sources, the rate version and the verified date sit one disclosure away ("Of
    - CN, with three duty lines: MFN 16.09 · 9903.05.31 +12.5% 35.00 · 9903.88.15 +7.5% 21.00 · duty subtotal 72.09 ·
      Total 377.09.
 5. **Estimate sentence** (`disclaimer`): "Includes US import duty, estimated from verified rates and paid here at checkout
-   (delivered duty paid). It's an estimate, not a customs ruling. Rate version 2026-rev20-v4 · HTS 2026 Rev. 20 · verified
+   (delivered duty paid). It's an estimate, not a customs ruling. Rate version 2026-rev20-v5 · HTS 2026 Rev. 20 · verified
    2026-10-09. Quote expires at 14:39 (your time)." The time is the buyer's local time.
 6. **Approve.** A primary near-black button (`approve`), "Approve $344.00 purchase", with "Per-order cap: $400.00"
    (`spend-cap`) beside it.

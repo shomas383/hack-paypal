@@ -25,6 +25,7 @@ const SOURCE = join('data', 'source', 'DDP_product_test_sheet_verify.xlsx');
 // after their HTS note (CH99_NOTE52, CH99_NOTE20_LIST4A/4B) — the HTS names no Section 301 / forced-labor action for note 52.
 // v4 (2026-10-09): EU watch P14 (Germany, 9903.05.39, combined 10% cap per note 52(k)); output text cites heading and note
 // numbers only (no "List 4A/4B" / "301" wording).
+// v5 (2026-10-10): no CSMS citation (no verified sheet row backs it); note 52 / heading citations unchanged. Rates unchanged.
 const VERSION = CURRENT_RATE_VERSION;
 const HTS_REVISION = CURRENT_HTS_REVISION;
 // Every rate key must be a real line in the official HTS index of the same revision (built by pnpm hts:import).
@@ -460,20 +461,20 @@ function main(): void {
       }
       additional.push({
         program: 'CH99_NOTE52', chapter99: '9903.05.49', chapter99_at_or_above_cap: '9903.05.48', rule: 'combined_cap',
-        rate_ppm: jpCap, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52; CSMS #69326983',
+        rate_ppm: jpCap, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52',
       });
-      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52' }, { kind: 'csms', ref: 'CSMS #69326983' });
+      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52' });
     } else if (r.origin === 'CN' && o === '9903.05.31') {
       assert(r.addon > 0, `${where}: CN .31 add-on missing`);
       additional.push({
         program: 'CH99_NOTE52', chapter99: '9903.05.31', rule: 'additive', rate_ppm: r.addon, basis: 'full_value',
-        conditions: [], ref: 'U.S. note 52; CSMS #69326983',
+        conditions: [], ref: 'U.S. note 52',
       });
       // P05: "List 4B (9903.88.16, note 20(u)) SUSPENDED"; P09: "List 4B (9903.88.16) SUSPENDED".
       assert(/List 4B \(9903\.88\.16(?:, note 20\(u\))?\) SUSPENDED/.test(w), `${where}: W must record List 4B (9903.88.16) SUSPENDED`);
       notApplied.push({ program: 'CH99_NOTE20_LIST4B', chapter99: '9903.88.16', reason: "suspended (compiler's note)", ref: 'U.S. note 20(u)' });
       exemptRefs.push('note 20 (legacy China lists) checked');
-      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52; note 20(u)' }, { kind: 'csms', ref: 'CSMS #69326983' });
+      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52; note 20(u)' });
     } else if (r.origin === 'CN' && MULTI_CH99[r.id] && heads.join(' + ') === '9903.05.31 + 9903.88.15') {
       // CN with the note 52 duty AND an active legacy List 4A line (9903.88.15), cumulative per note 52(a) — P13.
       const parts = MULTI_CH99[r.id]!;
@@ -495,7 +496,6 @@ function main(): void {
       sources.push(
         { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(a) cumulative)' },
         { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 20(r)/(s)(i)' },
-        { kind: 'csms', ref: 'CSMS #69326983' },
       );
     } else if (EU_MEMBER.has(r.origin) && (o === '9903.05.39' || o === '9903.05.38')) {
       // EU member state (note 52): combined 10% cap — .39 below it (top-up), .38 at or above it (no add-on); AVE per 52(k).
@@ -508,10 +508,10 @@ function main(): void {
       }
       additional.push({
         program: 'CH99_NOTE52', chapter99: '9903.05.39', chapter99_at_or_above_cap: '9903.05.38', rule: 'combined_cap',
-        rate_ppm: euCap!, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52(k); CSMS #69326983',
+        rate_ppm: euCap!, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52(k)',
       });
       exemptRefs.push('9903.05.97 (note 52(j)(2) EU list) checked', 'note 16 (Section 232): 9102 not listed');
-      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(j)(2), 52(k))' }, { kind: 'csms', ref: 'CSMS #69326983' });
+      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(j)(2), 52(k))' });
     } else if (r.origin === 'JP' && o === '9903.82.09') {
       assert(/note 16\(c\)\(vii\)/i.test(w) && /9903\.05\.90/.test(w), `${where}: W must cite note 16(c)(vii) and 9903.05.90`);
       additional.push(
@@ -537,7 +537,7 @@ function main(): void {
         conditions: conditions.map((c) => ({ ...c, ref: '9903.05.92: films, compact disks, CD-ROMs… "including but not limited to"' })),
         ref: 'U.S. note 52',
       });
-      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52' }, { kind: 'csms', ref: 'CSMS #69326983' });
+      sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52' });
     } else {
       throw new ImportError(`${where}: unhandled origin/heading ${r.origin} ${o} — needs a human decision`);
     }
@@ -607,7 +607,7 @@ function main(): void {
     generated_from: { file: 'data/source/DDP_product_test_sheet_verify.xlsx', tab: 'Verify', sha256 },
     regime_notes: [
       'De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).',
-      'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983.',
+      'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026.',
       'China: 9903.88.15 (note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); 9903.88.16 (note 20(u)) is suspended.',
       'EU member states: 9903.05.39 (column 1 AVE < 10%) tops the total up to 10%; 9903.05.38 (≥ 10%) adds nothing; exemptions 9903.05.85–.92 and 9903.05.97 (note 52(j)(2)); AVE per note 52(k).',
       'IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',

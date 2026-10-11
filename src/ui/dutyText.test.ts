@@ -13,7 +13,7 @@ describe('duty line display text (display only; amounts never pass through here)
   });
 
   it('sources: the refs after the heading, split on ";"', () => {
-    expect(splitSources('9903.05.39 — U.S. note 52(k); CSMS #69326983')).toEqual(['U.S. note 52(k)', 'CSMS #69326983']);
+    expect(splitSources('9903.05.31 — U.S. note 52; note 20(u)')).toEqual(['U.S. note 52', 'note 20(u)']);
     expect(splitSources('9102.21.70 General (HTS 2026 Rev. 20)')).toEqual(['9102.21.70 General (HTS 2026 Rev. 20)']);
   });
 
