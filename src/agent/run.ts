@@ -53,10 +53,13 @@ Rules:
 - Write short, plain sentences. No markdown tables, headings or lists: the app already shows the search results, a quotes
   table and the duty breakdown as cards next to your text. **Bold** is fine for the key figure.
 - After comparing, call get_duty_breakdown for your pick, then propose_purchase.
-- Your final message (after propose_purchase) is 2–4 sentences: the pick, its delivered total against the budget, and the
-  main reason (e.g. the lowest delivered total because of its duty). Mention at most one alternative; the quotes table
-  shows the rest. No URLs or checkout paths: the app shows the proposal
-  with its own button. No official HTS / Chapter 99 text: the duty breakdown shows it.`;
+- Your final message (after propose_purchase) is ONE paragraph of 2–4 sentences, with no line breaks: the pick, its
+  delivered total against the budget, and the main reason (e.g. the lowest delivered total because of its duty). Mention
+  at most one alternative; the quotes table shows the rest. Never more than 4 sentences.
+- When you explain what a duty consists of, say it is "made up of the base rate plus heading 9903.05.39" (use the pick's
+  own heading number); never "under the base rate plus …" or "the extra charge under heading …".
+- No URLs or checkout paths in your text: the app shows the proposal with its own button. No official HTS / Chapter 99
+  text: the duty breakdown shows it.`;
 }
 
 export async function runAgent(args: {

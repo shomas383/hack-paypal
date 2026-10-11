@@ -4,12 +4,12 @@
 import { queryKey } from './search';
 
 type Ev = { type: string; id?: string; name?: string; input?: unknown; output?: unknown };
-type Row = { listingId?: unknown; quoteId?: unknown; within_budget?: unknown; refused?: unknown; match_source?: unknown; hts_match?: { official_chain?: unknown } };
+type Row = { listingId?: unknown; quoteId?: unknown; within_budget?: unknown; delivered_total?: unknown; refused?: unknown; match_source?: unknown; hts_match?: { official_chain?: unknown } };
 
 const outputs = (events: readonly Ev[], name: string) => events.filter((e) => e.type === 'tool-result' && e.name === name).map((e) => (e.output ?? {}) as Record<string, unknown>);
 
 /** Quoted rows (compare_landed_costs rows + single quotes), excluding refused / unquotable ones. */
-function quotedRows(events: readonly Ev[]): Row[] {
+export function quotedRows(events: readonly Ev[]): Row[] {
   const compared = outputs(events, 'compare_landed_costs').flatMap((o) => (Array.isArray(o.compared) ? (o.compared as Row[]) : []));
   const single = outputs(events, 'get_landed_cost_quote') as Row[];
   return [...compared, ...single].filter((r) => typeof r.quoteId === 'string');

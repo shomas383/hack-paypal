@@ -1,6 +1,7 @@
 // Checks on the buyer agent's text for `pnpm agent:live`. Hard failures (anywhere in the agent text): a checkout path or
-// URL (the proposal card has the button), quoted official HTS / Chapter 99 wording (the breakdown shows it). The final
-// message's length (the text after the last tool call; the prompt asks for 2–4 sentences) is only a warning.
+// URL (the proposal card has the button), quoted official HTS / Chapter 99 wording (the breakdown shows it); and for the
+// final message (the text after the last tool call; the prompt asks for one paragraph of 2–4 sentences) more than 4
+// sentences or more than one paragraph. A single sentence is only a warning.
 
 export function finalMessage(events: readonly { type: string; text?: string | undefined }[]): string {
   const last = events.map((e) => e.type).findLastIndex((t) => t === 'tool-call' || t === 'tool-result' || t === 'tool-error');
@@ -59,8 +60,20 @@ export function agentTextWarnings(text: string, ctx: { toolStrings: readonly str
   return out;
 }
 
-export function finalMessageWarnings(final: string): string[] {
+/** Paragraphs: any line break starts one (/agent shows the text with its line breaks). */
+export function paragraphCount(text: string): number {
+  return text.split(/\n+/).filter((p) => p.trim()).length;
+}
+
+/** Hard failures for the final message: more than 4 sentences, more than one paragraph, or none at all. */
+export function finalMessageFailures(final: string): string[] {
   const n = sentenceCount(final);
   if (n === 0) return ['no final message'];
-  return n > 4 ? [`${n} sentences (more than 4)`] : [];
+  const p = paragraphCount(final);
+  return [...(n > 4 ? [`${n} sentences (more than 4)`] : []), ...(p > 1 ? [`${p} paragraphs (must be 1)`] : [])];
+}
+
+/** Advisory: the prompt asks for at least 2 sentences. */
+export function finalMessageWarnings(final: string): string[] {
+  return sentenceCount(final) === 1 ? ['1 sentence (fewer than 2)'] : [];
 }

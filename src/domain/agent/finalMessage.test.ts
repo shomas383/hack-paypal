@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { agentTextFailures, agentTextWarnings, finalMessage, finalMessageWarnings, sentenceCount } from './finalMessage';
+import { agentTextFailures, agentTextWarnings, finalMessage, finalMessageFailures, finalMessageWarnings, paragraphCount, sentenceCount } from './finalMessage';
 
 type E = { type: string; text?: string };
 
@@ -75,14 +75,33 @@ describe('agentTextWarnings (warnings only, never failures)', () => {
   });
 });
 
-describe('finalMessageWarnings (length is a warning, not a failure)', () => {
-  it('warns above 4 sentences and on an empty final message', () => {
-    expect(finalMessageWarnings('One. Two. Three. Four. Five.')).toEqual(['5 sentences (more than 4)']);
-    expect(finalMessageWarnings('')).toEqual(['no final message']);
+describe('paragraphCount — any line break starts a new paragraph (the page shows the text with its line breaks)', () => {
+  it('counts non-empty blocks', () => {
+    expect(paragraphCount('One. Two.')).toBe(1);
+    expect(paragraphCount('One.\n\nTwo.')).toBe(2);
+    expect(paragraphCount('One.\nTwo.\n\n\nThree.')).toBe(3);
+    expect(paragraphCount('  \n')).toBe(0);
+  });
+});
+
+describe('finalMessageFailures (hard failures: 2–4 sentences in one paragraph)', () => {
+  it('fails above 4 sentences, above 1 paragraph, and on an empty final message', () => {
+    expect(finalMessageFailures('One. Two. Three. Four. Five.')).toEqual(['5 sentences (more than 4)']);
+    expect(finalMessageFailures('I recommend L-P14 at $344.00 delivered.\n\nIt has the lowest duty.')).toEqual(['2 paragraphs (must be 1)']);
+    expect(finalMessageFailures('One. Two. Three.\nFour. Five.')).toEqual(['5 sentences (more than 4)', '2 paragraphs (must be 1)']);
+    expect(finalMessageFailures('')).toEqual(['no final message']);
   });
 
-  it('no warning for 1–4 sentences', () => {
-    expect(finalMessageWarnings('I recommend L-P14 at $344.00 delivered, within your $400.00 budget.')).toEqual([]);
-    expect(finalMessageWarnings('One. Two. Three. Four.')).toEqual([]);
+  it('passes 1–4 sentences in one paragraph', () => {
+    expect(finalMessageFailures('I recommend L-P14 at $344.00 delivered, within your $400.00 budget.')).toEqual([]);
+    expect(finalMessageFailures('One. Two. Three. Four.')).toEqual([]);
+  });
+});
+
+describe('finalMessageWarnings (advisory: fewer than the 2 sentences the prompt asks for)', () => {
+  it('warns on a single sentence; nothing for 2–4 or for what already fails', () => {
+    expect(finalMessageWarnings('I recommend L-P14 at $344.00 delivered, within your $400.00 budget.')).toEqual(['1 sentence (fewer than 2)']);
+    expect(finalMessageWarnings('One. Two.')).toEqual([]);
+    expect(finalMessageWarnings('')).toEqual([]);
   });
 });

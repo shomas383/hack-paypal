@@ -1,7 +1,7 @@
 import { MockLanguageModelV4 } from 'ai/test';
 import { describe, expect, it } from 'vitest';
 import { fakeDeps } from './fakeDeps';
-import { runAgent, type AgentEvent } from './run';
+import { runAgent, systemPrompt, type AgentEvent } from './run';
 
 type Step = { tool?: { name: string; input: (prompt: string) => unknown }; text?: string };
 const usage = { inputTokens: { total: 100, noCache: 100, cacheRead: undefined, cacheWrite: undefined }, outputTokens: { total: 10, text: 10, reasoning: undefined } };
@@ -36,6 +36,19 @@ async function go(steps: Step[], budgetMinor = 40_000n) {
   const done = await runAgent({ message: 'automatic diver watch under $400 delivered', budgetMinor, sessionId: 's-1', model: scripted(steps), deps: f.deps, onEvent: (e) => void events.push(e) });
   return { f, events, done };
 }
+
+describe('systemPrompt — the final-message rule (agent:live fails > 4 sentences or > 1 paragraph)', () => {
+  const p = systemPrompt('$400.00');
+  it('asks for ONE paragraph of 2–4 sentences', () => {
+    expect(p).toMatch(/final message[^]*one paragraph of 2–4 sentences/i);
+    expect(p).toMatch(/no line breaks/i);
+  });
+
+  it('describes duty composition as "made up of the base rate plus heading …", never "under the base rate plus …"', () => {
+    expect(p).toContain('made up of the base rate plus heading 9903.05.39');
+    expect(p).toMatch(/never "under the base rate plus/i);
+  });
+});
 
 describe('runAgent — the tool loop (mock model)', () => {
   it('search → compare → breakdown → propose → closing text; events streamed; proposal is PENDING with a checkout link', async () => {

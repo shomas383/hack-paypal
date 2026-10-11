@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { chainMatchesNotQuoted, chainOnlyResults, demoOutcome, quotedVsSearched, toolStrings } from './runChecks';
+import { chainMatchesNotQuoted, chainOnlyResults, demoOutcome, quotedRows, quotedVsSearched, toolStrings } from './runChecks';
 
 type E = { type: string; id?: string; name?: string; input?: unknown; output?: unknown };
 const search = (...ids: string[]): E => ({ type: 'tool-result', name: 'search_listings', output: { results: ids.map((listingId) => ({ listingId })) } });
 const compare = (...rows: [string, boolean][]): E => ({ type: 'tool-result', name: 'compare_landed_costs', output: { compared: rows.map(([listingId, within_budget], i) => ({ quoteId: `q-${listingId}`, listingId, within_budget, delivered_total: `$${300 + i}.00` })) } });
 const quote = (listingId: string): E => ({ type: 'tool-result', name: 'get_landed_cost_quote', output: { quoteId: `q-${listingId}`, listingId, within_budget: true } });
 const propose = (listingId: string): E => ({ type: 'tool-result', name: 'propose_purchase', output: { proposed: true, quoteId: `q-${listingId}` } });
+
+describe('quotedRows: only compare_landed_costs rows and get_landed_cost_quote results are quotes', () => {
+  it('the pick is listed once: propose_purchase and get_duty_breakdown outputs that carry quoteId/listingId are not quotes', () => {
+    const breakdown: E = { type: 'tool-result', name: 'get_duty_breakdown', output: { quoteId: 'q-L-P14', listingId: 'L-P14', hts: '9102.21.70' } };
+    const proposed: E = { type: 'tool-result', name: 'propose_purchase', output: { proposed: true, quoteId: 'q-L-P14', listingId: 'L-P14', delivered_total: '$344.00' } };
+    const rows = quotedRows([search('L-P14', 'L-P03'), compare(['L-P14', true], ['L-P03', true]), breakdown, proposed]);
+    expect(rows.map((r) => r.listingId)).toEqual(['L-P14', 'L-P03']);
+  });
+});
 
 describe('quotedVsSearched: every quoted listing must appear in a rendered search step', () => {
   it('passes when all compared / quoted ids were returned by a search', () => {
