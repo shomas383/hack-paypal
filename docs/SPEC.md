@@ -143,14 +143,14 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
   a DDP estimate doesn't assume anyone files an FTA claim.
 - Customs value = transaction value of the goods; **itemized international shipping is excluded** (HTS_VERIFICATION_SPEC §3
   Step 3.4). This clears the earlier VERIFY on customs value.
-- Chapter 99 U.S. note 52 additional duty (9903.05.xx), effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983.
+- Chapter 99 U.S. note 52 additional duty (9903.05.xx), effective 12:01 a.m. ET July 24, 2026; CBP filing guidance CSMS #69326983 (unverified research pointer — not cited in the product (removed in v5)).
   - JP: **9903.05.49** if the col. 1 rate **or its AVE** (compound rates) is < 12.5% → total becomes 12.5% (add-on = 12.5% − base);
     **9903.05.48** if ≥ 12.5% → no add-on. It is a cap/top-up, not an additive surcharge.
   - CN: **9903.05.31** = base **+ 12.5% (additive)**, plus any *active* legacy China list under U.S. note 20 (cited by note
     and heading numbers only; no Federal Register citation), cumulative per note 52(a). Example (rates-v3, P13):
     9102.21.70 → **9903.88.15** (note 20(r)/(s)(i), +7.5%) in addition to 9903.05.31. List 4B (9903.88.16) is **suspended** —
-    don't add it. CSMS #69326983 states "articles the product of China will be assessed an
-    additional ad valorem rate of duty of 12.5%"; one law-firm table's "13%" figure is superseded by the CSMS text.
+    don't add it. CSMS #69326983 (unverified research pointer — not cited in the product (removed in v5)) states "articles the product of China will be
+    assessed an additional ad valorem rate of duty of 12.5%"; one law-firm table's "13%" figure is superseded by the CSMS text.
   - EU members: **9903.05.39** if the col. 1 rate or its AVE (note 52(k)) is < 10% → total becomes 10% (combined cap);
     **9903.05.38** if ≥ 10% → no add-on. Exemptions also include **9903.05.97** (note 52(j)(2) EU list). Verified for DE
     (rates-v4, P14, 2026-10-09): 9102.21.70 at $290 → MFN $16.51 + 9903.05.39 $12.49 = $29.00. The importer reads the cap

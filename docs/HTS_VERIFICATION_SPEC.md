@@ -76,7 +76,7 @@ CSV format (confirmed): `HTS Number,Indent,Description,Unit of Quantity,General 
   4. **Check** the ruling number, date, `TARIFF NO.` line, the product description, and the "applicable subheading will be…" sentence.
 
 ### 2.6 Other primary sources
-- **CBP CSMS #69326983**: filing guidance for the Chapter 99 U.S. note 52 additional duty (9903.05.xx). Find via WebSearch; a broker reprint was used in earlier research. Prefer cbp.gov.
+- **CBP CSMS #69326983** (unverified research pointer — not cited in the product (removed in v5)): filing guidance for the Chapter 99 U.S. note 52 additional duty (9903.05.xx). Find via WebSearch; a broker reprint was used in earlier research. Prefer cbp.gov.
 - Federal Register for proclamations and interim final rules.
 
 ---
@@ -210,7 +210,7 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 
 ## 5. Regime facts as of HTS 2026 Rev 20 (re-verify on each new revision)
 - De minimis suspended for all countries (EO 14324 eff. Aug 29, 2025; CBP interim final rules made it indefinite eff. June 24, 2026).
-- Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983. (The Rev 20 Chapter 99 text contains neither "Section 301" nor "forced labor" anywhere, note 20 included — checked against the Ch. 99 PDF by the user, 2026-10-09.)
+- Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026; CSMS #69326983 (unverified research pointer — not cited in the product (removed in v5)). (The Rev 20 Chapter 99 text contains neither "Section 301" nor "forced labor" anywhere, note 20 included — checked against the Ch. 99 PDF by the user, 2026-10-09.)
 - Japan 9903.05.48/.49 (12.5% combined); China 9903.05.31 (+12.5% additive).
 - Section 232 derivatives: note 16; 9903.82.09 = +25% (lists (c)(vi)–(viii), (xi)), full value, ≥15% metal-weight test.
 - China legacy lists: U.S. note 20 (Federal Register notices referenced there, e.g. 84 Fed. Reg. 43304). List 4A
