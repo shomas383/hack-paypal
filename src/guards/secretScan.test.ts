@@ -110,6 +110,15 @@ describe('rule 4 exemption — the generated official HTS index (chemical names 
     expect(scanPatch(patchFor('src/x.ts', chem), []).map((f) => f.rule)).toEqual([4]);
     expect(scanPatch(patchFor('data/hts/2026-rev20.json', j('sk-', 'ant-', 'abcdefghijKLMN')), []).map((f) => f.rule)).toContain(2);
   });
+  it('the estimator data versions have the same rule-4-only exemption; rules 2 and 3 still catch a key there', () => {
+    const notes = j('data/', 'estimator/2026-rev21-e1/notes.json');
+    const chem = `"${j('Methyl-4-amino', 'benzenesulfonylcarbamate')} ${mixed(32)}"`;
+    expect(scanPatch(patchFor(notes, chem), [])).toEqual([]);
+    expect(scanPatch(patchFor(notes, j('sk-', 'ant-', 'abcdefghijKLMN')), []).map((f) => f.rule)).toEqual([2]);
+    expect(scanPatch(patchFor(notes, j('{"x":"local-', 'qa-value-9"}')), [j('local-', 'qa-value-9')]).map((f) => f.rule)).toEqual([3]);
+    // only that folder: a look-alike path elsewhere is still scanned by rule 4
+    expect(scanPatch(patchFor(j('src/data/', 'estimator/x.json'), chem), []).map((f) => f.rule)).toEqual([4]);
+  });
 });
 
 describe('rule 4 exemption — public government source URLs (hosts approved 2026-10-11)', () => {
