@@ -356,20 +356,32 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
                           </tr>
                         </thead>
                         <tbody>
-                          {matching.map((r) => (
-                            <tr key={r.listingId}>
-                              <th scope="row">
-                                <span className={s.mono}>{r.listingId}</span>
-                                <span className={s.sub} lang={titleLang(r.untrusted_seller_text.title)}>
-                                  {r.untrusted_seller_text.title}
-                                </span>
-                                {r.match_source === 'hts_description' && r.hts_match ? <HtsMatchLine listingId={r.listingId} m={r.hts_match} /> : null}
-                              </th>
-                              <td>{r.origin}</td>
-                              <td className={s.num}>{r.goods.replace(/^\$/, '')}</td>
-                              <td className={s.num}>{r.shipping.replace(/^\$/, '')}</td>
-                            </tr>
-                          ))}
+                          {matching.map((r) => {
+                            const m = r.match_source === 'hts_description' ? r.hts_match : undefined;
+                            return (
+                              <Fragment key={r.listingId}>
+                                <tr className={m ? s.hasMatch : undefined}>
+                                  <th scope="row">
+                                    <span className={s.mono}>{r.listingId}</span>
+                                    <span className={s.sub} lang={titleLang(r.untrusted_seller_text.title)}>
+                                      {r.untrusted_seller_text.title}
+                                    </span>
+                                  </th>
+                                  <td>{r.origin}</td>
+                                  <td className={s.num}>{r.goods.replace(/^\$/, '')}</td>
+                                  <td className={s.num}>{r.shipping.replace(/^\$/, '')}</td>
+                                </tr>
+                                {m ? (
+                                  // Full table width (readable at 375 px), directly under the listing it explains.
+                                  <tr className={s.matchRow}>
+                                    <td colSpan={4}>
+                                      <HtsMatchLine listingId={r.listingId} m={m} />
+                                    </td>
+                                  </tr>
+                                ) : null}
+                              </Fragment>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>

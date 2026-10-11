@@ -152,11 +152,20 @@
 }
 
 /* HTS-description match (search step): why a seller listing (often not in English) matched — official levels only. */
+/* The listing row and its match row read as one entry: the rule sits under the match row only. */
+.table .hasMatch > th,
+.table .hasMatch > td {
+  border-bottom: 0;
+}
+
+.table .matchRow > td {
+  padding-top: 0;
+}
+
 .match {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  margin-top: var(--space-2);
   max-width: var(--measure);
   color: var(--text-muted);
   font-size: var(--text-12);
