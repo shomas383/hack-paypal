@@ -7,10 +7,13 @@
 import { Fragment, useState } from 'react';
 import { parseBudgetField, parseDeliveredBudget } from '@/domain/agent/checks';
 import { runSummary, type QuoteView } from '@/domain/agent/insight';
-import { withheldNotice } from '@/domain/agent/instructionNotice';
+import { uncheckedScriptNotice, withheldNotice } from '@/domain/agent/instructionNotice';
 import { usd } from '@/domain/money/money';
 import { formatUsd } from '@/lib/money';
 import { Button } from '@/ui/Button';
+import { Disclosure } from '@/ui/Disclosure';
+import { officialChain } from '@/ui/dutyText';
+import { markTerms, shortLevel } from '@/ui/htsMatchText';
 import { Field, Input, Textarea } from '@/ui/Field';
 import { Icon } from '@/ui/Icon';
 import { PageHeader } from '@/ui/PageHeader';
@@ -23,11 +26,23 @@ import { ToolCallStep } from '@/ui/patterns/ToolCallStep';
 import s from './agent.module.css';
 
 type Json = Record<string, unknown>;
-type SearchResult = { listingId: string; origin: string; goods: string; shipping: string; match_score: number; seller_text_contains_instructions: boolean; untrusted_seller_text: { title: string; description: string | null } };
+type HtsMatch = { hts: string; terms: string[]; official_levels: string[]; official_chain: string[] };
+type SearchResult = {
+  listingId: string;
+  origin: string;
+  goods: string;
+  shipping: string;
+  match_score: number;
+  match_source?: 'title' | 'hts_description';
+  hts_match?: HtsMatch;
+  seller_text_contains_instructions: boolean;
+  seller_text_unchecked_script?: boolean;
+  untrusted_seller_text: { title: string; description: string | null };
+};
 
 type Item =
   | { kind: 'text'; text: string }
-  | { kind: 'search'; id: string; query: string; results?: SearchResult[]; catalogSize?: number; withheld?: number; error?: string }
+  | { kind: 'search'; id: string; query: string; results?: SearchResult[]; catalogSize?: number; withheld?: number; unchecked?: number; error?: string }
   | { kind: 'quotes'; rows: QuoteRow[]; pendingCompare?: string | undefined }
   | { kind: 'breakdown'; id: string; out?: Json; error?: string }
   | { kind: 'proposal'; id: string; reasoning: string; out?: Json; error?: string }
@@ -43,6 +58,33 @@ function Bold({ text }: { text: string }) {
     <>
       {parts.map((p, i) => (i % 2 === 1 ? <strong key={i}>{p}</strong> : <Fragment key={i}>{p}</Fragment>))}
     </>
+  );
+}
+
+/** Kana → the seller's title is Japanese (for screen readers); the title itself is shown as written, never translated. */
+const titleLang = (title: string) => (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(title) ? 'ja' : undefined);
+
+/**
+ * Why an HTS-description result matched: the official levels that contain a matched term (verbatim, cut at ~60 chars),
+ * matched words marked, and the whole official chain one disclosure away. Official Rev 20 text only.
+ */
+function HtsMatchLine({ listingId, m }: { listingId: string; m: HtsMatch }) {
+  return (
+    <div className={s.match} data-testid={`agent-search-hts-match-${listingId}`}>
+      <span className={s.matchLabel}>
+        Matched on official HTS description (<span className={s.mono}>{m.hts}</span>):
+      </span>
+      <ul className={s.matchLevels}>
+        {m.official_levels.map((level, i) => (
+          <li key={i}>
+            {markTerms(shortLevel(level), m.terms).map((seg, k) => (seg.mark ? <mark key={k} className={s.mark}>{seg.text}</mark> : <Fragment key={k}>{seg.text}</Fragment>))}
+          </li>
+        ))}
+      </ul>
+      <Disclosure summary="Full official description" className={s.matchFull}>
+        <p className={s.matchChain}>{officialChain(m.official_chain)}</p>
+      </Disclosure>
+    </div>
   );
 }
 
@@ -140,7 +182,14 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
                 next[i] = { ...it, rows };
               }
             } else if ('id' in it && it.id === id) {
-              if (it.kind === 'search') next[i] = { ...it, ...(out ? { results: (out.results ?? []) as SearchResult[], catalogSize: Number(out.catalog_size ?? 0), withheld: Number(out.withheld_instructions ?? 0) } : {}), ...(err ? { error: err } : {}) };
+              if (it.kind === 'search')
+                next[i] = {
+                  ...it,
+                  ...(out
+                    ? { results: (out.results ?? []) as SearchResult[], catalogSize: Number(out.catalog_size ?? 0), withheld: Number(out.withheld_instructions ?? 0), unchecked: Number(out.withheld_unchecked_script ?? 0) }
+                    : {}),
+                  ...(err ? { error: err } : {}),
+                };
               else next[i] = { ...it, ...(out ? { out } : {}), ...(err ? { error: err } : {}) } as Item;
             }
           }
@@ -285,6 +334,7 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
               // Rendered exactly as the tool returned it (the tool returns only matches; no second filter here).
               const matching = it.results ?? [];
               const notice = it.results ? withheldNotice(it.withheld) : null;
+              const uncheckedNotice = it.results ? uncheckedScriptNotice(it.unchecked) : null;
               return (
                 <ToolCallStep
                   key={i}
@@ -310,7 +360,10 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
                             <tr key={r.listingId}>
                               <th scope="row">
                                 <span className={s.mono}>{r.listingId}</span>
-                                <span className={s.sub}>{r.untrusted_seller_text.title}</span>
+                                <span className={s.sub} lang={titleLang(r.untrusted_seller_text.title)}>
+                                  {r.untrusted_seller_text.title}
+                                </span>
+                                {r.match_source === 'hts_description' && r.hts_match ? <HtsMatchLine listingId={r.listingId} m={r.hts_match} /> : null}
                               </th>
                               <td>{r.origin}</td>
                               <td className={s.num}>{r.goods.replace(/^\$/, '')}</td>
@@ -324,6 +377,11 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
                   {notice ? (
                     <StatusBadge tone="warning" data-testid="agent-instruction-notice">
                       {notice}
+                    </StatusBadge>
+                  ) : null}
+                  {uncheckedNotice ? (
+                    <StatusBadge tone="warning" data-testid="agent-unchecked-notice">
+                      {uncheckedNotice}
                     </StatusBadge>
                   ) : null}
                 </ToolCallStep>

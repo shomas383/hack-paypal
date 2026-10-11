@@ -150,3 +150,40 @@
   font-size: var(--text-12);
   line-height: var(--leading-12);
 }
+
+/* HTS-description match (search step): why a seller listing (often not in English) matched — official levels only. */
+.match {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  max-width: var(--measure);
+  color: var(--text-muted);
+  font-size: var(--text-12);
+  line-height: var(--leading-12);
+}
+
+.matchLabel {
+  font-weight: var(--weight-medium);
+}
+
+.matchLevels {
+  margin: 0;
+  padding-left: var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+.mark {
+  background: var(--accent-subtle);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+}
+
+.matchFull {
+  font-size: var(--text-12);
+}
+
+.matchChain {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

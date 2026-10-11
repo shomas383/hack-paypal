@@ -19,12 +19,43 @@ export function sentenceCount(text: string): number {
   return t.split(/(?<=[.!?])["”)]?\s+(?=[A-Z"“(*])/).filter((s) => s.trim()).length;
 }
 
-export function agentTextFailures(text: string): string[] {
+/** Spans inside straight or curly double quotes. */
+function quotedSpans(text: string): string[] {
+  return [...text.matchAll(/["“]([^"”]+)["”]/g)].map((m) => m[1]!.trim()).filter(Boolean);
+}
+const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
+const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').replace(/[:.,;]+$/, '').trim();
+
+/**
+ * Hard failures. `officialLevels`: the official HTS levels a search matched (hts_match.official_levels) — quoting any of
+ * them (2+ words) fails like the fixed official phrases do; the search card shows them.
+ */
+export function agentTextFailures(text: string, officialLevels: readonly string[] = []): string[] {
   const out: string[] = [];
   if (/\/checkout\//.test(text)) out.push('contains a checkout path');
   if (/https?:\/\//.test(text)) out.push('contains a URL');
   // Official HTS / Chapter 99 wording quoted back ("articles the product of …", "Wrist watches, pocket watches …").
-  if (/["“][^"”]{0,40}(articles the product of|as provided for in U\.S\. note|Wrist watches, pocket watches|Having over \d+ jewels)/i.test(text)) out.push('quotes official text');
+  const fixed = /["“][^"”]{0,40}(articles the product of|as provided for in U\.S\. note|Wrist watches, pocket watches|Having over \d+ jewels)/i.test(text);
+  const levels = officialLevels.map(norm);
+  const matchedLevel = quotedSpans(text).some((span) => words(span) >= 2 && levels.some((l) => l.includes(norm(span)) || norm(span).includes(l)));
+  if (fixed || matchedLevel) out.push('quotes official text');
+  return out;
+}
+
+/**
+ * Warnings only (never failures): a quoted span of 3+ words that no tool result contains (e.g. an invented translation
+ * presented as a quote), and a chain-only (HTS-description) listing named without saying it was matched that way.
+ */
+export function agentTextWarnings(text: string, ctx: { toolStrings: readonly string[]; chainOnlyIds: readonly string[] }): string[] {
+  const out: string[] = [];
+  for (const span of quotedSpans(text)) {
+    if (words(span) >= 3 && !ctx.toolStrings.some((s) => s.includes(span))) out.push(`quoted text not in any tool result: "${span}"`);
+  }
+  const sentences = text.split(/(?<=[.!?])\s+|\n+/).map((s) => s.trim()).filter(Boolean);
+  for (const id of ctx.chainOnlyIds) {
+    const naming = sentences.filter((s) => s.includes(id));
+    if (naming.length && !naming.some((s) => /\bHTS description\b/i.test(s))) out.push(`names ${id} (an HTS-description match) without saying so: "${naming[0]}"`);
+  }
   return out;
 }
 
