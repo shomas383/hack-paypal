@@ -163,5 +163,8 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   created_at, id); /agent shows "Matched on official HTS description"; seller-text filter normalised + Japanese/Chinese
   patterns + fail closed on unchecked scripts; replay fixture `?fixture=ja`. SPEC §4.4. Keep production at ≤ 2 Japanese
   watches for the video (a 3rd is shown but not quoted: compare cap 6).
+- HTS match line: show one level per matched term — the most specific (deepest) level containing it — so 9102.21.70 shows
+  2 bullets ("With automatic winding", "Other wrist watches, …"), not 3.
+- /agent search table at 375 px: check the right gutter (Shipping column ends flush with the screen edge in the QA shots).
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
