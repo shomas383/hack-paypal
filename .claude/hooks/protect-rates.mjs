@@ -1,6 +1,8 @@
 // PreToolUse guard (Edit|Write|Bash|PowerShell) for generated, protected data folders:
 //  - data/rates/: human-verified duty rates, written only by scripts/import-verify-sheet.ts (pnpm rates:import)
 //  - data/hts/:   the Rev 20 HTS index (codes + description chains), written only by scripts/import-hts.ts (pnpm hts:import)
+//  - data/estimator/: estimate-mode data versions (gate-checked), written only by scripts/estimator-build.ts
+//    (pnpm estimator:build)
 // Any other direct change there is denied. ("ask" was auto-resolved by the permission mode, so it didn't stop anything.)
 //  - Edit/Write: deny if tool_input.file_path is under a protected folder. FAIL CLOSED (deny) if the path is missing or stdin
 //    isn't JSON.
@@ -26,6 +28,13 @@ const PROTECTED = [
     reason:
       'data/hts/ holds the official Rev 20 HTS index; it is written only by scripts/import-hts.ts (pnpm hts:import). ' +
       'Use pnpm hts:import to regenerate it; read it with the Read tool.',
+  },
+  {
+    dir: 'data/estimator',
+    allowed: new Set(['pnpm estimator:build']),
+    reason:
+      'data/estimator/ holds the gate-checked estimate-mode data; it is written only by scripts/estimator-build.ts ' +
+      '(pnpm estimator:build). Use pnpm estimator:build to regenerate it; read it with the Read tool.',
   },
 ];
 

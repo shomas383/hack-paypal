@@ -49,6 +49,32 @@ describe('protect-rates hook — data/hts/ (written only by pnpm hts:import)', (
   });
 });
 
+describe('protect-rates hook — data/estimator/ (written only by pnpm estimator:build)', () => {
+  it('denies Write/Edit under data/estimator/, relative or absolute, either slash', () => {
+    expect(hook(write('data/estimator/current.json'))).toBe('deny');
+    expect(hook(write('C:/Users/me/repo/data/estimator/2026-rev21-e1/rules.json'))).toBe('deny');
+    expect(hook(edit('C:\\repo\\data\\estimator\\2026-rev21-e1\\report.json'))).toBe('deny');
+  });
+  it('allows exactly pnpm estimator:build', () => {
+    expect(hook(bash('pnpm estimator:build'))).toBe('none');
+    expect(hook(ps('pnpm estimator:build'))).toBe('none');
+  });
+  it('denies any other Bash/PowerShell command that mentions data/estimator', () => {
+    expect(hook(bash('git add data/estimator/current.json'))).toBe('deny');
+    expect(hook(bash('rm -rf data\\estimator'))).toBe('deny');
+    expect(hook(ps('Set-Content data/estimator/current.json x'))).toBe('deny');
+    expect(hook(bash('pnpm estimator:build && echo data/estimator'))).toBe('deny');
+  });
+  it("an allowed command for another folder does not open it, and its own command doesn't open the others", () => {
+    expect(hook(bash('pnpm hts:import data/estimator'))).toBe('deny');
+    expect(hook(bash('pnpm estimator:build data/rates'))).toBe('deny');
+    expect(hook(bash('pnpm estimator:build data/hts'))).toBe('deny');
+  });
+  it('a build that only writes its report elsewhere is not guarded (--out outside data/)', () => {
+    expect(hook(bash('pnpm estimator:build --out ../scratch/est'))).toBe('none');
+  });
+});
+
 describe('protect-rates hook — everything else', () => {
   it('leaves other paths and commands alone; data/source/hts (the raw export) is not guarded', () => {
     expect(hook(write('src/server/hts.ts'))).toBe('none');
