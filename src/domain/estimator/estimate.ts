@@ -68,6 +68,15 @@ export interface Estimate {
 /** Always shown; never computed. */
 export type Disclosure = 'SPECIAL_PROGRAMS' | 'NOT_A_RULING';
 
+/**
+ * SPECIAL_PROGRAMS covers Special-column rates (e.g. "JP", US–Japan Trade Agreement), trade-agreement subchapters and 9902
+ * temporary reductions: none is applied, and each can only lower the duty (decision 2026-10-11).
+ */
+export const DISCLOSURE_TEXT: Record<Disclosure, string> = {
+  SPECIAL_PROGRAMS: 'Lower special-program rates may apply; this estimate uses the General rate',
+  NOT_A_RULING: 'Estimate — not a customs ruling.',
+};
+
 const cant = (reason: CantReason, detail: string, refs: string[] = []): CantEstimate => ({ kind: 'CANT_ESTIMATE', reason, detail, refs });
 const digits = (c: string) => c.replace(/\./g, '');
 

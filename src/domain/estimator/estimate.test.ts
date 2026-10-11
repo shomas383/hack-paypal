@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { usd } from '@/domain/money/money';
 import type { EstimatorData } from './data';
-import { estimateLine, headingWords, listMembership, type Estimate, type EstimateInput } from './estimate';
+import { DISCLOSURE_TEXT, estimateLine, headingWords, listMembership, type Estimate, type EstimateInput } from './estimate';
 import { ASOF, REFERENCE_RULES, sampleData } from './__fixtures__/sample';
 
 // Committed official excerpts + the reference rules (no gate here: gate.test.ts). Expected figures are arithmetic on the
@@ -26,6 +26,7 @@ describe('estimateLine — JP / EU (DE) layer', () => {
     expect(e.result.totalDuty).toEqual(usd(1188));
     expect(heads(e)).toEqual(['9903.05.49']);
     expect(e.disclosures).toEqual(['SPECIAL_PROGRAMS', 'NOT_A_RULING']);
+    expect(e.disclosures.map((d) => DISCLOSURE_TEXT[d])).toEqual(['Lower special-program rates may apply; this estimate uses the General rate', 'Estimate — not a customs ruling.']);
     expect(e.ifYes).toEqual([]);
   });
 
