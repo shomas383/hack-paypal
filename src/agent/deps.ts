@@ -15,7 +15,17 @@ let toolkit: ReturnType<typeof readOnlyToolkit> | undefined;
 export function agentDeps(): AgentDeps {
   return {
     listListings: async () =>
-      (await listListings()).map((l) => ({ id: l.id, title: l.title, origin: l.origin, priceMinor: l.priceMinor, shippingMinor: l.shippingMinor, description: l.description })),
+      (await listListings()).map((l) => ({
+        id: l.id,
+        title: l.title,
+        origin: l.origin,
+        hts10: l.hts10,
+        priceMinor: l.priceMinor,
+        shippingMinor: l.shippingMinor,
+        description: l.description,
+        sellerPublished: l.sheetRef === 'CLASSIFIER', // published from the seller console (src/domain/classifier/publish.ts)
+        createdAt: l.createdAt,
+      })),
     createQuote,
     getQuote: findQuoteForSession,
     rateRow: (rateRowId) => {
@@ -52,6 +62,7 @@ export function agentDeps(): AgentDeps {
       return toolkit.getOrder(id);
     },
     officialText: (code) => (code.startsWith('9903.') ? (currentCh99().headings[code] ?? null) : (currentHtsIndex().chains.get(code)?.join(' > ') ?? null)),
+    htsChain: (code) => currentHtsIndex().chains.get(code) ?? null,
     now: () => new Date(),
   };
 }
