@@ -216,11 +216,27 @@ AC:
   `get_order_status` (toolkit `get_order`, this session's orders only). The model chooses the query, reads the breakdown,
   explains and proposes; which listings are compared is decided by code (2026-10-10, after the production search/quote
   mismatch).
+- Search matching (`src/domain/agent/search.ts`, 2026-10-11): words are lowercase `[a-z0-9]+`, ≥ 3 chars, not all digits,
+  singular (watches → watch), minus query and HTS-chain filler stop words. A listing matches on its title/description
+  (`match_source: "title"`), or — only a seller-published listing (`sheet_ref = 'CLASSIFIER'`) whose own words match
+  nothing — on the official Rev 20 English description chain of its settled HTS code, verbatim from the HTS index
+  (`"hts_description"`, needs min(2, query words) matched; `hts_match` = code, matched terms, the levels that contain them,
+  full chain). No translation, no model keywords: a Japanese title is found only through the official text. Order: title
+  matches always before HTS-description matches, then score, then `created_at` (seed rows predate seller listings; the
+  seed upsert keeps the first insert time — a seed row first inserted after a seller listing would lose ties to it), then
+  id. Demo query: the four English watches always hold places 1–4 of the 6 compared; seller Japanese watches follow in
+  created_at order. /agent shows the original-language title and "Matched on official HTS description (code):" with the
+  matched levels (cut at ~60 chars) and the full chain in a disclosure. The prompt lets the model say a listing is in
+  Japanese and matched on its HTS description, never translate or paraphrase its title.
 - PayPal Agent Toolkit 1.11.0: only `actions.orders.get` → `get_order`. Unit test asserts the tool list contains no
   approve/authorize/capture/void/refund/pay/create-order/dispute tool and no agent source imports a money-moving function.
 - Budget: the buyer-confirmed field (positive integer minor units), never from the model. "Delivered" = the stored quote total.
 - Seller text is untrusted: passed only under `untrusted_seller_text`; text that reads like instructions is withheld by code
   (flag kept for the UI). Duty lines carry the official HTS / Ch. 99 wording (no program labels).
+  The filter (`sellerTextCheck`, 2026-10-11) normalises first (NFKC, format characters removed: fullwidth / zero-width
+  variants match), checks English, Japanese and Simplified Chinese patterns, and withholds text with letters in any other
+  script (Cyrillic look-alikes, Hangul, …) because it cannot check it — its own marker, whole-catalog count and /agent notice.
+  Ordinary marketplace wording (即購入OK, 動作確認済み, 決済してください) is not flagged.
 - Spend cap per order and per session enforced in `policy/` and in `propose_purchase`; runs rate-limited per session/IP/day.
 - Final message (prompt): 2–4 sentences — the pick, its delivered total against the budget, the main reason; at most one
   alternative (the quotes table shows the rest); no URLs or checkout paths (the proposal card has the button); no official
@@ -231,6 +247,13 @@ AC:
   proposal), a code-computed insight line when the lowest goods price isn't the lowest delivered total, and one screen-reader
   announcement at the end. Phones (≤ 640 px): quotes as two-line rows with Delivered and the budget status visible.
 AC:
+- [x] A buyer agent searching in English finds a seller's Japanese listing through its official HTS description, and the
+      page shows why. (`pnpm agent:live`, 2026-10-11 UTC, claude-opus-5-5, local DB with two published Japanese watches,
+      demo query: searched 6 = 4 English (title) + L-C-8af89a9e, L-C-469846d7 (hts_description); compared all 6 — L-P14
+      $344.00, L-P03 / both Japanese watches $362.50, L-P13 $377.09, L-P03-B $452.50 over budget; proposed L-P14; no
+      official text quoted, nothing translated; 5 steps, 34.7k / 0.5k tokens, 11.3 s. "vintage" run: proposed L-P03
+      ("its seller says it's from the 1990s"), did not read the Japanese titles' 1990年代; WARN 5 sentences. Replay fixture
+      `replay-de-compare-ja.ndjson`: unedited run with one Japanese watch, recorded with `--exclude-listing L-C-8af89a9e`.)
 - [x] Agent compares ≥2 origins with itemized duties and cites rate sources; asks for approval; never captures.
       (rates-v4, `pnpm agent:live`, 2026-10-10 UTC, claude-opus-5-5, "automatic diver watch under $400 delivered": quoted
       all four watches — JP L-P03 $362.50, CN L-P13 $377.09, DE L-P14 $344.00, JP L-P03-B $452.50 (over budget); proposed

@@ -35,10 +35,12 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   `data/source/hts/`; stages the output
 - `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
   wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
-- `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00]` — ONE live buyer-agent run against the local DB (live
-  Claude calls); prints the transcript and fails if any $ amount in the agent's text isn't from stored-quote/rate data or the
-  budget, a non-allowlisted tool was called, L-T-INJ was proposed, or the agent text has a checkout path / URL / quoted
-  official text (final message over 4 sentences only warns)
+- `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00] [--exclude-listing <id>]…` — ONE live buyer-agent run
+  against the local DB (live Claude calls); prints the transcript and fails if any $ amount in the agent's text isn't from
+  stored-quote/rate data or the budget, a non-allowlisted tool was called, L-T-INJ was proposed, an HTS-description match
+  within the compare cap wasn't quoted, or the agent text has a checkout path / URL / quoted official text (final message
+  over 4 sentences, untraceable quotes and unexplained HTS-description mentions only warn). `--exclude-listing` hides a
+  listing from that run's catalog (no DB write; script only — no route can reach it)
 - `pnpm seller:seed [--force]` — LIVE (2 Claude calls per sample): classifies the two seller demo samples
   (`src/domain/seller/samples.ts`) so the review queue isn't empty; accepts/publishes nothing; skips samples already
   classified. Never run by a deploy.
@@ -156,9 +158,10 @@ Polish backlog (Wk5, before the Nov 4 freeze):
 - Agent search/quote mismatch: DONE (2026-10-10, local) — search_listings returns only matches (+ whole-catalog withheld
   count), get_landed_cost_quote refuses ids no search in the run returned, compare_landed_costs quotes all matches (max 6,
   score then id) sorted by delivered total; agent:live checks quoted ⊆ searched, DE proposed, JP-B over-budget row.
-- Design note (not built): HTS-description matching for search. Match published listings on their official Rev 20
-  description chain (English, verbatim from the HTS index, no model translation) in addition to the title, so a seller who
-  lists in Japanese is found by a buyer agent searching in English (wanted for the video). Constraint: the demo query
-  "automatic diver watch under $400 delivered" must still return ≤ 6 listings (compare's cap) with DE (L-P14) as the pick.
+- HTS-description search: DONE on branch `hts-description-search` (2026-10-11, local, not pushed) — seller-published
+  listings match on their official Rev 20 chain when their own words don't (title matches always first; then score,
+  created_at, id); /agent shows "Matched on official HTS description"; seller-text filter normalised + Japanese/Chinese
+  patterns + fail closed on unchecked scripts; replay fixture `?fixture=ja`. SPEC §4.4. Keep production at ≤ 2 Japanese
+  watches for the video (a 3rd is shown but not quoted: compare cap 6).
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

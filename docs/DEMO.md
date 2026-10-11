@@ -19,7 +19,9 @@ listing… with case $250 / band $50 → "Quotable: **$362.50** delivered at $30
 official schedule; the model never sets a code it wasn't offered or any amount. (Live run 2026-10-10: exactly this.)
 
 0:55–1:45 Buyer agent (`/agent`). Prompt: "automatic diver watch under $400 delivered." Buyer confirms the $400.00 budget.
-Agent searches, quotes all four watches (JP / CN / DE / JP-B), explains duties (MFN + Chapter 99 U.S. note 52 additional duty
+Agent searches — the search step also lists the seller's Japanese watch just published, under its Japanese title with
+"Matched on official HTS description (9102.21.70): … With automatic winding" (official text, no translation; point at it) —
+quotes the four English watches (JP / CN / DE / JP-B) and the Japanese listing ($362.50), explains duties (MFN + Chapter 99 U.S. note 52 additional duty
 (9903.05.xx), official text quoted, cited), and proposes **L-P14 (DE) at $344.00** as PENDING — the agent can't approve or
 pay. Point at the quotes card: CN has the lowest goods price ($280) but the highest delivered total within budget ($377.09);
 JP-B is over budget (✗, computed by code). The code-generated notice shows the injected test listing was withheld.
