@@ -165,6 +165,13 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
   the article's weight**. A 232 article is **exempt from the 12.5%** via 9903.05.90 / note 52(f). Unknown subdivision → UNSUPPORTED.
 - **IEEPA** tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but **terminated** (CBP stopped collecting for
   entries on/after Feb 24, 2026) — never add them. Section 122 10% surcharge expired July 24, 2026 — must NOT appear.
+  - Source (primary): CBP CSMS # 67834313, "Ending Collection of International Emergency Economic Powers Act Duties", sent
+    2026-02-22, https://content.govdelivery.com/accounts/USDHSCBP/bulletins/40b11c9 (read 2026-10-11): IEEPA duties are not
+    collected for goods entered on or after 12:00 a.m. ET Feb 24, 2026, per the Feb 20, 2026 Executive Order "Ending Certain
+    Tariff Actions", which ends the IEEPA duties under EOs 14193, 14194, 14195, 14245, 14257, 14323, 14329 and "affects IEEPA
+    duties only". The estimator treats a 9903.01/.02 heading as terminated only if its own text or its note's text names one
+    of those seven EOs (gate G0); any other fails closed. The Section 122 headings (9903.03.01–.11) are out of force from their
+    own compiler's note in note 2(aa) ("expired at the close of July 23, 2026"), not from this source.
 - Rounding: compute in integers (ppm, micros); round half-up to the cent per duty line. For `combined_cap` the add-on line =
   round(cap × value) − round(MFN line), so the total is exactly round(cap × value) (12.5% JP, 10% EU). (Estimate, not a CBP liquidation figure.)
 - Engine is versioned: every quote stores `rateVersion`; capture re-checks that version is still current.

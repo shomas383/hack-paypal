@@ -159,7 +159,7 @@ Other countries: search `9903.05` for "articles the product of <country>".
    "heading +x%" (P13, rates-v3).
 
 **4e. Things that look applicable but aren't (Rev 20 era):**
-- **IEEPA tariffs** (9903.01.xx "fentanyl", 9903.02.xx "reciprocal", e.g. 9903.02.30 Japan 15%): still printed in Chapter 99, but **terminated**. *Learning Resources, Inc. v. Trump* (Feb 20, 2026); CBP stopped collecting for entries on or after Feb 24, 2026. Never add them.
+- **IEEPA tariffs** (9903.01.xx "fentanyl", 9903.02.xx "reciprocal", e.g. 9903.02.30 Japan 15%): still printed in Chapter 99, but **terminated**. *Learning Resources, Inc. v. Trump* (Feb 20, 2026); CBP stopped collecting for entries on or after Feb 24, 2026. Never add them. Primary source: CBP CSMS # 67834313, "Ending Collection of International Emergency Economic Powers Act Duties", sent 2026-02-22, https://content.govdelivery.com/accounts/USDHSCBP/bulletins/40b11c9 (read 2026-10-11) — IEEPA duties not collected for goods entered on or after 12:00 a.m. ET Feb 24, 2026, per the Feb 20, 2026 Executive Order "Ending Certain Tariff Actions", which ends the IEEPA duties under EOs 14193, 14194, 14195, 14245, 14257, 14323, 14329 and "affects IEEPA duties only".
 - **Section 122** 10% surcharge: expired July 24, 2026.
 - Lists for **other countries** (e.g. note 51 / 9903.03.12–.16 = Canada only). Always read who a list applies to before applying it.
 
