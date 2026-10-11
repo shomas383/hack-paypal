@@ -24,6 +24,11 @@ export function parseReleaseName(name: string): HtsRelease {
   return { name, year, rev, label: `${year} Rev. ${rev}`, slug: `${year}-rev${rev}` };
 }
 
+/** "2026 Rev. 21" (an hts_revision label) → its release. */
+export function releaseFromLabel(label: string): HtsRelease {
+  throw new Error(`not implemented: ${label}`);
+}
+
 const Release = z.object({ name: z.string(), description: z.string().optional(), title: z.string().optional() });
 
 export const ExportMetaSchema = z.strictObject({
