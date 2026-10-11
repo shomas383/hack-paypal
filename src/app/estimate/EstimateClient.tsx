@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, NOT_INCLUDED, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, NOT_INCLUDED, plainBasis, reasonText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
 import { parseUsdInput } from '@/domain/seller/form';
@@ -226,6 +226,9 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   // The estimator's own disclosures (e.g. special-program rates), once each, as sentences.
   // The not-a-ruling notice is shown on its own under the result, so it is left out here.
   const disclosures = [...new Set(estimated.flatMap((c) => c.outcome.disclosures))].filter((d) => d !== view.notice).map((d) => (/[.!?]$/.test(d) ? d : `${d}.`));
+  const reason = reasonText(view.reasons, view.separating);
+  // Every candidate estimated and all at the same duty: say what would pick the line, and that it doesn't matter here.
+  const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && min === max ? sameDutyText(view.separating, levels) : null;
   const needsSplit = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && c.outcome.reason === 'NEEDS_SPLIT');
 
   return (
@@ -254,6 +257,17 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
               <Money value={m(min)} strong /> to <Money value={m(max)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale.
             </>
           )}
+        </p>
+      ) : null}
+      {reason && view.candidates.length > 0 ? (
+        <p className={s.inlineNote} data-testid="estimate-reason">
+          {reason}
+        </p>
+      ) : null}
+      {sameDuty ? (
+        <p className={s.separating} data-testid="estimate-same-duty">
+          <Icon name="info" />
+          <span>{sameDuty}</span>
         </p>
       ) : null}
       {levels && estimated.length > 1 && min !== max ? (
@@ -335,8 +349,16 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
             <tbody>
               {o.lines.map((l, i) => (
                 <tr key={i}>
-                  <th scope="row">{l.chapter99 ? <span className={s.code}>{l.chapter99}</span> : `General rate · ${c.code}`}</th>
-                  <td>{l.basis}</td>
+                  <th scope="row">
+                    {l.chapter99 ? (
+                      <span className={s.lineCode}>{l.chapter99}</span>
+                    ) : (
+                      <>
+                        General rate <span className={s.lineCode}>{c.code}</span>
+                      </>
+                    )}
+                  </th>
+                  <td data-testid="estimate-basis">{plainBasis(l, view.origin)}</td>
                   <td className={s.num}>
                     <Money value={m(l.amountMinor)} bare />
                   </td>
@@ -362,6 +384,23 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
               </tr>
             </tfoot>
           </table>
+          <Disclosure summary="Official text and exact basis" data-testid="estimate-official">
+            <dl className={s.officialList}>
+              {o.lines.map((l, i) => (
+                <div key={i}>
+                  <dt>{l.chapter99 ? <span className={s.code}>Heading {l.chapter99}</span> : <span className={s.code}>General rate · {c.code}</span>}</dt>
+                  {l.officialText ? (
+                    <dd>
+                      <blockquote className={s.official}>{l.officialText}</blockquote>
+                    </dd>
+                  ) : null}
+                  <dd className={s.muted}>
+                    Computed as: <span className={s.code}>{l.basis}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Disclosure>
           {o.ifYes.map((q) => (
             <fieldset key={q.fact} className={s.question} data-testid={`estimate-question-${q.fact}`}>
               <legend>Does this describe the product? (heading {q.heading})</legend>

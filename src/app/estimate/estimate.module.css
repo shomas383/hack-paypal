@@ -178,6 +178,15 @@
 
 .lines tbody th {
   font-weight: var(--weight-regular);
+  overflow-wrap: normal;
+}
+
+/* A code never breaks inside; after "General rate" it drops to its own line when the column is narrow. */
+.lineCode {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  white-space: nowrap;
 }
 
 .lines tfoot th {
@@ -218,6 +227,25 @@
   border-left: var(--rule-strong) solid var(--border-strong);
   font-size: var(--text-14);
   line-height: var(--leading-14);
+}
+
+.officialList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--measure);
+}
+
+.officialList > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.officialList dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .radios {

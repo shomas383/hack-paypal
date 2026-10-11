@@ -56,6 +56,8 @@ test('range: two candidates (verified row vs automated estimate), the separating
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Lower special-program rates may apply');
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Section 232');
   await expect(page.getByTestId('estimate-versions')).toContainText('2026-rev21-e1');
+  await expect(page.getByTestId('estimate-same-duty')).toHaveCount(0);
+  await expect(cotton.getByTestId('estimate-basis')).toHaveText(['General rate: 16.6% of the price', 'The General rate is already at least Japan’s 12.5% combined rate, so heading 9903.05.48 adds nothing']);
   await expect(page.getByTestId('estimate-disclosures')).not.toContainText('not a customs ruling'); // shown once, below
   await check(page, 'range');
 });
@@ -64,6 +66,12 @@ test('same duty on every line: guitar', async ({ page }) => {
   await run(page, 'guitar');
   await expect(page.getByTestId('estimate-summary')).toContainText('on a $400.00 sale for every likely HTS line');
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
+  await expect(page.getByTestId('estimate-same-duty')).toHaveText('The exact line depends on value of the guitar, excluding the case, but the estimate is the same either way.');
+  // Plain basis in the table; the engine's exact text in the official-text section.
+  const top = page.getByTestId('estimate-candidate-9202.90.4000');
+  await expect(top.getByTestId('estimate-basis')).toHaveText(['General rate: 8.7% of the price', 'Japan’s 12.5% combined rate applies (heading 9903.05.49)']);
+  await top.getByText('Official text and exact basis').click();
+  await expect(top.getByTestId('estimate-official')).toContainText('Computed as: combined cap 12.5% (base or AVE below cap)');
 });
 
 test('verified row: the German watch needs the case/band split, then quotes from its verified row', async ({ page }) => {
