@@ -1,12 +1,10 @@
 'use client';
-import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { Button } from '@/ui/Button';
 import { Field, Input } from '@/ui/Field';
 import s from './seller.module.css';
 
 export function SellerSignIn() {
-  const router = useRouter();
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -24,7 +22,8 @@ export function SellerSignIn() {
     try {
       const res = await fetch('/api/seller/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ passcode }) });
       if (res.ok) {
-        router.refresh();
+        // A full load, not router.refresh(): the soft refresh drops <title> for ~300 ms (Next re-streams the metadata).
+        window.location.reload();
         return;
       }
       const j = (await res.json().catch(() => ({}))) as { error?: string };

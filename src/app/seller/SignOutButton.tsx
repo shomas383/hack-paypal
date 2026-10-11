@@ -1,10 +1,8 @@
 'use client';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/ui/Button';
 
 export function SignOutButton() {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
   return (
     <Button
@@ -14,7 +12,8 @@ export function SignOutButton() {
       onClick={async () => {
         setBusy(true);
         await fetch('/api/seller/session', { method: 'DELETE' }).catch(() => undefined);
-        router.refresh();
+        // A full load, not router.refresh(): the soft refresh drops <title> for ~300 ms (Next re-streams the metadata).
+        window.location.reload();
       }}
     >
       Sign out
