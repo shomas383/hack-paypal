@@ -69,3 +69,27 @@ describe('buildMentions / mentionsOf', () => {
     expect(mentionsOf('9102.21.70', i)).toEqual(['note III 52(a)']);
   });
 });
+
+describe('line-specific vs context mentions', () => {
+  const n = segmentNotes(doc([
+    'SUBCHAPTER III', 'U.S. Notes', '16. (a) synthetic',
+    '(g) Heading 9903.82.13 applies to articles … that are motorcycle parts classifiable in chapter 84, 85 or 87 for use in the manufacturing of motorcycles',
+    '17. (a) synthetic: … general rates of duty imposed under subheadings in chapters 1 to 97 of the tariff schedule',
+  ]));
+  const fn = (columns: string[], h: string) => ({ on: 'x', columns, text: `See ${h}.`, headings: [h], ranges: [] as [string, string][] });
+  const i = buildMentions(n, { '9903.41.10': 'Articles the product of Japan: Footwear … the foregoing provided for in chapter 64' }, {
+    '0201.10.5010': [fn(['general'], '9904.02.01')],
+    '0201.10.5020': [fn(['other'], '9903.90.08')],
+  });
+  it('chapters in note text and broad chapter ranges are context only', () => {
+    expect(mentionsOf('8523.49.4000', i)).toEqual(['note III 16(g)', 'note III 17(a)']);
+    expect(mentionsOf('8523.49.4000', i, { lineOnly: true })).toEqual([]);
+  });
+  it('a chapter in a heading\'s own text is its scope', () => {
+    expect(mentionsOf('6403.59.6000', i, { lineOnly: true })).toEqual(['heading 9903.41.10']);
+  });
+  it("a line's own Ch. 99 footnote names it, unless it binds only Column 2", () => {
+    expect(mentionsOf('0201.10.5010', i, { lineOnly: true })).toEqual(['footnote 9904.02.01']);
+    expect(mentionsOf('0201.10.5020', i, { lineOnly: true })).toEqual([]);
+  });
+});

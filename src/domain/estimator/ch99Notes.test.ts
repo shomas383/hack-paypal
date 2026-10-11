@@ -277,3 +277,18 @@ describe('note 52 — the committed Rev 21 excerpt (pages 99-III-393 … 434)', 
     expect(Object.values(n52.exemptions).map((s) => s.path)).not.toContain('52(a)');
   });
 });
+
+describe('subchapter titles', () => {
+  it('are read between "SUBCHAPTER X" and the notes; furniture at a title line end is dropped; "1." opens notes without "U.S. Notes"', () => {
+    const n = segmentNotes(doc([
+      'SUBCHAPTER XV', 'MODIFICATIONS ESTABLISHED PURSUANT TO         XXII',
+      'THE DOMINICAN REPUBLIC-CENTRAL AMERICA-UNITED STATES FREE TRADE AGREEMENT  99-XV-1', 'U.S. Notes', '1. This subchapter contains',
+      'SUBCHAPTER XXI', 'TRADE AGREEMENT BETWEEN THE UNITED STATES AND JAPAN', '1. The provisions of this subchapter contain modifications',
+    ]));
+    expect(n.subchapterTitles).toEqual({
+      XV: 'MODIFICATIONS ESTABLISHED PURSUANT TO THE DOMINICAN REPUBLIC-CENTRAL AMERICA-UNITED STATES FREE TRADE AGREEMENT',
+      XXI: 'TRADE AGREEMENT BETWEEN THE UNITED STATES AND JAPAN',
+    });
+    expect(n.sections.map((s) => [s.id, s.notes])).toEqual([['XV', [1]], ['XXI', [1]]]);
+  });
+});

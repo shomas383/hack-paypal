@@ -44,6 +44,8 @@ export interface Subdivision extends CodeTokens {
 export interface Ch99Notes {
   revision: string;
   sections: { id: string; notes: number[]; deleted: number[] }[];
+  /** Every subchapter's title (the lines between "SUBCHAPTER X" and its notes or tariff table), whitespace-folded. */
+  subchapterTitles: Record<string, string>;
   subdivisions: Subdivision[];
   /** Line-start markers read as text (neither a continuation nor a new list). */
   ignoredMarkers: IgnoredMarker[];
@@ -294,6 +296,8 @@ interface NoteLines {
 /** Pass 1: sections and notes, with each note's raw lines. */
 function splitNotes(s: StrippedText, opts: SegmentOptions) {
   const sections: Ch99Notes['sections'] = [];
+  const subchapterTitles: Record<string, string> = {};
+  let titleOf: string | null = null;
   const notes: NoteLines[] = [];
   let section: Ch99Notes['sections'][number] | undefined;
   let current: NoteLines | undefined;
@@ -313,8 +317,16 @@ function splitNotes(s: StrippedText, opts: SegmentOptions) {
   for (const line of s.lines) {
     const t = line.text.trim();
     let m: RegExpExecArray | null;
+    if (titleOf !== null && (US_NOTES.test(t) || TABLE.test(t) || SUBCHAPTER.exec(t) || SUBCHAPTER_DELETED.test(t))) titleOf = null;
+    // Subchapters XXI and XXII open their notes with "1." and no "U.S. Notes" line.
+    if (titleOf !== null && /^1\.\s/.test(t)) {
+      titleOf = null;
+      open(subchapter!);
+    }
     if ((m = SUBCHAPTER.exec(t))) {
       subchapter = m[1]!;
+      subchapterTitles[subchapter] = '';
+      titleOf = subchapter;
       seenSubchapter = true;
       section = undefined;
       current = undefined;
@@ -332,6 +344,9 @@ function splitNotes(s: StrippedText, opts: SegmentOptions) {
     } else if (TABLE.test(t)) {
       section = undefined;
       current = undefined;
+    } else if (titleOf !== null) {
+      // a title line can end in the section numeral or the page number (subchapter XV: "… PURSUANT TO   XXII", "… AGREEMENT  99-XV-1")
+      subchapterTitles[titleOf] = normaliseText(`${subchapterTitles[titleOf]} ${t.replace(/\s{2,}(?:[IVXL]+|\d{2} ?- ?[IVXL]+ ?- ?\d+)$/, '')}`);
     } else if (section) {
       const last = section.notes.at(-1) ?? 0;
       const lastSeen = Math.max(last, section.deleted.at(-1) ?? 0);
@@ -350,7 +365,7 @@ function splitNotes(s: StrippedText, opts: SegmentOptions) {
       } else if (current) current.lines.push(line);
     }
   }
-  return { sections, notes };
+  return { sections, notes, subchapterTitles };
 }
 
 const AS_PROVIDED = /^As provided (?:for )?in headings?\s+/;
@@ -390,7 +405,7 @@ function makeSubdivision(section: string, note: number, path: string, page: stri
 }
 
 export function segmentNotes(s: StrippedText, opts: SegmentOptions = {}): Ch99Notes {
-  const { sections, notes } = splitNotes(s, opts);
+  const { sections, notes, subchapterTitles } = splitNotes(s, opts);
   const subdivisions: Subdivision[] = [];
   const ignoredMarkers: Ch99Notes['ignoredMarkers'] = [];
 
@@ -433,7 +448,7 @@ export function segmentNotes(s: StrippedText, opts: SegmentOptions = {}): Ch99No
     }
     close();
   }
-  return { revision: s.revision, sections, subdivisions, ignoredMarkers };
+  return { revision: s.revision, sections, subchapterTitles, subdivisions, ignoredMarkers };
 }
 
 // ------------------------------------------------------------------------------------------------------------- note 52
