@@ -15,6 +15,7 @@ import { StatusBadge } from '@/ui/StatusBadge';
 import { ClassificationProgress } from '@/ui/patterns/ClassificationProgress';
 import { reasonText } from '@/ui/reasonText';
 import s from './seller.module.css';
+import { CURRENT_HTS_REV_SHORT } from '@/domain/rates/current';
 
 interface View {
   id: string;
@@ -195,7 +196,7 @@ export function ClassifyPanel() {
           <h3 id="run-h" className={s.h3}>
             Classification
           </h3>
-          {view ? <ClassificationProgress steps={view.progress.steps} /> : <ClassificationProgress steps={[{ state: 'active', label: 'Proposing headings…' }, { state: 'pending', label: 'Matching official Rev 20 lines' }, { state: 'pending', label: 'Choosing a line' }]} />}
+          {view ? <ClassificationProgress steps={view.progress.steps} /> : <ClassificationProgress steps={[{ state: 'active', label: 'Proposing headings…' }, { state: 'pending', label: `Matching official ${CURRENT_HTS_REV_SHORT} lines` }, { state: 'pending', label: 'Choosing a line' }]} />}
 
           {view?.progress.state === 'interrupted' || view?.progress.state === 'failed' ? (
             <p role="alert" className={s.error}>

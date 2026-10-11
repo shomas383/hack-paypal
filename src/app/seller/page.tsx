@@ -10,6 +10,7 @@ import { ReviewQueue } from './ReviewQueue';
 import { SellerSignIn } from './SellerSignIn';
 import { SignOutButton } from './SignOutButton';
 import s from './seller.module.css';
+import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Seller console — Landed', robots: { index: false } };
@@ -28,7 +29,7 @@ export default async function SellerPage({ searchParams }: { searchParams: Promi
     return (
       <AppShell>
         <div className={s.signIn}>
-          <PageHeader title="Seller console" lead="Classify listings against the official HTS 2026 Rev. 20 schedule and publish them for landed-cost quotes." />
+          <PageHeader title="Seller console" lead={`Classify listings against the official HTS ${CURRENT_HTS_REVISION} schedule and publish them for landed-cost quotes.`} />
           <SellerSignIn />
         </div>
       </AppShell>
@@ -40,7 +41,7 @@ export default async function SellerPage({ searchParams }: { searchParams: Promi
     <AppShell seller current="seller">
       <PageHeader
         title="Seller console"
-        lead="Classify listings against the official HTS 2026 Rev. 20 schedule, review them and publish. Codes come only from the schedule; duty comes only from verified rate rows."
+        lead={`Classify listings against the official HTS ${CURRENT_HTS_REVISION} schedule, review them and publish. Codes come only from the schedule; duty comes only from verified rate rows.`}
       >
         <div className={s.headerActions}>
           <SignOutButton />

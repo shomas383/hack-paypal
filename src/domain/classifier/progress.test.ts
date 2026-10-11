@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CURRENT_HTS_REV_SHORT } from '@/domain/rates/current';
 import { INTERRUPTED_AFTER_MS, progressView } from './progress';
 
 const t0 = new Date('2026-10-10T05:00:00Z');
@@ -10,7 +11,7 @@ describe('progressView: three real steps from the stored stage (nothing simulate
     expect(v.state).toBe('classifying');
     expect(v.steps.map((s) => [s.state, s.label])).toEqual([
       ['active', 'Proposing headings…'],
-      ['pending', 'Matching official Rev 20 lines'],
+      ['pending', `Matching official ${CURRENT_HTS_REV_SHORT} lines`],
       ['pending', 'Choosing a line'],
     ]);
   });
@@ -19,7 +20,7 @@ describe('progressView: three real steps from the stored stage (nothing simulate
     const v = progressView({ status: 'CLASSIFYING', stage: { stage: 'matching', headings: ['9102.21', '9102.29'] }, createdAt: t0, top: null }, at(4_000));
     expect(v.steps.map((s) => [s.state, s.label])).toEqual([
       ['done', 'Proposed 2 headings: 9102.21, 9102.29'],
-      ['active', 'Matching official Rev 20 lines…'],
+      ['active', `Matching official ${CURRENT_HTS_REV_SHORT} lines…`],
       ['pending', 'Choosing a line'],
     ]);
   });
@@ -41,7 +42,7 @@ describe('progressView: three real steps from the stored stage (nothing simulate
     expect(v.state).toBe('done');
     expect(v.steps.map((s) => [s.state, s.label])).toEqual([
       ['done', 'Proposed 1 heading: 9999.99'],
-      ['failed', 'No official Rev 20 lines matched'],
+      ['failed', `No official ${CURRENT_HTS_REV_SHORT} lines matched`],
       ['pending', 'Choosing a line (not run)'],
     ]);
   });

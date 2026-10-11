@@ -1,6 +1,6 @@
 // Grounded HTS classification (B2, SPEC §4.1). Two calls; code in between:
 //   1. the model proposes up to 3 HEADINGS (6 or 8 digits) — no 10-digit codes;
-//   2. code expands them to the real Rev 20 lines (official HTS index) with description chains;
+//   2. code expands them to the real lines of the current HTS revision (official HTS index) with description chains;
 //      nothing expands → NO_CANDIDATES, more than MAX_EXPANDED_LINES → TOO_BROAD (no second call);
 //   3. the model chooses only from that list (z.enum), with evidence and the attributes that separate the candidates;
 //   4. code verifies every quote against the listing, then decides the routing.
@@ -12,6 +12,7 @@ import type { ListingText } from './classify';
 import { decideGroundedReview, groundedChoiceSchema, verifyQuotes, type GroundedChoice } from './grounded';
 import { expandHeading, type HtsLine, type HtsLookup } from './hts';
 import type { ReviewDecision } from './review';
+import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 
 export const MAX_EXPANDED_LINES = 100;
 
@@ -112,7 +113,7 @@ export async function classifyListingGrounded(
   }
   meta.headings = h.headings.map((x) => x.heading);
 
-  // 2. Expand to real Rev 20 lines.
+  // 2. Expand to real lines of the current revision.
   await stage({ stage: 'matching', headings: meta.headings });
   const lines = new Map<string, HtsLine>();
   for (const heading of meta.headings) {
@@ -130,7 +131,7 @@ export async function classifyListingGrounded(
   const list = candidates.map((c, i) => `${i + 1}. ${c.code} — ${c.chain.join(' > ')}`).join('\n');
   let choice: GroundedChoice;
   try {
-    choice = await call(SYSTEM_2, `${userPrompt(listing)}\n\nValid candidate lines (HTSUS 2026 Rev. 20):\n${list}`, groundedChoiceSchema(candidates.map((c) => c.code)), 'hts_choice');
+    choice = await call(SYSTEM_2, `${userPrompt(listing)}\n\nValid candidate lines (HTSUS ${CURRENT_HTS_REVISION}):\n${list}`, groundedChoiceSchema(candidates.map((c) => c.code)), 'hts_choice');
   } catch (e) {
     if (isAnswerError(e)) return invalid(2, e);
     throw e;

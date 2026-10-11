@@ -13,6 +13,7 @@ import { SourceCitation } from '@/ui/SourceCitation';
 import { StatusBadge } from '@/ui/StatusBadge';
 import { ToastDemo } from './ToastDemo';
 import s from './states.module.css';
+import { CURRENT_HTS_REVISION, CURRENT_RATE_VERSION } from '@/domain/rates/current';
 
 export const metadata = { title: 'States (dev) — Landed', robots: { index: false } };
 
@@ -85,18 +86,18 @@ export default function DevStatesPage() {
           <SourceCitation
             officialText="Except for products described in headings 9903.05.85–9903.05.92 and 9903.05.97, articles the product of a member state of the European Union, with an ad valorem (or ad valorem equivalent) rate of duty under column 1 less than 10 percent, as provided for in U.S. note 52 to this subchapter"
             sources={['U.S. note 52(k)']}
-            htsRevision="2026 Rev. 20"
+            htsRevision={CURRENT_HTS_REVISION}
             verifiedOn="2026-10-09"
-            rateVersion="2026-rev20-v5"
+            rateVersion={CURRENT_RATE_VERSION}
           />
         </Disclosure>
         <Disclosure summary="Official text and sources (open)" defaultOpen>
           <SourceCitation
             officialText="Except for products described in headings 9903.05.85–9903.05.92, articles the product of Japan, with an ad valorem (or ad valorem equivalent) rate of duty under column 1 less than 12.5 percent, as provided for in U.S. note 52 to this subchapter"
             sources={['U.S. note 52']}
-            htsRevision="2026 Rev. 20"
+            htsRevision={CURRENT_HTS_REVISION}
             verifiedOn="2026-10-08"
-            rateVersion="2026-rev20-v5"
+            rateVersion={CURRENT_RATE_VERSION}
           />
         </Disclosure>
       </section>

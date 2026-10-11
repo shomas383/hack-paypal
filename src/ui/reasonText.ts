@@ -1,3 +1,4 @@
+import { CURRENT_HTS_REV_SHORT } from '@/domain/rates/current';
 import type { Tone } from './StatusBadge';
 
 const SHORT: Record<string, string> = {
@@ -47,9 +48,9 @@ export function reasonText(code: string, ctx: { confidence: number | null; thres
     case 'MODEL_FLAGGED':
       return 'The classifier asked for a human check.';
     case 'NO_CANDIDATES':
-      return 'No official Rev 20 line matched the proposed headings.';
+      return `No official ${CURRENT_HTS_REV_SHORT} line matched the proposed headings.`;
     case 'INVALID_CODE':
-      return "A proposed code isn't a Rev 20 line.";
+      return `A proposed code isn't a ${CURRENT_HTS_REV_SHORT} line.`;
     case 'TOO_BROAD':
       return 'The proposed headings cover more than 100 official lines; add detail to the listing.';
     case 'UNVERIFIED_EVIDENCE':

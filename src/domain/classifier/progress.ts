@@ -1,6 +1,7 @@
 // Classification progress for the seller console: three steps derived from the REAL stage the server stored while the
 // grounded classifier ran (classifyListingGrounded onStage). Nothing is simulated or time-based except the interrupted
 // check (a run still "classifying" long after it started — e.g. the server restarted mid-run).
+import { CURRENT_HTS_REV_SHORT } from '@/domain/rates/current';
 import type { GroundedStage } from './classifyGrounded';
 
 export const INTERRUPTED_AFTER_MS = 90_000;
@@ -50,7 +51,7 @@ export function progressView(row: ProgressInput, now: Date): ProgressView {
       state: 'done',
       steps: [
         { state: 'done', label: headingsDone ?? 'Proposed headings' },
-        { state: 'failed', label: 'No official Rev 20 lines matched' },
+        { state: 'failed', label: `No official ${CURRENT_HTS_REV_SHORT} lines matched` },
         { state: 'pending', label: 'Choosing a line (not run)' },
       ],
     };
@@ -61,7 +62,7 @@ export function progressView(row: ProgressInput, now: Date): ProgressView {
     state: interrupted ? 'interrupted' : failed ? 'failed' : running ? 'classifying' : 'done',
     steps: [
       step(1, 'Proposing headings', 'Proposing headings…', headingsDone),
-      step(2, 'Matching official Rev 20 lines', 'Matching official Rev 20 lines…', matchedDone),
+      step(2, `Matching official ${CURRENT_HTS_REV_SHORT} lines`, `Matching official ${CURRENT_HTS_REV_SHORT} lines…`, matchedDone),
       step(3, 'Choosing a line', 'Choosing a line…', chose),
     ],
   };
