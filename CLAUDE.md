@@ -42,6 +42,10 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   sidecar; the revision label and file names come from the recorded release; stages the output
 - `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
   wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
+- `pnpm estimator:build --out <dir> [--draft [--max-calls N] [--draft-headings 9903.05.87,…]]` — builds the estimate-mode data
+  from the official sources (export of current-export.meta.json; the release's Ch. 99 PDF, downloaded if missing; pdftotext
+  must be xpdf 4.06) and runs the gate (G0–G9) with the reference rules; writes manifest/report/rules to `--out` (refused
+  inside data/). `--draft` is LIVE: Claude drafts the rules (≤ 15 calls, retries included) and GR compares them to the reference
 - `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00] [--exclude-listing <id>]…` — ONE live buyer-agent run
   against the local DB (live Claude calls); prints the transcript and fails if any $ amount in the agent's text isn't from
   stored-quote/rate data or the budget, a non-allowlisted tool was called, L-T-INJ was proposed, an HTS-description match
