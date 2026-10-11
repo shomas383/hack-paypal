@@ -112,6 +112,27 @@ describe('rule 4 exemption — the generated official HTS index (chemical names 
   });
 });
 
+describe('rule 4 exemption — public government source URLs (hosts approved 2026-10-11)', () => {
+  const tok = mixed(32);
+  it('a token inside a URL on an approved host (exact, or www.) is not flagged', () => {
+    for (const host of ['content.govdelivery.com', 'federalregister.gov', 'www.federalregister.gov', 'govinfo.gov', 'hts.usitc.gov', 'usitc.gov', 'www.cbp.gov', 'whitehouse.gov'])
+      expect(lineRules(j('Source: https://', host, '/accounts/', tok, '/bulletins/x (read 2026-10-11)'), []), host).toEqual([]);
+    // the CSMS bulletin path that tripped rule 4 (docs/SPEC.md)
+    expect(lineRules(j('https://content.govdelivery.com/accounts/USD', 'HSCBP/bulletins/40b11c9'), [])).toEqual([]);
+  });
+  it('the same token outside such a URL, on another host, or on a look-alike host is still flagged', () => {
+    expect(lineRules(`token ${tok}`, [])).toEqual([4]);
+    expect(lineRules(j('https://example.com/', tok), [])).toEqual([4]);
+    expect(lineRules(j('https://cbp.gov.example.com/', tok), [])).toEqual([4]);
+    expect(lineRules(j('https://evilcbp.gov/', tok), [])).toEqual([4]);
+    expect(lineRules(j('https://sub.federalregister.gov/', tok), [])).toEqual([4]);
+    expect(lineRules(j('https://federalregister.gov/x ', tok), [])).toEqual([4]); // after the URL ends
+  });
+  it('only rule 4: a secret pattern inside an approved URL is still rule 2', () => {
+    expect(lineRules(j('https://cbp.gov/?API_', 'KEY=', 'abcdefghij12'), [])).toContain(2);
+  });
+});
+
 describe('scanPatch + formatFinding — report file:line only, never the matched text', () => {
   const secret = j('sk-', 'ant-', 'api03-', 'abcdefghijKLMNOP');
   const patch = ['commit 3333333333333333333333333333333333333333', 'diff --git a/.env b/.env', 'new file mode 100644', '--- /dev/null', '+++ b/.env', '@@ -0,0 +1 @@', `+ANTHROPIC_API_KEY=${secret}`].join('\n');
