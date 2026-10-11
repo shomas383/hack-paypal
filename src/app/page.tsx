@@ -14,6 +14,9 @@ export default function Home() {
         <li>
           <Link href="/agent">Shopping agent</Link>
         </li>
+        <li>
+          <Link href="/estimate">Estimate import duty</Link>
+        </li>
       </ul>
     </AppShell>
   );

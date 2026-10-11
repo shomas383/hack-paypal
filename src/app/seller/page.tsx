@@ -44,6 +44,9 @@ export default async function SellerPage({ searchParams }: { searchParams: Promi
         lead={`Classify listings against the official HTS ${CURRENT_HTS_REVISION} schedule, review them and publish. Codes come only from the schedule; duty comes only from verified rate rows.`}
       >
         <div className={s.headerActions}>
+          <Link href="/estimate" className={s.headerLink}>
+            Estimate import duty
+          </Link>
           <SignOutButton />
         </div>
       </PageHeader>

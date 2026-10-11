@@ -15,9 +15,23 @@
 }
 
 .headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   margin-top: var(--space-1);
   /* The ghost button's padding + transparent border, so its label starts on the page's left edge. */
   margin-left: calc(-1 * (var(--space-2) + var(--hairline)));
+}
+
+/* Inside the same negative margin as the ghost button: padded so its label also starts on the page's left edge. */
+.headerLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h-sm);
+  padding: 0 calc(var(--space-2) + var(--hairline));
+  font-size: var(--text-14);
+  font-weight: var(--weight-medium);
 }
 
 .h2 {

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import s from './AppShell.module.css';
 
 // `seller`: show the Seller link (the seller pages pass it while a seller session is active).
-export function AppShell({ children, width = 'app', current, seller = false }: { children: ReactNode; width?: 'app' | 'checkout'; current?: 'listings' | 'agent' | 'seller'; seller?: boolean }) {
+export function AppShell({ children, width = 'app', current, seller = false }: { children: ReactNode; width?: 'app' | 'checkout'; current?: 'listings' | 'agent' | 'estimate' | 'seller'; seller?: boolean }) {
   return (
     <>
       <a href="#main" className={s.skip}>
@@ -22,6 +22,9 @@ export function AppShell({ children, width = 'app', current, seller = false }: {
             </Link>
             <Link href="/agent" aria-current={current === 'agent' ? 'page' : undefined}>
               Agent
+            </Link>
+            <Link href="/estimate" aria-current={current === 'estimate' ? 'page' : undefined}>
+              Estimate
             </Link>
             {seller ? (
               <Link href="/seller" aria-current={current === 'seller' ? 'page' : undefined}>
