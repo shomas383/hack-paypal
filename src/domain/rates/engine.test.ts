@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { jpy, usd } from '../money/money';
 import { additiveRow, capRow, compoundRow, exemptRow, syntheticFile } from './__fixtures__/synthetic';
-import { quoteDuty, type QuoteInput } from './engine';
+import { computeRow, quoteDuty, type QuoteInput } from './engine';
 import type { RateFile } from './schema';
 
 const DATE = '2026-06-01';
@@ -132,5 +132,17 @@ describe('UNSUPPORTED — never guesses', () => {
     const ended: RateFile = { ...syntheticFile, rows: [{ ...capRow, effective_to: '2026-06-01' }] };
     expect(quoteDuty(ended, input(capRow, { entryDate: '2026-05-31' })).kind).toBe('OK');
     expect(quoteDuty(ended, input(capRow, { entryDate: '2026-06-01' })).kind).toBe('UNSUPPORTED');
+  });
+});
+
+describe('computeRow (the math quoteDuty runs after its lookup and date check)', () => {
+  const file = syntheticFile;
+  it.each(file.rows.map((r) => [r.id, r] as const))('%s: same result as quoteDuty', (_id, row) => {
+    const i = input(row, row.mfn.type === 'compound' ? { valueSplit: { case: usd(8_000), band: usd(2_000) } } : {});
+    expect(computeRow(row, file.version, i)).toEqual(quoteDuty(file, i));
+  });
+  it('validates the input itself (it has no lookup in front of it)', () => {
+    expect(computeRow(capRow, 'v', input(capRow, { customsValue: jpy(1000) })).kind).toBe('UNSUPPORTED');
+    expect(computeRow(capRow, 'v', input(capRow, { quantity: 0 })).kind).toBe('UNSUPPORTED');
   });
 });

@@ -47,11 +47,20 @@ const unsupported = (reason: string): QuoteResult => ({ kind: 'UNSUPPORTED', rea
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const pct = (ppm: number): string => `${ppm / 10_000}%`;
 
-export function quoteDuty(table: RateFile, input: QuoteInput): QuoteResult {
+/** The rate-row fields the duty math reads. A verified RateRow is one; the estimator builds others (never charged). */
+export type EngineRow = Pick<RateRow, 'id' | 'hts10' | 'mfn' | 'additional' | 'source_refs'>;
+
+function checkInput(input: QuoteInput): QuoteResult | null {
   const value = input.customsValue;
   if (value.currency !== 'USD') return unsupported(`customs value must be USD, got ${value.currency}`);
   if (value.amountMinor <= 0n) return unsupported('customs value must be positive');
   if (!Number.isSafeInteger(input.quantity) || input.quantity < 1) return unsupported(`quantity must be a whole number ≥ 1, got ${input.quantity}`);
+  return null;
+}
+
+export function quoteDuty(table: RateFile, input: QuoteInput): QuoteResult {
+  const bad = checkInput(input);
+  if (bad) return bad;
   if (!ISO_DATE.test(input.entryDate)) return unsupported(`entry date must be YYYY-MM-DD, got "${input.entryDate}"`);
 
   const row = table.rows.find((r) => r.origin === input.origin && r.hts10 === input.hts10);
@@ -59,6 +68,14 @@ export function quoteDuty(table: RateFile, input: QuoteInput): QuoteResult {
   if (input.entryDate < row.effective_from || (row.effective_to !== null && input.entryDate >= row.effective_to)) {
     return unsupported(`${row.id} is effective ${row.effective_from}–${row.effective_to ?? 'open'}; entry date ${input.entryDate} is outside it`);
   }
+  return computeRow(row, table.version, input);
+}
+
+/** The duty math for one row (no lookup, no effective-date check): conditions, MFN, additional lines, totals. */
+export function computeRow(row: EngineRow, version: string, input: QuoteInput): QuoteResult {
+  const bad = checkInput(input);
+  if (bad) return bad;
+  const value = input.customsValue;
 
   for (const a of row.additional) {
     for (const c of a.conditions) {
@@ -86,12 +103,12 @@ export function quoteDuty(table: RateFile, input: QuoteInput): QuoteResult {
     totalDuty: usd(total),
     effectiveRatePpm: Number(roundHalfUpDiv(total * PPM, V)),
     ...(compound ? { avePpm: Number(roundHalfUpDiv(mfn, V)) } : {}),
-    rateVersion: table.version,
+    rateVersion: version,
   };
 }
 
 /** MFN duty as an exact integer in (cents × ppm) units, or an UNSUPPORTED reason. */
-function mfnNumerator(row: RateRow, input: QuoteInput): bigint | string {
+function mfnNumerator(row: EngineRow, input: QuoteInput): bigint | string {
   const V = input.customsValue.amountMinor;
   const m = row.mfn;
   if (m.type === 'free') return 0n;
@@ -146,7 +163,7 @@ function additionalLine(a: Additional, V: bigint, mfn: bigint, mfnCents: bigint)
   return { kind: a.program, chapter99: a.chapter99, amount: usd(0), basis: 'exempt — no add-on', sourceRef: ref(a.chapter99) };
 }
 
-function describeMfn(row: RateRow): string {
+function describeMfn(row: EngineRow): string {
   const m = row.mfn;
   if (m.type === 'free') return 'Free';
   if (m.type === 'ad_valorem') return `${pct(m.rate_ppm)} of customs value`;
