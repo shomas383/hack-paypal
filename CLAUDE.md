@@ -35,8 +35,11 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   (src/guards/secretScan.ts): 1 sensitive paths, 2 secret patterns, 3 known local values (.env secrets, git user.email,
   SECRET_SCAN_EXTRA — read at runtime, never committed), 4 high-entropy tokens (not path/slug-like; no SRI hashes; the
   generated HTS index is exempt from rule 4 only). Prints file:line only, never the matched text; exit 1 on any finding
-- `pnpm hts:import` — builds the committed Rev 20 HTS index (codes + description chains, no rates) from the gitignored export in
-  `data/source/hts/`; stages the output
+- `pnpm hts:download` — downloads the full HTS export into the gitignored `data/source/hts/` and writes
+  `current-export.meta.json` (the release read from `reststop/currentRelease` before and after; `exportList` ignores any release
+  parameter, so the export can't be pinned to a revision)
+- `pnpm hts:import` — builds the committed HTS index (codes + description chains, no rates) from the export named in that
+  sidecar; the revision label and file names come from the recorded release; stages the output
 - `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
   wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
 - `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00] [--exclude-listing <id>]…` — ONE live buyer-agent run

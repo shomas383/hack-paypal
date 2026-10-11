@@ -26,7 +26,8 @@ export interface HtsCode {
 
 export interface HtsIndex {
   hts_revision: string;
-  source: { url: string; exportedOn: string; file?: string; sha256?: string };
+  /** release: the hts.usitc.gov release name read at download time (absent in indexes built before it was recorded). */
+  source: { url: string; exportedOn: string; release?: string; file?: string; sha256?: string };
   /** d = description, p = parent node index (-1 at the root). */
   nodes: { d: string; p: number }[];
   codes: HtsCode[];
