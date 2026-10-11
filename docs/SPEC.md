@@ -168,9 +168,17 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
   - Source (primary): CBP CSMS # 67834313, "Ending Collection of International Emergency Economic Powers Act Duties", sent
     2026-02-22, https://content.govdelivery.com/accounts/USDHSCBP/bulletins/40b11c9 (read 2026-10-11): IEEPA duties are not
     collected for goods entered on or after 12:00 a.m. ET Feb 24, 2026, per the Feb 20, 2026 Executive Order "Ending Certain
-    Tariff Actions", which ends the IEEPA duties under EOs 14193, 14194, 14195, 14245, 14257, 14323, 14329 and "affects IEEPA
-    duties only". The estimator treats a 9903.01/.02 heading as terminated only if its own text or its note's text names one
-    of those seven EOs (gate G0); any other fails closed. The Section 122 headings (9903.03.01–.11) are out of force from their
+    Tariff Actions".
+  - That order: EO 14389, 91 FR 9437 (Feb 25, 2026),
+    https://www.federalregister.gov/documents/2026/02/25/2026-03832/ending-certain-tariff-actions (text verified by the user
+    at whitehouse.gov; read 2026-10-11). §1 ends the IEEPA duties under EOs 14193, 14194, 14195 (each "as amended"), 14245,
+    14257 (as amended), 14323 (as amended), 14329 (as amended), 14380 and 14382; §2(d): Section 232 and Section 301 duties are
+    unaffected. Neither the CSMS nor EO 14389 lists HTS headings (EO 14389 leaves HTSUS changes to a later notice), and the
+    Rev 21 Chapter 99 text names none of these orders except EO 14323 (in 9903.01.77/.78).
+  - Estimator: gate G0 today terminates a 9903.01/.02 heading only if its own text or its note's text names one of the
+    orders (so only 9903.01.77/.78); every other one fails closed. Next (pending review): a reviewed list of ended headings
+    (docs/IEEPA_HEADINGS_REVIEW.md → a committed data file citing EO 14389 §1 and CSMS # 67834313, each heading's text sha256
+    checked by G0 so a new revision forces a re-review). The Section 122 headings (9903.03.01–.11) are out of force from their
     own compiler's note in note 2(aa) ("expired at the close of July 23, 2026"), not from this source.
 - Rounding: compute in integers (ppm, micros); round half-up to the cent per duty line. For `combined_cap` the add-on line =
   round(cap × value) − round(MFN line), so the total is exactly round(cap × value) (12.5% JP, 10% EU). (Estimate, not a CBP liquidation figure.)
