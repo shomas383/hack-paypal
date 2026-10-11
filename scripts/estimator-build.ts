@@ -17,6 +17,7 @@ import { runGate, type GoldenCase } from '../src/domain/estimator/gate';
 import { compareToReference, factNameDiff, RulesFileSchema, type Rule } from '../src/domain/estimator/rules';
 import { verifyExportMeta } from '../src/domain/hts/release';
 import { goldenFileName } from '../src/domain/rates/current';
+import { ieepaOverride } from '../src/server/estimatorReview';
 import { currentHtsIndex } from '../src/server/hts';
 import { currentRateTable } from '../src/server/rates';
 
@@ -74,7 +75,8 @@ async function main() {
   const ch99Text = execFileSync('pdftotext', [...PDFTOTEXT.args, pdfFile, '-'], { encoding: 'utf8', maxBuffer: 1 << 26 });
 
   const asOf = new Date().toISOString().slice(0, 10);
-  const data = buildEstimatorData({ version: `${release.slug}-e1`, asOf, exportRows: JSON.parse(exportBuf.toString('utf8')), ch99Text, index, rules: [] });
+  const overrides = [ieepaOverride()];
+  const data = buildEstimatorData({ version: `${release.slug}-e1`, asOf, exportRows: JSON.parse(exportBuf.toString('utf8')), ch99Text, index, rules: [], overrides });
   const reference = RulesFileSchema.parse(JSON.parse(readFileSync(REFERENCE, 'utf8')));
 
   let rules: Rule[] = reference.rules;
@@ -101,6 +103,7 @@ async function main() {
     verified: currentRateTable(),
     docs: { 'docs/SPEC.md': readFileSync(join('docs', 'SPEC.md'), 'utf8') },
     origins: ORIGINS,
+    overrides,
     ...(draft ? { reference: reference.rules } : {}),
   });
 

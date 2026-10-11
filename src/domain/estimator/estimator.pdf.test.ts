@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadGolden, loadVerifiedRates } from '@/domain/rates/__fixtures__/verified';
+import { ieepaOverride } from '@/server/estimatorReview';
 import { currentHtsIndex } from '@/server/hts';
 import { buildEstimatorData } from './data';
 import { runGate } from './gate';
@@ -19,7 +20,8 @@ const local = spawnSync('pdftotext', ['-v']).status !== null && existsSync(PDF) 
 describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules (local only)', { timeout: 600_000 }, () => {
   const ch99Text = spawnSync('pdftotext', ['-enc', 'UTF-8', '-layout', PDF, '-'], { encoding: 'utf8', maxBuffer: 1 << 26 }).stdout;
   const index = currentHtsIndex().index;
-  const data = buildEstimatorData({ version: 'test-e1', asOf: '2026-10-11', exportRows: JSON.parse(readFileSync(EXPORT, 'utf8')), ch99Text, index, rules: [] });
+  const overrides = [ieepaOverride()];
+  const data = buildEstimatorData({ version: 'test-e1', asOf: '2026-10-11', exportRows: JSON.parse(readFileSync(EXPORT, 'utf8')), ch99Text, index, rules: [], overrides });
   const { report } = runGate({
     data,
     rules: REFERENCE_RULES.rules,
@@ -29,24 +31,21 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
     verified: loadVerifiedRates(),
     docs: { 'docs/SPEC.md': readFileSync(join(process.cwd(), 'docs', 'SPEC.md'), 'utf8') },
     origins: ['JP', 'DE'],
+    overrides,
   });
 
-  // State 2026-10-11, strict G0 (decision pending): the Rev 21 text names only EO 14323 of the seven EOs the CSMS lists, so
-  // only 9903.01.77/.78 are tied; the 120 others stay in force and G7 blocks JP and EU through the ones that reach every line.
-  it('G0: 2 IEEPA headings tied to an EO, 120 untied and kept in force; G7 then blocks JP and EU; no rule is blocked', () => {
-    expect(report.overrideTies).toHaveLength(1);
-    expect(report.overrideTies[0]!.tied).toEqual({
-      '9903.01.77': { eo: '14323', where: 'heading 9903.01.77' },
-      '9903.01.78': { eo: '14323', where: 'heading 9903.01.78' },
-    });
-    expect(report.overrideTies[0]!.untied).toHaveLength(120);
-    expect(report.overrideTies[0]!.untied).toEqual(expect.arrayContaining(['9903.01.25', '9903.01.29', '9903.02.01', '9903.02.20', '9903.02.73']));
-    expect(report.checks.filter((c) => !c.pass).map((c) => `${c.id} ${c.subject}`)).toEqual(['G0 docs/SPEC.md EO ties', 'G7 origin JP', 'G7 origin DE']);
-    expect(report.blockedOrigins).toEqual({
-      JP: ['G7 unplaced headings 9903.01.25, 9903.01.29, 9903.02.01, 9903.02.73'],
-      EU: ['G7 unplaced headings 9903.01.25, 9903.01.29, 9903.02.01, 9903.02.20'],
-    });
+  it('every check passes; nothing is blocked', () => {
+    expect(report.checks.filter((c) => !c.pass).map((c) => `${c.id} ${c.subject}: ${c.detail}`)).toEqual([]);
     expect(report.blockedRules).toEqual([]);
+    expect(report.blockedOrigins).toEqual({});
+  });
+
+  it('G0: all 120 reviewed IEEPA headings present with their reviewed text; only the two flagged ones stay in force', () => {
+    expect(report.overrideTies).toHaveLength(1);
+    const t = report.overrideTies[0]!;
+    expect(Object.keys(t.tied)).toHaveLength(120);
+    expect({ changed: t.changed, missing: t.missing, unlisted: t.unlisted }).toEqual({ changed: [], missing: [], unlisted: ['9903.02.76', '9903.02.81'] });
+    expect(data.outOfForce['9903.01.25']).toMatchObject({ why: 'verified_override', ref: 'data/reviews/ieepa-ended-2026-rev21.json (EO 14257 (as amended); reviewed 2026-10-11)' });
   });
 
   it('the Section 122 headings 9903.03.01–.11 are out of force from note 2(aa)\'s own compiler\'s note, not from the IEEPA override', () => {
@@ -79,10 +78,10 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
   });
 
   it('coverage and out-of-force counts (pinned)', () => {
-    // line refusals before the origin block (the block refuses every line on top): untied IEEPA headings named by note 2's lists
-    expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, lines: report.coverage.JP!.lines }).toEqual({ JP: 6434, DE: 5987, lines: 19926 });
+    // line refusals (232 and other unmodeled regimes; the two flagged civil-aircraft exemption headings stay in force)
+    expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, lines: report.coverage.JP!.lines }).toEqual({ JP: 5447, DE: 4942, lines: 19926 });
     const why = Object.values(data.outOfForce).reduce<Record<string, number>>((m, o) => ((m[o.why] = (m[o.why] ?? 0) + 1), m), {});
-    expect(why).toEqual({ compiler_note: 74, entry_window_closed: 3, note_compiler_note: 10, verified_override: 2 });
+    expect(why).toEqual({ compiler_note: 74, entry_window_closed: 3, note_compiler_note: 10, verified_override: 120 });
     expect(report.listCounts['note III 52(d)']).toMatchObject({ codes: 541, ch98: 6, unknown: [] });
   });
 });

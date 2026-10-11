@@ -6,8 +6,9 @@
 //   headings 9903.03.01–9903.03.11 expired at the close of July 23, 2026.";
 // - entry_window_closed: the heading covers only goods "(2) … entered for consumption, or withdrawn from warehouse for
 //   consumption, before 12:01 a.m. … on <date>" and that date is on or before the as-of date (9903.05.85);
-// - verified_override: docs/SPEC.md records, from a verified source, that IEEPA headings 9903.01.xx / 9903.02.xx are still
-//   printed but terminated (Learning Resources, Inc. v. Trump). The quote is checked against docs/SPEC.md by the gate.
+// - verified_override: a reviewed list (data/reviews/) of headings a primary source ends although the HTS still prints them
+//   (IEEPA: EO 14389 §1, CBP CSMS # 67834313), each held to the sha256 of its reviewed text (see VerifiedOverride).
+import { createHash } from 'node:crypto';
 import type { RateExportRow } from './baseRates';
 import { codeTokens, type Ch99Notes } from './ch99Notes';
 import { normaliseText } from './ch99Text';
@@ -50,65 +51,54 @@ export interface OutOfForce {
 }
 
 /**
- * A fact the HTS text doesn't carry, recorded in docs from a primary source. The gate checks `quote` is in `file` (G0), and a
- * heading counts as terminated only when its own text, or the text of a U.S. note it cites, names one of `executiveOrders`
- * ("Executive Order 14323"); a heading that can't be tied stays in force (fails closed).
+ * A reviewed list of headings the HTS text still prints but a primary source ends (IEEPA: EO 14389 §1, CBP CSMS # 67834313).
+ * The text can't tie them to the source, so people did (docs/IEEPA_HEADINGS_REVIEW.md, approved by group). The gate checks
+ * `quote` is in `file` (G0). A listed heading is terminated only while it exists in the schedule and the sha256 of its
+ * text + General column equals the reviewed one; a changed or missing one — and any heading under `prefixes` that is not
+ * listed and not out of force by its own text — stays in force (fails closed) and is reported for re-review.
  */
+export interface ReviewedHeading {
+  heading: string;
+  group: string;
+  /** The ended order it implements ("EO 14257 (as amended)"). */
+  order: string;
+  text_sha256: string;
+}
 export interface VerifiedOverride {
-  /** Heading prefixes it covers ("9903.01.", "9903.02."). */
+  /** Heading prefixes the list covers ("9903.01.", "9903.02."). */
   prefixes: string[];
+  /** Docs file + sentence that states the fact (G0 checks the sentence is still there). */
   file: string;
   quote: string;
-  executiveOrders: string[];
+  /** Where the list lives, for refs ("data/reviews/ieepa-ended-2026-rev21.json"). */
+  listFile: string;
+  reviewedOn: string;
+  headings: ReviewedHeading[];
 }
+
+/** What a reviewed heading's sha256 covers: its official text with parent rows, a line break, and its General column. */
+export const headingTextSha = (info: HeadingInfo) => createHash('sha256').update(`${info.chain}\n${info.general}`).digest('hex');
 
 /**
- * docs/SPEC.md §4.2: CBP CSMS # 67834313 (2026-02-22, read 2026-10-11) — IEEPA duties not collected for goods entered on or
- * after 12:00 a.m. ET Feb 24, 2026, per the Feb 20, 2026 EO "Ending Certain Tariff Actions" (EOs 14193, 14194, 14195,
- * 14245, 14257, 14323, 14329; "affects IEEPA duties only").
+ * The override's headings against the current table: tied (listed, present, text unchanged → terminated), changed (listed,
+ * text differs), missing (listed, not in the schedule), unlisted (under its prefixes, not out of force for another reason).
  */
-export const VERIFIED_OVERRIDES: VerifiedOverride[] = [
-  {
-    prefixes: ['9903.01.', '9903.02.'],
-    file: 'docs/SPEC.md',
-    quote:
-      'IEEPA tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but terminated (CBP stopped collecting for entries on/after Feb 24, 2026) — never add them.',
-    executiveOrders: ['14193', '14194', '14195', '14245', '14257', '14323', '14329'],
-  },
-];
-
-const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
-const EO_NUMBER = /\bExecutive Order (?:No\. )?(\d{5})\b/g;
-
-/** Where a heading names one of the EOs: its own text, else a note it cites ("U.S. note 2"); null when nowhere. */
-export function executiveOrderTie(h: string, t: HeadingTable, notes: Ch99Notes, eos: string[]): { eo: string; where: string } | null {
-  const info = t[h];
-  if (!info) return null;
-  const hit = (text: string) => [...text.matchAll(EO_NUMBER)].map((m) => m[1]!).find((n) => eos.includes(n));
-  const own = hit(info.chain);
-  if (own) return { eo: own, where: `heading ${h}` };
-  const section = ROMAN[Number(h.slice(2, 4))];
-  for (const n of new Set([...info.chain.matchAll(/(?<!general )\bU\.S\. notes? (\d+)/g)].map((m) => Number(m[1])))) {
-    for (const s of notes.subdivisions) {
-      if (s.section !== section || s.note !== n) continue;
-      const e = hit(s.text);
-      if (e) return { eo: e, where: `note ${s.section} ${s.path}` };
-    }
+export function overrideTies(t: HeadingTable, o: VerifiedOverride, alreadyOut: (h: string) => boolean) {
+  const tied: Record<string, { order: string; group: string }> = {};
+  const changed: string[] = [];
+  const missing: string[] = [];
+  const listed = new Map(o.headings.map((r) => [r.heading, r]));
+  for (const r of o.headings) {
+    const info = t[r.heading];
+    if (!info) missing.push(r.heading);
+    else if (alreadyOut(r.heading)) continue;
+    else if (headingTextSha(info) !== r.text_sha256) changed.push(r.heading);
+    else tied[r.heading] = { order: r.order, group: r.group };
   }
-  return null;
-}
-
-/** Headings an override covers that aren't out of force for another reason, split into tied (→ terminated) and untied. */
-export function overrideTies(t: HeadingTable, notes: Ch99Notes, o: VerifiedOverride, alreadyOut: (h: string) => boolean) {
-  const tied: Record<string, { eo: string; where: string }> = {};
-  const untied: string[] = [];
-  for (const h of Object.keys(t).sort()) {
-    if (!o.prefixes.some((p) => h.startsWith(p)) || alreadyOut(h)) continue;
-    const tie = executiveOrderTie(h, t, notes, o.executiveOrders);
-    if (tie) tied[h] = tie;
-    else untied.push(h);
-  }
-  return { tied, untied };
+  const unlisted = Object.keys(t)
+    .sort()
+    .filter((h) => o.prefixes.some((p) => h.startsWith(p)) && !listed.has(h) && !alreadyOut(h));
+  return { tied, changed: changed.sort(), missing: missing.sort(), unlisted };
 }
 
 const OWN_NOTE = /\[Compiler['’]s note:[^\]]*?\b(terminated|suspended|expired)\b[^\]]*\]/i;
@@ -124,7 +114,7 @@ const isoDate = (month: string, day: string, year: string) => {
   return m < 0 ? null : `${year}-${String(m + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
-export function outOfForce(t: HeadingTable, notes: Ch99Notes, asOf: string, overrides: VerifiedOverride[] = VERIFIED_OVERRIDES): Record<string, OutOfForce> {
+export function outOfForce(t: HeadingTable, notes: Ch99Notes, asOf: string, overrides: VerifiedOverride[] = []): Record<string, OutOfForce> {
   const out: Record<string, OutOfForce> = {};
   const set = (h: string, o: OutOfForce) => {
     if (t[h] && !out[h]) out[h] = o;
@@ -149,8 +139,8 @@ export function outOfForce(t: HeadingTable, notes: Ch99Notes, asOf: string, over
     }
   }
   for (const o of overrides) {
-    const { tied } = overrideTies(t, notes, o, (h) => !!out[h]);
-    for (const [h, tie] of Object.entries(tied)) set(h, { why: 'verified_override', ref: `${o.file} (Executive Order ${tie.eo}, named in ${tie.where})`, quote: o.quote });
+    const { tied } = overrideTies(t, o, (h) => !!out[h]);
+    for (const [h, tie] of Object.entries(tied)) set(h, { why: 'verified_override', ref: `${o.listFile} (${tie.order}; reviewed ${o.reviewedOn})`, quote: o.quote });
   }
   return out;
 }

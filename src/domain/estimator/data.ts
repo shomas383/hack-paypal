@@ -3,7 +3,7 @@ import { chainsOf, type HtsIndex } from '@/domain/hts/buildIndex';
 import { buildBaseRates, type BaseRates, type RateExportRow } from './baseRates';
 import { segmentNotes, type Ch99Notes, type SegmentOptions } from './ch99Notes';
 import { stripPageFurniture } from './ch99Text';
-import { buildHeadingTable, outOfForce, type HeadingTable, type OutOfForce, type VerifiedOverride, VERIFIED_OVERRIDES } from './headings';
+import { buildHeadingTable, outOfForce, type HeadingTable, type OutOfForce, type VerifiedOverride } from './headings';
 import { buildMentions, type MentionsIndex } from './mentions';
 import type { OriginGroup } from './origin';
 import type { Rule } from './rules';
@@ -51,7 +51,7 @@ export function buildEstimatorData(src: EstimatorSources): Omit<EstimatorData, '
     hts_revision: src.index.hts_revision,
     asOf: src.asOf,
     headings,
-    outOfForce: outOfForce(headings, notes, src.asOf, src.overrides ?? VERIFIED_OVERRIDES),
+    outOfForce: outOfForce(headings, notes, src.asOf, src.overrides),
     notes,
     mentions: buildMentions(notes, ch99Text, Object.fromEntries(Object.entries(base.codes).map(([c, v]) => [c, v.fn]))),
     base,

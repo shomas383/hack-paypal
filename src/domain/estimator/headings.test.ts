@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { ieepaOverride } from '@/server/estimatorReview';
 import type { RateExportRow } from './baseRates';
 import { segmentNotes } from './ch99Notes';
 import type { StrippedText } from './ch99Text';
-import { buildHeadingTable, headingsInRange, outOfForce, overrideQuoteHolds, overrideTies, VERIFIED_OVERRIDES } from './headings';
+import { buildHeadingTable, headingsInRange, headingTextSha, outOfForce, overrideQuoteHolds, overrideTies, type VerifiedOverride } from './headings';
 import { headingAppliesTo, originOf } from './origin';
+
+const QUOTE = 'IEEPA tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but terminated (CBP stopped collecting for entries on/after Feb 24, 2026) — never add them.';
 
 // Real Rev 21 text (export rows and note text), cut down; marked where synthetic.
 const row = (htsno: string, indent: number, description: string, general = ''): RateExportRow => ({ htsno, indent: String(indent), description, general }) as RateExportRow;
@@ -49,27 +52,39 @@ describe('outOfForce', () => {
     expect(o['9903.05.85']).toMatchObject({ why: 'entry_window_closed' });
     expect(outOfForce(table, notes, '2026-07-27')['9903.05.85']).toBeUndefined();
   });
-  it('the docs-verified IEEPA override terminates only headings tied to one of its EOs (own text or a cited note); untied ones stay in force', () => {
-    expect(o['9903.01.25']).toBeUndefined(); // neither its text nor note 2 here names one of the seven EOs
+  it('a reviewed list terminates a listed heading only while present with its reviewed text; changed, missing and unlisted stay in force', () => {
+    expect(o['9903.01.25']).toBeUndefined(); // no list passed
     const t2 = buildHeadingTable([
       ...rows,
-      row('9903.01.77', 0, 'Except for products described in headings 9903.01.78-9903.01.83 and 9903.01.90, articles the product of Brazil …, as provided for in subdivision (x) of U.S. note 2 to this subchapter [Compiler’s note: Executive Order 14323 (90 Fed. Reg. 37739) was signed on July 30, 2025, and became effective on August 6, 2025.]', 'The duty provided in the applicable subheading + 40%'),
-      row('9903.02.99', 0, 'synthetic: articles the product of any country, as provided for in subdivision (zz) of U.S. note 2 to this subchapter', 'The duty provided in the applicable subheading + 10%'),
       row('9903.02.98', 0, 'synthetic: articles the product of any country', 'The duty provided in the applicable subheading + 10%'),
     ]);
-    const n2 = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '2. (a) synthetic: imposed under Executive Order 14257 (synthetic)']));
-    const o2 = outOfForce(t2, n2, '2026-10-11');
-    expect(o2['9903.01.77']).toMatchObject({ why: 'verified_override', ref: 'docs/SPEC.md (Executive Order 14323, named in heading 9903.01.77)' });
-    expect(o2['9903.02.99']).toMatchObject({ why: 'verified_override', ref: 'docs/SPEC.md (Executive Order 14257, named in note III 2(a))' });
-    expect(o2['9903.02.98']).toBeUndefined(); // cites no note, names no EO
-    const ties = overrideTies(t2, n2, VERIFIED_OVERRIDES[0]!, (h) => !!o2[h] && o2[h]!.why !== 'verified_override');
-    expect(ties.untied).toEqual(['9903.01.25', '9903.02.98']);
+    const override = (headings: VerifiedOverride['headings']): VerifiedOverride => ({
+      prefixes: ['9903.01.', '9903.02.'], file: 'docs/SPEC.md', quote: QUOTE, listFile: 'data/reviews/test.json', reviewedOn: '2026-10-11', headings,
+    });
+    const listed = (h: string, sha = headingTextSha(t2[h]!)) => ({ heading: h, group: '2 reciprocal baseline and its exceptions', order: 'EO 14257 (as amended)', text_sha256: sha });
+    const ov = override([listed('9903.01.25'), listed('9903.02.98', '0'.repeat(64)), listed('9903.02.97', 'f'.repeat(64))]);
+    const o2 = outOfForce(t2, notes, '2026-10-11', [ov]);
+    expect(o2['9903.01.25']).toMatchObject({ why: 'verified_override', ref: 'data/reviews/test.json (EO 14257 (as amended); reviewed 2026-10-11)' });
+    expect(o2['9903.02.98']).toBeUndefined(); // listed, but its text changed since review
+    const ties = overrideTies(t2, ov, (h) => !!o2[h] && o2[h]!.why !== 'verified_override');
+    expect(ties).toEqual({ tied: { '9903.01.25': { order: 'EO 14257 (as amended)', group: '2 reciprocal baseline and its exceptions' } }, changed: ['9903.02.98'], missing: ['9903.02.97'], unlisted: [] });
+    // 9903.01.86 is out of force by its own compiler's note, so it is neither listed nor "unlisted"
+    expect(overrideTies(t2, override([]), (h) => !!o2[h] && o2[h]!.why !== 'verified_override').unlisted).toEqual(['9903.01.25', '9903.02.98']);
+    // the sha covers the General column too
+    expect(headingTextSha({ ...t2['9903.01.25']!, general: 'Free' })).not.toBe(headingTextSha(t2['9903.01.25']!));
     expect(o['9903.05.49']).toBeUndefined();
     expect(o['9903.41.05']).toBeUndefined();
     expect(o['9903.88.15']).toBeUndefined();
   });
+  it('the committed IEEPA list parses and holds 120 headings from the approved groups', () => {
+    const ov = ieepaOverride();
+    expect(ov.headings).toHaveLength(120);
+    expect(ov.headings.map((h) => h.heading)).not.toEqual(expect.arrayContaining(['9903.02.76']));
+    expect(ov.headings.map((h) => h.heading)).not.toEqual(expect.arrayContaining(['9903.02.81']));
+    expect(new Set(ov.headings.map((h) => h.order))).toEqual(new Set(['EO 14194 (as amended)', 'EO 14193 (as amended)', 'EO 14195 (as amended)', 'EO 14257 (as amended)', 'EO 14257 (as amended), via EO 14326 (90 FR 37963)', 'EO 14323 (as amended)']));
+  });
   it('the override quote is checked against the docs text (Markdown emphasis and line breaks ignored)', () => {
-    const q = VERIFIED_OVERRIDES[0]!.quote;
+    const q = QUOTE;
     expect(overrideQuoteHolds('- **IEEPA** tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but **terminated** (CBP stopped collecting for\n  entries on/after Feb 24, 2026) — never add them.', q)).toBe(true);
     expect(overrideQuoteHolds('IEEPA tariffs (9903.01.xx / 9903.02.xx) are in force', q)).toBe(false);
   });

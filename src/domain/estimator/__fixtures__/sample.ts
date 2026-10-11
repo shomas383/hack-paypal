@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildHtsIndex } from '@/domain/hts/buildIndex';
+import { ieepaOverride } from '@/server/estimatorReview';
 import { currentHtsIndex } from '@/server/hts';
 import { loadGolden, loadVerifiedRates } from '@/domain/rates/__fixtures__/verified';
 import type { RateFile } from '@/domain/rates/schema';
@@ -18,11 +19,18 @@ export const NOTE52_TEXT = read('ch99-rev21-note52.txt');
 export const REFERENCE_RULES = JSON.parse(read('rules-reference-jp-eu.json')) as RulesFile;
 export const ASOF = '2026-10-11';
 
+/** The reviewed IEEPA list, narrowed to the listed headings the excerpt carries (none: no 9903.01/.02 rows in the sample). */
+export const sampleOverride = () => {
+  const o = ieepaOverride();
+  const present = new Set(SAMPLE_ROWS.map((r) => r.htsno));
+  return { ...o, headings: o.headings.filter((h) => present.has(h.heading)) };
+};
+
 export const sampleIndex = () =>
   buildHtsIndex(SAMPLE_ROWS, { hts_revision: '2026 Rev. 21', source: { url: 'export-sample-rev21.json', exportedOn: '2026-10-11' } });
 
 export function sampleData() {
-  return buildEstimatorData({ version: 'test-e1', asOf: ASOF, exportRows: SAMPLE_ROWS, ch99Text: NOTE52_TEXT, index: sampleIndex(), rules: [], notesStartIn: { section: 'III', note: 51 } });
+  return buildEstimatorData({ version: 'test-e1', asOf: ASOF, exportRows: SAMPLE_ROWS, ch99Text: NOTE52_TEXT, index: sampleIndex(), rules: [], notesStartIn: { section: 'III', note: 51 }, overrides: [sampleOverride()] });
 }
 
 /**
@@ -48,6 +56,7 @@ export function sampleGate(rules: unknown[] = REFERENCE_RULES.rules, over: Parti
     verified,
     docs: { 'docs/SPEC.md': readFileSync(join(process.cwd(), 'docs', 'SPEC.md'), 'utf8') },
     origins: ['JP', 'DE'],
+    overrides: [sampleOverride()],
     ...over,
   });
 }

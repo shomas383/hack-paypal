@@ -20,7 +20,7 @@ import { normaliseText } from './ch99Text';
 import { coverageIndex, lineVerdicts, originGaps, type CoverageContext } from './coverage';
 import type { EstimatorData } from './data';
 import { estimateLine } from './estimate';
-import { overrideQuoteHolds, overrideTies, type VerifiedOverride, VERIFIED_OVERRIDES } from './headings';
+import { overrideQuoteHolds, overrideTies, type VerifiedOverride } from './headings';
 import { originOf, type OriginGroup } from './origin';
 import { toEngineMfn } from './rateText';
 import { compareToReference, RuleSchema, type Rule } from './rules';
@@ -46,7 +46,8 @@ export interface GateInput {
   verified: RateFile;
   /** File path → text, for the overrides' quotes (docs/SPEC.md). */
   docs: Record<string, string>;
-  overrides?: VerifiedOverride[];
+  /** Reviewed override lists (the IEEPA list); each must also be passed to buildEstimatorData. */
+  overrides: VerifiedOverride[];
   /** List sizes of the previous published version ("note III 52(b)" → codes), for the drift alarm. */
   previousListCounts?: Record<string, number>;
   /** Origins the gate covers; a golden case of another origin is skipped. */
@@ -69,8 +70,8 @@ export interface GateReport {
   alerts: string[];
   listCounts: Record<string, { codes: number; ch98: number; unknown: string[] }>;
   coverage: Record<string, { lines: number; refused: number; byRef: Record<string, number> }>;
-  /** Per override: headings tied to one of its Executive Orders (terminated) and those that couldn't be (in force). */
-  overrideTies: { file: string; tied: Record<string, { eo: string; where: string }>; untied: string[] }[];
+  /** Per override list: tied (terminated), changed / missing (re-review, kept in force), unlisted (kept in force). */
+  overrideTies: { file: string; tied: Record<string, { order: string; group: string }>; changed: string[]; missing: string[]; unlisted: string[] }[];
 }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -116,18 +117,19 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
 
   // G0
   const overrideTieReport: GateReport['overrideTies'] = [];
-  for (const o of input.overrides ?? VERIFIED_OVERRIDES) {
+  for (const o of input.overrides) {
     const ok = check('G0', o.file, overrideQuoteHolds(input.docs[o.file] ?? '', o.quote), `override for ${o.prefixes.join(', ')}: quote must be in ${o.file}`);
     if (!ok) for (const g of groups) blockOrigin(g, `G0 ${o.file} no longer says what the override claims`);
-    // each heading it would terminate must be tied to one of its EOs; an untied one stays in force (G7 then decides)
-    const { tied, untied } = overrideTies(data.headings, data.notes, o, (h) => !!data.outOfForce[h] && data.outOfForce[h]!.why !== 'verified_override');
-    overrideTieReport.push({ file: o.file, tied, untied });
+    // a listed heading is terminated only while present with its reviewed text; else it stays in force and needs re-review
+    const ties = overrideTies(data.headings, o, (h) => !!data.outOfForce[h] && data.outOfForce[h]!.why !== 'verified_override');
+    overrideTieReport.push({ file: o.listFile, ...ties });
     check(
       'G0',
-      `${o.file} EO ties`,
-      untied.length === 0,
-      `${Object.keys(tied).length} heading(s) tied to EO ${o.executiveOrders.join('/')} (${Object.entries(tied).map(([h, x]) => `${h}: EO ${x.eo} in ${x.where}`).join('; ') || 'none'}); ${untied.length} untied, kept in force: ${untied.join(', ') || 'none'}`,
+      `${o.listFile} reviewed headings`,
+      ties.changed.length === 0 && ties.missing.length === 0,
+      `${Object.keys(ties.tied).length} of ${o.headings.length} reviewed heading(s) present with their reviewed text (terminated); RE-REVIEW — text changed, kept in force: ${ties.changed.join(', ') || 'none'}; RE-REVIEW — no longer in the schedule: ${ties.missing.join(', ') || 'none'}`,
     );
+    check('G0', `${o.listFile} not listed`, true, `${ties.unlisted.length} heading(s) under ${o.prefixes.join(', ')} not in the list and not out of force by their own text, kept in force: ${ties.unlisted.join(', ') || 'none'}`);
   }
 
   // G1–G6 per rule

@@ -1,0 +1,780 @@
+{
+ "name": "IEEPA duties ended by EO 14389 §1 (HTS headings still printed)",
+ "hts_revision": "2026 Rev. 21",
+ "review_document": "docs/IEEPA_HEADINGS_REVIEW.md",
+ "reviewed_on": "2026-10-11",
+ "reviewers": [
+  "Shoma",
+  "co-reviewer (approved with Shoma in the Claude Code session of 2026-10-11)"
+ ],
+ "sources": [
+  {
+   "title": "Executive Order 14389, Ending Certain Tariff Actions",
+   "citation": "91 FR 9437 (Feb 25, 2026), §1 and §2(d)",
+   "urls": [
+    "https://www.federalregister.gov/documents/2026/02/25/2026-03832/ending-certain-tariff-actions",
+    "https://www.whitehouse.gov/presidential-actions/2026/02/ending-certain-tariff-actions/"
+   ],
+   "read_on": "2026-10-11",
+   "says": "§1 ends the IEEPA duties under EOs 14193, 14194, 14195 (each as amended), 14245, 14257 (as amended), 14323 (as amended), 14329 (as amended), 14380 and 14382; §2(d): Section 232 and 301 duties unaffected; HTSUS changes by later notice."
+  },
+  {
+   "title": "CBP CSMS # 67834313, Ending Collection of International Emergency Economic Powers Act Duties",
+   "citation": "sent 2026-02-22",
+   "urls": [
+    "https://content.govdelivery.com/accounts/USDHSCBP/bulletins/40b11c9"
+   ],
+   "read_on": "2026-10-11",
+   "says": "IEEPA duties not collected for goods entered on or after 12:00 a.m. ET Feb 24, 2026; affects IEEPA duties only."
+  },
+  {
+   "title": "Executive Order 14326, Further Modifying the Reciprocal Tariff Rates",
+   "citation": "90 FR 37963",
+   "urls": [
+    "https://www.govinfo.gov/content/pkg/FR-2025-08-06/pdf/2025-15010.pdf"
+   ],
+   "read_on": "2026-10-11",
+   "says": "Amends EO 14257; cited by 9903.02.01, so covered by \"14257 (as amended)\"."
+  }
+ ],
+ "docs_quote": {
+  "file": "docs/SPEC.md",
+  "quote": "IEEPA tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but terminated (CBP stopped collecting for entries on/after Feb 24, 2026) — never add them."
+ },
+ "prefixes": [
+  "9903.01.",
+  "9903.02."
+ ],
+ "headings": [
+  {
+   "heading": "9903.01.01",
+   "group": "1a drug-flow: Mexico",
+   "order": "EO 14194 (as amended)",
+   "text_sha256": "dd1c51e048cc37233714c0a98bff95f4388ce3f3904a1fa53e538073d637fc47"
+  },
+  {
+   "heading": "9903.01.02",
+   "group": "1a drug-flow: Mexico",
+   "order": "EO 14194 (as amended)",
+   "text_sha256": "34a508409225f3c79f030ab617ca51511c694cb03853a60e10698c1bc91a3819"
+  },
+  {
+   "heading": "9903.01.03",
+   "group": "1a drug-flow: Mexico",
+   "order": "EO 14194 (as amended)",
+   "text_sha256": "ff0b9a3cc7bbdbe730695ffae8fa5685fb6032545ca283cb1fb7e5c41489b21b"
+  },
+  {
+   "heading": "9903.01.04",
+   "group": "1a drug-flow: Mexico",
+   "order": "EO 14194 (as amended)",
+   "text_sha256": "363aacd8f33a85a51b6b0b2e033cf22a855864ec1b5988d11805c38124978bdd"
+  },
+  {
+   "heading": "9903.01.05",
+   "group": "1a drug-flow: Mexico",
+   "order": "EO 14194 (as amended)",
+   "text_sha256": "5b4eb006b2b5c5c593fe955a6e09a42d1835d25559b0733405af1d5de729f370"
+  },
+  {
+   "heading": "9903.01.10",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "ac194d61e40dc08b5e0a358ee736e511e0eb046aa7f617af62f1107d706e75be"
+  },
+  {
+   "heading": "9903.01.11",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "99caaf852709886125d4f9a7364615d034c369c4f1abe26ed603a952075a7183"
+  },
+  {
+   "heading": "9903.01.12",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "90014b2ecff2c0ed2ca8cf55cd7eec05d0179e0bb930068ab3670bede21f9a99"
+  },
+  {
+   "heading": "9903.01.13",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "368d29d9e4dafdd42493581f427f5eede7f4eb0171592f36c1388e9ee5741d22"
+  },
+  {
+   "heading": "9903.01.14",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "79428d8ab44d0ac97bb96608911927eb73e1c583b1ff7e0b011eb666e82bfe7c"
+  },
+  {
+   "heading": "9903.01.15",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "f253b5c79a450044787f166d6fab1c5f3831d972ddecbaa10ade6206277e66ce"
+  },
+  {
+   "heading": "9903.01.16",
+   "group": "1b drug-flow: Canada",
+   "order": "EO 14193 (as amended)",
+   "text_sha256": "e7e462647497ef37c9707323ae0e0b1dcdcf25b9fccdc9f1856ead13b903e37c"
+  },
+  {
+   "heading": "9903.01.20",
+   "group": "1c drug-flow: China and Hong Kong",
+   "order": "EO 14195 (as amended)",
+   "text_sha256": "2f4c23b066bcdbe8553156e33e145092a87f4b32c2a267dcf155f7006f0218be"
+  },
+  {
+   "heading": "9903.01.21",
+   "group": "1c drug-flow: China and Hong Kong",
+   "order": "EO 14195 (as amended)",
+   "text_sha256": "7031ea4577257f00ff381ea7780e5fa3399636d9383d644010f0ccd02509a897"
+  },
+  {
+   "heading": "9903.01.22",
+   "group": "1c drug-flow: China and Hong Kong",
+   "order": "EO 14195 (as amended)",
+   "text_sha256": "2c3ad84f1bc844d3636dfab5a184669d13e507646818630117caf6a5f47c2bba"
+  },
+  {
+   "heading": "9903.01.23",
+   "group": "1c drug-flow: China and Hong Kong",
+   "order": "EO 14195 (as amended)",
+   "text_sha256": "78e188c7278bea0516735af3fd71ec2e481b69d57a85e34a2fbdc47c630355c0"
+  },
+  {
+   "heading": "9903.01.24",
+   "group": "1c drug-flow: China and Hong Kong",
+   "order": "EO 14195 (as amended)",
+   "text_sha256": "9b4c6460613f83118f08774bbd5f966ca14009a61ac96fa7d91aecf5841f8823"
+  },
+  {
+   "heading": "9903.01.25",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "a3b7da502a6ad89c0f8224058ee67450bf0d42de837c7682d06a463472514267"
+  },
+  {
+   "heading": "9903.01.26",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "a29d2dd0d3bf32fbf4c0b19d2f0581890cc56483eb643b28c21328e9d4234fc6"
+  },
+  {
+   "heading": "9903.01.27",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "ab7d5416d24be49cc5abb05fe2e81c93375ac453b88f97b67ccc8034a71dec02"
+  },
+  {
+   "heading": "9903.01.28",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "8391fe147935734dd4186af6ba9edcf5654b432788b8ef647c9dbee47b0a74e0"
+  },
+  {
+   "heading": "9903.01.29",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "5b39c0353315d99dfa63942f1214d31ede72f5884f1e5bf10cc2b0b9dffb3f58"
+  },
+  {
+   "heading": "9903.01.30",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "ddde5175e812ca3b53c90545704c21877ce4e24ac39d938d944105f70cdc8a24"
+  },
+  {
+   "heading": "9903.01.31",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "1066a531977078662c3b088cde06669050ab313b22e460478e8c266ef13d91ed"
+  },
+  {
+   "heading": "9903.01.32",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "5c4362c149bce2d0db13c973360368956ec35ce0b9de71c0b8ddd744b0caa6e5"
+  },
+  {
+   "heading": "9903.01.33",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f87e8bf62ae5c49ae8a367b7588d056e80f7de6c2e69afa66ff2f51a174fba09"
+  },
+  {
+   "heading": "9903.01.34",
+   "group": "2 reciprocal baseline and its exceptions",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "495c944d5b9517cd5bd3ae5e989bef2173b6633377123dcab8639a4ed12e2df5"
+  },
+  {
+   "heading": "9903.01.77",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "d927208a47ff8d8f147fff30bee8fbb2852a0ec474bdf32e278b950a878b7c9e"
+  },
+  {
+   "heading": "9903.01.78",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "e694765b8ac6bbc9ca09c364ff09d74c6ce61b0f428b2e5d1be8674db135849b"
+  },
+  {
+   "heading": "9903.01.79",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "b3a7d72bd124ba1551ef1c792568493219448492d40da9226587585c179c0c7c"
+  },
+  {
+   "heading": "9903.01.80",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "e89abbc5a3f4310d96ff612ea0700a2964921bf7f7e1583474c7180f1c878fe4"
+  },
+  {
+   "heading": "9903.01.81",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "577e33aa557dcb35f12ca216a1e89e9dda7ec314fbdcf35f6620d6d2ea400e70"
+  },
+  {
+   "heading": "9903.01.82",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "6a56a2da5248bbf5b6a326470627932e066aeb54e028aaf94db9523348594b9c"
+  },
+  {
+   "heading": "9903.01.83",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "b2edc7718eab181beea453880e70515ea7d27000b69372bfc282e1c00a4f095a"
+  },
+  {
+   "heading": "9903.01.90",
+   "group": "6 Brazil",
+   "order": "EO 14323 (as amended)",
+   "text_sha256": "f860935292fc02d7e4344df01141203653f9e35019b8848db1a875e286724b22"
+  },
+  {
+   "heading": "9903.02.01",
+   "group": "5 transshipment",
+   "order": "EO 14257 (as amended), via EO 14326 (90 FR 37963)",
+   "text_sha256": "7b1015d801da6dbbc86b1bc534d8330b78c971e18409e9693ffd6b1e0de57f34"
+  },
+  {
+   "heading": "9903.02.02",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "1238e7747c899ce980bc867c0a61871854d6d6c88c734d6c494e7fff15add68b"
+  },
+  {
+   "heading": "9903.02.03",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f3b6e09f6f6253eaf02a04414a3593c2467d59b6d5f13ededf02f42d6fc21ead"
+  },
+  {
+   "heading": "9903.02.04",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "e8b8f617c9a9dca3461862e351609c2fddd141b1d58a4d982d62050591d4cfec"
+  },
+  {
+   "heading": "9903.02.05",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "d0c588e58cf809c44ec6e09299bc42108b67968f7392dcb9df8c17f538ba3ffa"
+  },
+  {
+   "heading": "9903.02.06",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "01ef18712b2f34af188cc3a3d67804be75819caf291226afa971f73cbffb963b"
+  },
+  {
+   "heading": "9903.02.07",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "6f70b124d1d89920631c3e27fd9242ee28040deac2e03f16caa26e0ec93fe48c"
+  },
+  {
+   "heading": "9903.02.08",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "72be96137452fb58f93a69ac4d9fbc9607f09977973a743db004e628a981b24a"
+  },
+  {
+   "heading": "9903.02.09",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f4c30126967d274f71c968abb6cdce54c3735f4d422cece5312b12d64ae5945f"
+  },
+  {
+   "heading": "9903.02.10",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "6075df98bf4754c3b762d31f1bd5454a5002690418bafcf7d74e6782659f6093"
+  },
+  {
+   "heading": "9903.02.11",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "92f3fca321af6f484814674f6eeeb2bd90fdf27e8489c00d2a91f7dac59f0773"
+  },
+  {
+   "heading": "9903.02.12",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "10d6c53e010a7a294e71304816db76dac105ec9df10b722e874a1c22eba8120f"
+  },
+  {
+   "heading": "9903.02.13",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "9fe490cd9d11f3100b491e0e3a919a5abdb1249e688c5a45de9257f947e169c7"
+  },
+  {
+   "heading": "9903.02.14",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "c63dea6e2235943048f9f5a8b2646f42649a151a19659338fac4aff4add6c0bd"
+  },
+  {
+   "heading": "9903.02.15",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "8c18c02dd2b521ff6bdd0c17d05aee809245c5bf6225dedad285406df06a4ac1"
+  },
+  {
+   "heading": "9903.02.16",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "7d70bbde7b3dceeb8ff61962039476842507e85298ebf3d55ea5829e199a7e27"
+  },
+  {
+   "heading": "9903.02.17",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "b71c390170bec593dbd743e0a29771825d72ccb404035616a39c5ce50c607cd5"
+  },
+  {
+   "heading": "9903.02.18",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "6b699f0dbf411cc18cd0caac5e4efe92ca65908f024a5c2e39c301abd63159c2"
+  },
+  {
+   "heading": "9903.02.19",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "fab0b83a6213dcb3716c83e8e3a4b013b4967a66f3b8f7975b06445103ae6e4f"
+  },
+  {
+   "heading": "9903.02.20",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f79f6443f9cbc3f9dc67bac770216ec70b3acc999e570a7ce92682acc50e17f8"
+  },
+  {
+   "heading": "9903.02.21",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "ca6edaff1e1db2214de228425cd0e02e0dc62cd390306fa33dafee631383c4cb"
+  },
+  {
+   "heading": "9903.02.22",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "457bbb59e2342bd017544f12ecc10a829469c003ef7a61df5185ccb4d2993d20"
+  },
+  {
+   "heading": "9903.02.23",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "e4bff6bd461b676930b119e6c3b4ed52066cc6bb99e874be14010a23a8883765"
+  },
+  {
+   "heading": "9903.02.24",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "032637e642fc87a0ffa238576767cc3cf00a29d8a6125610b99614e3de8e478e"
+  },
+  {
+   "heading": "9903.02.25",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "58c0634484afdd1c6d5711482dd301088e44d6517213e48f244e1a2a540aa00d"
+  },
+  {
+   "heading": "9903.02.26",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "0c47bb95921cc69db43b92d0e74c4460baac4fe81205d907d073d6e8d9ed781e"
+  },
+  {
+   "heading": "9903.02.27",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "e410f9b74ccfd7110b9dc568d7d33a25faedf1724f660248622ab05ca855824c"
+  },
+  {
+   "heading": "9903.02.28",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "e19ef661918a7bac84fc6d615c7fdd38b01a424f221e89ec2a793e0a2cd7a8b9"
+  },
+  {
+   "heading": "9903.02.29",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "2aefdf2601ac0a0f395ff910ba7b8ddab5470563c396ae07ac960c0bf0cfdaf9"
+  },
+  {
+   "heading": "9903.02.31",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "0e29f4e047098132f7bf88e138b618e730d4999bdad99fe36681a37bd1717e7a"
+  },
+  {
+   "heading": "9903.02.32",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "0e20b69fb117af4aa4128f98166f7551e829f190190d60b8324a1b79530028d2"
+  },
+  {
+   "heading": "9903.02.33",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "fba7d1cd136971d9985ba6d6eb3c2932970dff7b138dd3e6ef93a4e8289845b3"
+  },
+  {
+   "heading": "9903.02.34",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "3b39ad1fe274e32a8aecdc4affb0544093f2f79bb7cd5f15103a417dd20e1df2"
+  },
+  {
+   "heading": "9903.02.35",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "a3405fc9acdcd3d37e5fbd5642f1a6c63b8d5d05f701fecb97aeb8e4f35b63d9"
+  },
+  {
+   "heading": "9903.02.37",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "efb786838934fe58cca2e0b8545073c9810e50b7948ced0fbeb4753d119d5de5"
+  },
+  {
+   "heading": "9903.02.38",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f3a4044fea92c9b05d7cb2248a0ccf655663745b306f4a4e8f84678e8e113d82"
+  },
+  {
+   "heading": "9903.02.39",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "e398087aa41875df9e2b567f4b1b024a96fcfc4c8824f3a3b063adf7a8f8be8a"
+  },
+  {
+   "heading": "9903.02.40",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f3d5f750d52e1845386449ac7625ab1865634798e6d18e728408db46c9d43472"
+  },
+  {
+   "heading": "9903.02.41",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "2dd3116640dffa96041a52303e325fd6281d8d925ddba789932ccf5a872a2d56"
+  },
+  {
+   "heading": "9903.02.42",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "155daf1d39bde27539a2013af9dccbc0787ba563704bae6780f23b6ec07bceb4"
+  },
+  {
+   "heading": "9903.02.43",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "6b27a029c0bd9acf99ba5f5b95d5fd2602b69fc49825ed6337dfc447952c60d0"
+  },
+  {
+   "heading": "9903.02.44",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "4861edea7c6e1ded22ae69cb1a4fbba12ce6c50965839ce18e38f4377d328aff"
+  },
+  {
+   "heading": "9903.02.45",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "d7094d5f95f8eefff224d6f970bdf6f6e0736ec5c8b1931ae89dd9467328563e"
+  },
+  {
+   "heading": "9903.02.46",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "504e17b4be7f5cab5686545fa1d80d135b72b1653ab1ab93bfd30642341586e8"
+  },
+  {
+   "heading": "9903.02.47",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "0337be5c28912b0e30a099e70b8ca3d9fb1c89838b539cfa244d2bf99c0c327a"
+  },
+  {
+   "heading": "9903.02.48",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "31c12a241375213fc6d19ea8f0b4ba750b0d3d54ef8da33a989c898fefe87538"
+  },
+  {
+   "heading": "9903.02.49",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "aad971509a86bd910138eb9c8a6f9751468a96b5aa27ba03e34a5b9faa35f7d7"
+  },
+  {
+   "heading": "9903.02.50",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "3160004587b9cb94fe52060b419fa4ec34c69811f6ff3d01d82ecdf4421560a5"
+  },
+  {
+   "heading": "9903.02.51",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "57840ac1524bc5d7a97582c0a7bbf5da361b5f867ec62379cb5dbd57dea59627"
+  },
+  {
+   "heading": "9903.02.52",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "a7a6475ee1afa5f0fc8e89919cbfc8685bd531880a44a8a31bbefdbd31df89ed"
+  },
+  {
+   "heading": "9903.02.53",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "ea80125bc1d97f2d197587aca243102d6faec68be061b80264a2c465bffda19a"
+  },
+  {
+   "heading": "9903.02.54",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "1a05a62778ab5f9a643b864251af115a6f935ad01281670c2c97ee7ddf629f2e"
+  },
+  {
+   "heading": "9903.02.55",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "9a17a4e277dd5a282d6560bf5efa6eb4cfe5be29d39b333c6cf2d7c855a862e0"
+  },
+  {
+   "heading": "9903.02.57",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "50136ccd861c7d2b2a69128f7d730f85e8db56cb0a6482861ee1bc125099f435"
+  },
+  {
+   "heading": "9903.02.59",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "523f5198ae1a0fa4be7a77e24267d3aee36a4f6e560764871eee709f79a77dac"
+  },
+  {
+   "heading": "9903.02.60",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "db7ac4df0586eb114b0f3af533ca2299efdf63a3c2b35d842582cbbc28078a61"
+  },
+  {
+   "heading": "9903.02.61",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "af08e2c0db8a423506b7133b28ac8aa8a2da4d2691d1ba39c90ad3d2cab43df4"
+  },
+  {
+   "heading": "9903.02.62",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "9611932f3ae4b82b7f6487e9c5071f16b232fffe15edf49667d8ee4fc8a312f0"
+  },
+  {
+   "heading": "9903.02.63",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "85055db79509edca49dd58460e86cd7f0f0a31cdb0914dec8419c262b28ef408"
+  },
+  {
+   "heading": "9903.02.64",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "6e3e4ba8cba9c92a787765ef031f66779f0ac32a22951ea6aedfb013c18bc052"
+  },
+  {
+   "heading": "9903.02.65",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "2e283176269175b4f3f98f227446a564b0023b838d4a04a655414afd68fb8e00"
+  },
+  {
+   "heading": "9903.02.66",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "2edb8eb037576a07c5d1fe176cabb880c09872b856c4f2e710745aa862f978f3"
+  },
+  {
+   "heading": "9903.02.67",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "c93d2c71ba6a02ad01b1627866631d5d9029e2b2a511f6677b28d38083813c3b"
+  },
+  {
+   "heading": "9903.02.68",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "82c17f72ef3d840fc9e65604a37aedcb848436cebaa2cab3aa152b884e3b48bf"
+  },
+  {
+   "heading": "9903.02.69",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "cd8566da5144a2282414da2d31c3e01ab154865e9ae97fef53fa120f220f2631"
+  },
+  {
+   "heading": "9903.02.70",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "80726e4c4fa00f631e2c61464d5c8ef668e1c28027aac35606dedd5a3ebed608"
+  },
+  {
+   "heading": "9903.02.71",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "a49af2dcfc950b0c0320a9df39331854cf6229c129fffc291ad624f4ace38399"
+  },
+  {
+   "heading": "9903.02.72",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "7c4c87bd127297410cd9a09365bdccdb4494df7a76526be4e28e31967a407e72"
+  },
+  {
+   "heading": "9903.02.73",
+   "group": "3 reciprocal country rates",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "2a6ca2b1233df828512fd4f01fd9d4f08ded41696f875bd4ebcb6f828bea5258"
+  },
+  {
+   "heading": "9903.02.74",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "ea6602e496f07711050274238f6ecd4201256abde726021626d5e57ebc07b999"
+  },
+  {
+   "heading": "9903.02.75",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "167f3810d7e65463d0ccad271deac5bade3df98c5ea572e506eb0b02823978f2"
+  },
+  {
+   "heading": "9903.02.77",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "4f3a21117da38d9bf0d492d82b5d92c54fc8e0dfb00464970300ab2c4497d656"
+  },
+  {
+   "heading": "9903.02.78",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "01aea458ca9b33c6c8f7e37ff1b92832e4fd7e9b2e266af045104d4bc986cfa8"
+  },
+  {
+   "heading": "9903.02.79",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "e60062cbc146ae4763d18498baa9a747d79baae65b6a3d960def03a63b17fde7"
+  },
+  {
+   "heading": "9903.02.80",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "08b4b6ba034f8efa97dedbeb078606f5d87eb1ea9bea26f677481e209d1160bc"
+  },
+  {
+   "heading": "9903.02.82",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "10fa88e887e5100cd2bf26b63c33432690d560136a517df8da0612b403985b61"
+  },
+  {
+   "heading": "9903.02.83",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "8b0cb9ff524e0af5b2ed78e7a42c6cd8d4abc95dd16ad1fcf5ce92e85d7640c8"
+  },
+  {
+   "heading": "9903.02.84",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "f623b529cddab2e337c056c8672e79aa24ec5806c4e0360cee49142149d53341"
+  },
+  {
+   "heading": "9903.02.85",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "c43cbe08ea8924ff530d300af8a11b3842cd7909f6d6fdd48ec3cc388b4a3184"
+  },
+  {
+   "heading": "9903.02.86",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "895dc00bb5c009969abadf109f87ae97cbdb0a6c860b74739cf6fefe6e42d37f"
+  },
+  {
+   "heading": "9903.02.87",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "45227c77f5eee4b2be38342d3954525da6ae02a0890c2a2f904d55e0e27ea823"
+  },
+  {
+   "heading": "9903.02.88",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "7e69dc81b308c66a2e7df94b3082c7a22108c74b87fba6eeba2525134523952c"
+  },
+  {
+   "heading": "9903.02.89",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "64bab289d89958df6a51a9c82e4395566d6f51be5eb676e0a82cb6110bbbacf3"
+  },
+  {
+   "heading": "9903.02.90",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "67a2a3d6a8a7bc9c672b98e5105b042bbf1cc5b805fc185c98921dced52b32bf"
+  },
+  {
+   "heading": "9903.02.91",
+   "group": "4 reciprocal framework headings",
+   "order": "EO 14257 (as amended)",
+   "text_sha256": "20fc2746f82409005509804758b8d92bce50c5b8c14058ca2196a26b40037132"
+  }
+ ],
+ "excluded": [
+  {
+   "heading": "9903.02.76",
+   "why": "note 2(v)(xxii) also switches off Section 232 headings 9903.82.02 and 9903.82.04–9903.82.17 (EO 14389 §2(d): 232 unaffected)"
+  },
+  {
+   "heading": "9903.02.81",
+   "why": "note 2(v)(xxiv)(b) also switches off Section 232 headings 9903.82.02 and 9903.82.04–9903.82.17 (EO 14389 §2(d): 232 unaffected)"
+  }
+ ]
+}
