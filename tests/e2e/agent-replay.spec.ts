@@ -42,7 +42,8 @@ test('agent replay (fixture=ja): Japanese listing matched on its official HTS de
   const match = page.getByTestId('agent-search-hts-match-L-C-469846d7');
   await expect(match).toContainText('Matched on official HTS description (9102.21.70):');
   await expect(match.locator('mark', { hasText: 'automatic' })).toBeVisible();
-  await expect(match.locator('li')).toContainText(['Wrist watches, pocket watches and other watches, including…', 'Other wrist watches, whether or not incorporating a stop…', 'With automatic winding']);
+  // One level per matched term, the deepest containing it: watch → "Other wrist watches…", automatic → "With automatic winding".
+  await expect(match.locator('li')).toHaveText(['Other wrist watches, whether or not incorporating a stop…', 'With automatic winding']);
   // The seller's title is shown as written (no translation); the full official chain is one disclosure away.
   await expect(page.getByTestId('agent-search').locator('[lang="ja"]')).toHaveText('自動巻き ダイバーズウォッチ ステンレスケース ステンレスブレス 1990年代');
   await match.getByText('Full official description').click();

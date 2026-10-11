@@ -42,7 +42,7 @@ the sources, the rate version and the verified date sit one disclosure away ("Of
        | L-P13 | CN | 280.00 | 25.00 |
        | L-P14 | DE | 290.00 | 25.00 |
 
-     - Below it, a code-generated notice (warning text with an icon, no fill): "1 listing(s) contained seller instructions;
+     - Below it, a code-generated notice (warning text with an icon, no fill): "1 listing contained seller instructions;
        withheld." (from `instructionNotice()`).
    - **Step 2.** "Quoted 4 listings" · meta "rate version 2026-rev20-v4". **QuotesTable**, caption "Landed-cost quotes,
      sorted by delivered total". Money headers carry "(USD)".

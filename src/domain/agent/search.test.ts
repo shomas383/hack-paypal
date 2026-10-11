@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { chainThreshold, rankListings, singular, tokens, type SearchListing } from './search';
+import { chainThreshold, deepestLevels, rankListings, singular, tokens, type SearchListing } from './search';
 
 // The official Rev 20 chain of 9102.21.70, verbatim (as in src/ui/dutyText.test.ts).
 const WATCH_CHAIN = [
@@ -54,6 +54,21 @@ describe('chainThreshold — a chain-only match needs min(2, query tokens) match
   });
 });
 
+describe('deepestLevels — one official level per matched term: the most specific (deepest) level containing it', () => {
+  it('9102.21.70 + automatic, watch → 2 levels in chain order: "Other wrist watches…" (deepest with watch) and "With automatic winding"', () => {
+    expect(deepestLevels(WATCH_CHAIN, ['automatic', 'watch'])).toEqual([WATCH_CHAIN[1], WATCH_CHAIN[2]]);
+  });
+
+  it('two terms whose deepest level is the same level → that level once', () => {
+    expect(deepestLevels(WATCH_CHAIN, ['wrist', 'watch'])).toEqual([WATCH_CHAIN[1]]);
+  });
+
+  it('a term in no level adds nothing; levels are verbatim', () => {
+    expect(deepestLevels(WATCH_CHAIN, ['diver'])).toEqual([]);
+    expect(deepestLevels(WATCH_CHAIN, ['jewel'])).toEqual([WATCH_CHAIN[3]]);
+  });
+});
+
 describe('rankListings — title matches, then HTS-description (chain-only) matches', () => {
   const ja = seller('L-C-ja', '自動巻き ダイバーズウォッチ ステンレスケース', 100);
 
@@ -64,7 +79,7 @@ describe('rankListings — title matches, then HTS-description (chain-only) matc
     expect(r[0]!.htsMatch).toEqual({
       hts: '9102.21.70',
       terms: ['automatic', 'watch'],
-      official_levels: [WATCH_CHAIN[0], WATCH_CHAIN[1], WATCH_CHAIN[2]],
+      official_levels: [WATCH_CHAIN[1], WATCH_CHAIN[2]],
       official_chain: WATCH_CHAIN,
     });
   });

@@ -15,7 +15,7 @@ export interface QuoteRow {
 }
 
 /**
- * ≤ 640 px: one two-line row per quote, so Delivered and Budget are visible without scrolling. Line 1: listing, origin,
+ * ≤ 720 px: one two-line row per quote, so Delivered and Budget are visible without scrolling. Line 1: listing, origin,
  * delivered, budget status. Line 2 (muted): goods, shipping, duty. Same data and order as the table (which is hidden).
  */
 function NarrowQuotes({ rows }: { rows: QuoteRow[] }) {
@@ -97,7 +97,7 @@ export function QuotesTable({ rows, pending }: { rows: QuoteRow[]; pending: numb
             if (!o || r.error) {
               return (
                 <tr key={r.id}>
-                  <th scope="row" className={s.mono}>{r.listingId}</th>
+                  <th scope="row" className={`${s.mono} ${s.id}`} title={r.listingId}>{r.listingId}</th>
                   <td colSpan={7} className={r.error ? s.failed : s.muted}>
                     {r.error ? `This quote failed: ${r.error}` : 'Quoting…'}
                   </td>
@@ -107,7 +107,7 @@ export function QuotesTable({ rows, pending }: { rows: QuoteRow[]; pending: numb
             if (o.unsupported) {
               return (
                 <tr key={r.id}>
-                  <th scope="row" className={s.mono}>{r.listingId}</th>
+                  <th scope="row" className={`${s.mono} ${s.id}`} title={r.listingId}>{r.listingId}</th>
                   <td colSpan={7}>
                     <StatusBadge tone="neutral">No verified rate for this origin and HTS line, so no quote.</StatusBadge>
                   </td>
@@ -117,7 +117,7 @@ export function QuotesTable({ rows, pending }: { rows: QuoteRow[]; pending: numb
             const over = overBudgetBy(o);
             return (
               <tr key={r.id} data-testid={`agent-quote-${r.listingId}`}>
-                <th scope="row" className={s.mono}>{r.listingId}</th>
+                <th scope="row" className={`${s.mono} ${s.id}`} title={r.listingId}>{r.listingId}</th>
                 <td>{o.origin}</td>
                 <td className={s.mono}>{o.hts}</td>
                 <td className={s.num}>{bare(o.goods)}</td>

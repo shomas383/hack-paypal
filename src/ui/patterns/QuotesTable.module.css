@@ -59,15 +59,34 @@
   font-family: var(--font-mono);
 }
 
+/* Listing id: a long seller id (L-C-bce3add4) is cut with "…" (full id in the title) instead of widening the table. */
+.id {
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .muted {
   color: var(--text-muted);
+}
+
+/* Tablet widths: tighter columns so all eight fit (Budget's "Over by …" stays visible without scrolling). */
+@media (max-width: 1024px) {
+  .table th,
+  .table td {
+    padding-right: var(--space-2);
+  }
+
+  .id {
+    max-width: 10ch;
+  }
 }
 
 .failed {
   color: var(--danger);
 }
 
-/* = 640 px: two-line rows instead of the scrolling table. */
+/* ≤ 720 px: two-line rows instead of the table (all eight columns need ~690 px). */
 .narrow {
   display: none;
 }
@@ -112,7 +131,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .wide {
     display: none;
   }

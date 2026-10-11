@@ -45,7 +45,7 @@ export interface HtsMatch {
   hts: string;
   /** The query tokens the chain matched, in query order. */
   terms: string[];
-  /** The chain levels (verbatim) that contain a matched term, in chain order. */
+  /** One level per matched term — the deepest (most specific) level containing it — verbatim, once each, in chain order. */
   official_levels: string[];
   /** The whole chain, verbatim. */
   official_chain: string[];
@@ -56,6 +56,17 @@ export interface Ranked<L extends SearchListing> {
   score: number;
   source: MatchSource;
   htsMatch?: HtsMatch;
+}
+
+/** For each term, the deepest chain level whose tokens contain it; each level once, verbatim, in chain order. */
+export function deepestLevels(chain: readonly string[], terms: readonly string[]): string[] {
+  const levelTokens = chain.map((level) => new Set(tokens(level)));
+  const picked = new Set<number>();
+  for (const t of terms) {
+    const i = levelTokens.findLastIndex((s) => s.has(t));
+    if (i >= 0) picked.add(i);
+  }
+  return chain.filter((_, i) => picked.has(i));
 }
 
 /** The search key of a query (compare_landed_costs must use a query whose key was searched). */
@@ -84,7 +95,7 @@ export function rankListings<L extends SearchListing>(query: string, catalog: re
       listing: l,
       score: terms.length,
       source: 'hts_description',
-      htsMatch: { hts: l.hts10, terms, official_levels: chain.filter((_, i) => terms.some((t) => levelTokens[i]!.has(t))), official_chain: [...chain] },
+      htsMatch: { hts: l.hts10, terms, official_levels: deepestLevels(chain, terms), official_chain: [...chain] },
     });
   }
   const rank = (s: MatchSource) => (s === 'title' ? 0 : 1);

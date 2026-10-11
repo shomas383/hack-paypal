@@ -8,6 +8,7 @@ import { Fragment, useState } from 'react';
 import { parseBudgetField, parseDeliveredBudget } from '@/domain/agent/checks';
 import { runSummary, type QuoteView } from '@/domain/agent/insight';
 import { uncheckedScriptNotice, withheldNotice } from '@/domain/agent/instructionNotice';
+import { deepestLevels } from '@/domain/agent/search';
 import { usd } from '@/domain/money/money';
 import { formatUsd } from '@/lib/money';
 import { Button } from '@/ui/Button';
@@ -65,7 +66,8 @@ function Bold({ text }: { text: string }) {
 const titleLang = (title: string) => (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(title) ? 'ja' : undefined);
 
 /**
- * Why an HTS-description result matched: the official levels that contain a matched term (verbatim, cut at ~60 chars),
+ * Why an HTS-description result matched: one official level per matched term, the deepest containing it, recomputed from
+ * the chain so older recordings render the same (verbatim, cut at ~60 chars),
  * matched words marked, and the whole official chain one disclosure away. Official Rev 20 text only.
  */
 function HtsMatchLine({ listingId, m }: { listingId: string; m: HtsMatch }) {
@@ -75,7 +77,7 @@ function HtsMatchLine({ listingId, m }: { listingId: string; m: HtsMatch }) {
         Matched on official HTS description (<span className={s.mono}>{m.hts}</span>):
       </span>
       <ul className={s.matchLevels}>
-        {m.official_levels.map((level, i) => (
+        {deepestLevels(m.official_chain, m.terms).map((level, i) => (
           <li key={i}>
             {markTerms(shortLevel(level), m.terms).map((seg, k) => (seg.mark ? <mark key={k} className={s.mark}>{seg.text}</mark> : <Fragment key={k}>{seg.text}</Fragment>))}
           </li>

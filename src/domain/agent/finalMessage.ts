@@ -27,7 +27,7 @@ const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').replace(/[:.,;]+$/, '').trim();
 
 /**
- * Hard failures. `officialLevels`: the official HTS levels a search matched (hts_match.official_levels) — quoting any of
+ * Hard failures. `officialLevels`: the official HTS chain levels of the HTS-description matches (hts_match.official_chain) — quoting any of
  * them (2+ words) fails like the fixed official phrases do; the search card shows them.
  */
 export function agentTextFailures(text: string, officialLevels: readonly string[] = []): string[] {

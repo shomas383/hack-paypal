@@ -140,6 +140,22 @@
   font-family: var(--font-mono);
 }
 
+/* Phone widths: headers wrap ("Shipping" / "(USD)") and the last column keeps a right gutter off the screen edge. */
+@media (max-width: 640px) {
+  .table thead th {
+    white-space: normal;
+  }
+
+  .table th:last-child,
+  .table td:last-child {
+    padding-right: var(--space-3);
+  }
+
+  .table .matchRow > td:last-child {
+    padding-right: 0;
+  }
+}
+
 .sub {
   display: block;
   color: var(--text-muted);

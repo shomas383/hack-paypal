@@ -62,7 +62,7 @@ describe('demo query with 0–3 seller-published Japanese watches (real 9102.21.
     const [r] = rankListings(Q, [jaWatch(0)], chainOf);
     expect(r).toMatchObject({ source: 'hts_description', score: 2, htsMatch: { hts: '9102.21.70', terms: ['automatic', 'watch'] } });
     expect(r!.htsMatch!.official_levels.every((l) => r!.htsMatch!.official_chain.includes(l))).toBe(true);
-    expect(r!.htsMatch!.official_levels.some((l) => /automatic winding/i.test(l))).toBe(true);
+    expect(r!.htsMatch!.official_levels.map((l) => l.replace(/:$/, ''))).toEqual(['Other wrist watches, whether or not incorporating a stop watch facility', 'With automatic winding']);
   });
 
   it.each([0, 1, 2, 3])('%i JA watch(es): the four English watches are always first; compare = first 6', (n) => {

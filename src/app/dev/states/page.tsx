@@ -72,7 +72,7 @@ export default function DevStatesPage() {
         <div className={s.row}>
           <StatusBadge tone="success">Within budget</StatusBadge>
           <StatusBadge tone="danger">Over by 52.50</StatusBadge>
-          <StatusBadge tone="warning">1 listing(s) contained seller instructions; withheld.</StatusBadge>
+          <StatusBadge tone="warning">1 listing contained seller instructions; withheld.</StatusBadge>
           <StatusBadge tone="info">Proposed by your agent</StatusBadge>
           <StatusBadge tone="neutral">Pending</StatusBadge>
           <StatusBadge tone="progress">Quoting…</StatusBadge>

@@ -4,7 +4,7 @@
 import { queryKey } from './search';
 
 type Ev = { type: string; id?: string; name?: string; input?: unknown; output?: unknown };
-type Row = { listingId?: unknown; quoteId?: unknown; within_budget?: unknown; refused?: unknown; match_source?: unknown; hts_match?: { official_levels?: unknown } };
+type Row = { listingId?: unknown; quoteId?: unknown; within_budget?: unknown; refused?: unknown; match_source?: unknown; hts_match?: { official_chain?: unknown } };
 
 const outputs = (events: readonly Ev[], name: string) => events.filter((e) => e.type === 'tool-result' && e.name === name).map((e) => (e.output ?? {}) as Record<string, unknown>);
 
@@ -23,15 +23,15 @@ export function quotedVsSearched(events: readonly Ev[]): { quoted: string[]; uns
 
 const searchRows = (o: Record<string, unknown>) => (Array.isArray(o.results) ? (o.results as Row[]) : []);
 
-/** The HTS-description (chain-only) search results of a run, once per listing, with their matched official levels. */
-export function chainOnlyResults(events: readonly Ev[]): { listingId: string; official_levels: string[] }[] {
+/** The HTS-description (chain-only) search results of a run, once per listing, with their whole official chain. */
+export function chainOnlyResults(events: readonly Ev[]): { listingId: string; official_chain: string[] }[] {
   const seen = new Map<string, string[]>();
   for (const r of outputs(events, 'search_listings').flatMap(searchRows)) {
     if (r.match_source !== 'hts_description' || seen.has(String(r.listingId))) continue;
-    const levels = r.hts_match?.official_levels;
+    const levels = r.hts_match?.official_chain;
     seen.set(String(r.listingId), Array.isArray(levels) ? levels.map(String) : []);
   }
-  return [...seen].map(([listingId, official_levels]) => ({ listingId, official_levels }));
+  return [...seen].map(([listingId, official_chain]) => ({ listingId, official_chain }));
 }
 
 /**

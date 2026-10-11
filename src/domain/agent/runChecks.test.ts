@@ -34,7 +34,7 @@ describe('HTS-description matches in a run', () => {
         listingId,
         match_source,
         untrusted_seller_text: { title: listingId.startsWith('L-C') ? '自動巻き ダイバーズウォッチ' : 'Automatic diver watch' },
-        ...(match_source === 'hts_description' ? { hts_match: { hts: '9102.21.70', terms: ['automatic', 'watch'], official_levels: ['With automatic winding:'], official_chain: ['With automatic winding:'] } } : {}),
+        ...(match_source === 'hts_description' ? { hts_match: { hts: '9102.21.70', terms: ['automatic', 'watch'], official_levels: ['With automatic winding:'], official_chain: ['Wrist watches:', 'With automatic winding:'] } } : {}),
       })),
     },
   });
@@ -49,8 +49,8 @@ describe('HTS-description matches in a run', () => {
     ['L-C-c', 'hts_description'],
   ];
 
-  it('chainOnlyResults: the hts_description rows with their matched official levels', () => {
-    expect(chainOnlyResults([searchOut('s1', rows.slice(3, 5))])).toEqual([{ listingId: 'L-C-a', official_levels: ['With automatic winding:'] }]);
+  it('chainOnlyResults: the hts_description rows with their whole official chain (every level counts for the quote check)', () => {
+    expect(chainOnlyResults([searchOut('s1', rows.slice(3, 5))])).toEqual([{ listingId: 'L-C-a', official_chain: ['Wrist watches:', 'With automatic winding:'] }]);
   });
 
   it('chainMatchesNotQuoted: every hts_description row within the compare cap of a compared search must be quoted', () => {

@@ -57,7 +57,7 @@ describe('agent tools — read and prepare only; amounts from stored quotes; sel
     ]);
     const ja = s.results[2]!;
     expect(ja.untrusted_seller_text.title).toBe('自動巻き ダイバーズウォッチ ステンレスケース'); // original language, never translated
-    expect(ja.hts_match).toEqual({ hts: '9102.21.70', terms: ['automatic', 'watch'], official_levels: WATCH_CHAIN.slice(0, 3), official_chain: WATCH_CHAIN });
+    expect(ja.hts_match).toEqual({ hts: '9102.21.70', terms: ['automatic', 'watch'], official_levels: WATCH_CHAIN.slice(1, 3), official_chain: WATCH_CHAIN });
     expect(s.results[0]).not.toHaveProperty('hts_match');
     expect(await run(tools.get_landed_cost_quote, { listingId: 'L-C-JA' })).toMatchObject({ listingId: 'L-C-JA', delivered_total: '$335.00' });
   });
