@@ -38,8 +38,9 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - `pnpm agent:live [--out f.ndjson] ["message"] [--budget 400.00] [--exclude-listing <id>]…` — ONE live buyer-agent run
   against the local DB (live Claude calls); prints the transcript and fails if any $ amount in the agent's text isn't from
   stored-quote/rate data or the budget, a non-allowlisted tool was called, L-T-INJ was proposed, an HTS-description match
-  within the compare cap wasn't quoted, or the agent text has a checkout path / URL / quoted official text (final message
-  over 4 sentences, untraceable quotes and unexplained HTS-description mentions only warn). `--exclude-listing` hides a
+  within the compare cap wasn't quoted, the agent text has a checkout path / URL / quoted official text, or the final
+  message has more than 4 sentences or more than one paragraph (a 1-sentence final message, untraceable quotes and
+  unexplained HTS-description mentions only warn). `--exclude-listing` hides a
   listing from that run's catalog (no DB write; script only — no route can reach it)
 - `pnpm seller:seed [--force]` — LIVE (2 Claude calls per sample): classifies the two seller demo samples
   (`src/domain/seller/samples.ts`) so the review queue isn't empty; accepts/publishes nothing; skips samples already
@@ -149,12 +150,13 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   renamed the programs after their HTS notes (CH99_NOTE52, CH99_NOTE20_LIST4A/4B).
 - Base HTS line text: DONE (ui-refresh) — checkout and agent show the full official chain, every level verbatim, " › ".
 - Quote expiry: DONE (ui-refresh) — shown in the buyer's local time.
-- Ledger: legacy orders show the pre-rekey code 9102.21.7000 (rates v1). Show the "Rate version" column at all widths, or
-  filter to the current rate version by default with a toggle for older orders.
-- Action rows: primary button first, consistently (review panel, publish dialog, checkout).
-- Ledger: wider Listing column (titles are truncated at 1280).
-- Agent final message: still 5 sentences in production (agent:live WARN); awkward wording "with the extra charge under
-  heading …" — tighten the prompt's final-message rule.
+- Ledger: DONE (polish-1, 2026-10-10) — Rate version shown at all widths; Listing is the only flex column (title on hover);
+  goods/shipping/PayPal order in tooltips + CSV (grid max 1152 px).
+- Action rows: DONE (polish-1) — primary first (Accept / Publish, then Override); publish dialog and checkout already were.
+- Agent final message: prompt asks for ONE paragraph of 2–4 sentences, duty "made up of the base rate plus heading …";
+  agent:live FAILs > 4 sentences / > 1 paragraph (polish-1). Live 2026-10-10: demo query 4 sentences PASS; "vintage …"
+  5 sentences FAIL (5th = "nothing is bought until you … Approve") — next: tell the prompt not to restate the checkout steps.
+- Seller questions: DONE (polish-1) — options citing statistical reporting numbers show "If you don't know, choose Not sure".
 - Agent search/quote mismatch: DONE (2026-10-10, local) — search_listings returns only matches (+ whole-catalog withheld
   count), get_landed_cost_quote refuses ids no search in the run returned, compare_landed_costs quotes all matches (max 6,
   score then id) sorted by delivered total; agent:live checks quoted ⊆ searched, DE proposed, JP-B over-budget row.
@@ -163,8 +165,10 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   created_at, id); /agent shows "Matched on official HTS description"; seller-text filter normalised + Japanese/Chinese
   patterns + fail closed on unchecked scripts; replay fixture `?fixture=ja`. SPEC §4.4. Keep production at ≤ 2 Japanese
   watches for the video (a 3rd is shown but not quoted: compare cap 6).
-- HTS match line: show one level per matched term — the most specific (deepest) level containing it — so 9102.21.70 shows
-  2 bullets ("With automatic winding", "Other wrist watches, …"), not 3.
-- /agent search table at 375 px: check the right gutter (Shipping column ends flush with the screen edge in the QA shots).
+- HTS match line: DONE (polish-1) — deepestLevels(): one level per matched term (9102.21.70 → 2 bullets).
+- /agent layout: DONE (polish-1) — quote table fits 721–1280 px (id ellipsis + title; two-line rows ≤ 720 px); search
+  table right gutter at ≤ 640 px; notices singular/plural.
+- Open question (polish-1 A): the CSMS #69326983 source ref on note 52 rows (incl. P14 / 9903.05.39) is hardcoded in
+  scripts/import-verify-sheet.ts, not in any verified sheet row — decide keep / drop / move into the sheet.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
