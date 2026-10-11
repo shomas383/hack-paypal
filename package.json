@@ -20,6 +20,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "rates:import": "tsx scripts/import-verify-sheet.ts",
     "rates:validate": "tsx scripts/validate-rates.ts",
+    "secrets:scan": "tsx scripts/secret-scan.ts",
     "hts:import": "tsx scripts/import-hts.ts",
     "eval:classifier": "tsx scripts/eval-classifier.ts",
     "agent:live": "tsx scripts/agent-live-run.ts",

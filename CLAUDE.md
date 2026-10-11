@@ -31,6 +31,10 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   (prices checked against the verified golden cases; every listing must quote OK)
 - `pnpm rates:import` — regenerates `data/rates/` + `data/eval/` from the gitignored verified sheet (`data/source/`); stages the output
 - `pnpm rates:validate` — schema + source/effective-date checks on rate data
+- `pnpm secrets:scan <range>` — secret scan of every file touched and line added by each commit in the range
+  (src/guards/secretScan.ts): 1 sensitive paths, 2 secret patterns, 3 known local values (.env secrets, git user.email,
+  SECRET_SCAN_EXTRA — read at runtime, never committed), 4 high-entropy tokens (not path/slug-like; no SRI hashes; the
+  generated HTS index is exempt from rule 4 only). Prints file:line only, never the matched text; exit 1 on any finding
 - `pnpm hts:import` — builds the committed Rev 20 HTS index (codes + description chains, no rates) from the gitignored export in
   `data/source/hts/`; stages the output
 - `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
@@ -83,6 +87,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 - Tests first for `money`, `rates`, `policy`. Write the failing test, then the code.
 - Small commits, conventional messages (`feat:`, `fix:`, `test:`, `docs:`, `chore:`). One concern per commit.
 - After changes: run `pnpm typecheck && pnpm test`; show me the output, don't just say it passes.
+- Every push runs `pnpm secrets:scan origin/main..main` (the exact range being pushed) first; any finding → don't push,
+  report the file:line list.
 - Use a subagent for wide searches/reviews (e.g., "review this diff against invariants 1–11").
 - When you learn a PayPal/tariff fact from a primary source, record it in `docs/PAYPAL.md` or `docs/SPEC.md` with the URL and date.
 - IMPORTANT: Scope discipline. If a task isn't on the demo path in `docs/DEMO.md`, ask before building it.
