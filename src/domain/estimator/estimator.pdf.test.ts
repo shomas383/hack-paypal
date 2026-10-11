@@ -31,10 +31,37 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
     origins: ['JP', 'DE'],
   });
 
-  it('every check passes; nothing is blocked', () => {
-    expect(report.checks.filter((c) => !c.pass).map((c) => `${c.id} ${c.subject}: ${c.detail}`)).toEqual([]);
+  // State 2026-10-11, strict G0 (decision pending): the Rev 21 text names only EO 14323 of the seven EOs the CSMS lists, so
+  // only 9903.01.77/.78 are tied; the 120 others stay in force and G7 blocks JP and EU through the ones that reach every line.
+  it('G0: 2 IEEPA headings tied to an EO, 120 untied and kept in force; G7 then blocks JP and EU; no rule is blocked', () => {
+    expect(report.overrideTies).toHaveLength(1);
+    expect(report.overrideTies[0]!.tied).toEqual({
+      '9903.01.77': { eo: '14323', where: 'heading 9903.01.77' },
+      '9903.01.78': { eo: '14323', where: 'heading 9903.01.78' },
+    });
+    expect(report.overrideTies[0]!.untied).toHaveLength(120);
+    expect(report.overrideTies[0]!.untied).toEqual(expect.arrayContaining(['9903.01.25', '9903.01.29', '9903.02.01', '9903.02.20', '9903.02.73']));
+    expect(report.checks.filter((c) => !c.pass).map((c) => `${c.id} ${c.subject}`)).toEqual(['G0 docs/SPEC.md EO ties', 'G7 origin JP', 'G7 origin DE']);
+    expect(report.blockedOrigins).toEqual({
+      JP: ['G7 unplaced headings 9903.01.25, 9903.01.29, 9903.02.01, 9903.02.73'],
+      EU: ['G7 unplaced headings 9903.01.25, 9903.01.29, 9903.02.01, 9903.02.20'],
+    });
     expect(report.blockedRules).toEqual([]);
-    expect(report.blockedOrigins).toEqual({});
+  });
+
+  it('the Section 122 headings 9903.03.01–.11 are out of force from note 2(aa)\'s own compiler\'s note, not from the IEEPA override', () => {
+    const hs = Object.keys(data.headings).filter((x) => x >= '9903.03.01' && x <= '9903.03.11');
+    expect(hs.length).toBeGreaterThan(5);
+    for (const h of hs) {
+      expect(data.outOfForce[h]?.why).not.toBe('verified_override');
+      if (h === '9903.03.02') {
+        // its own text closes first: entered "before 12:01 a.m. eastern standard time on February 28, 2026"
+        expect(data.outOfForce[h]).toMatchObject({ why: 'entry_window_closed', ref: 'heading 9903.03.02' });
+        continue;
+      }
+      expect(data.outOfForce[h]).toMatchObject({ why: 'note_compiler_note', ref: 'note III 2(aa)' });
+      expect(data.outOfForce[h]!.quote).toMatch(/headings 9903\.03\.01–9903\.03\.11 expired at the close of July 23, 2026/);
+    }
   });
 
   it('G8: every JP / DE verified case reproduced exactly, P11 refused on its 232 note, P07 refused as a chapter 98 provision', () => {
@@ -52,9 +79,10 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
   });
 
   it('coverage and out-of-force counts (pinned)', () => {
-    expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, lines: report.coverage.JP!.lines }).toEqual({ JP: 4469, DE: 3964, lines: 19926 });
+    // line refusals before the origin block (the block refuses every line on top): untied IEEPA headings named by note 2's lists
+    expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, lines: report.coverage.JP!.lines }).toEqual({ JP: 6434, DE: 5987, lines: 19926 });
     const why = Object.values(data.outOfForce).reduce<Record<string, number>>((m, o) => ((m[o.why] = (m[o.why] ?? 0) + 1), m), {});
-    expect(why).toEqual({ compiler_note: 74, entry_window_closed: 3, note_compiler_note: 10, verified_override: 122 });
+    expect(why).toEqual({ compiler_note: 74, entry_window_closed: 3, note_compiler_note: 10, verified_override: 2 });
     expect(report.listCounts['note III 52(d)']).toMatchObject({ codes: 541, ch98: 6, unknown: [] });
   });
 });

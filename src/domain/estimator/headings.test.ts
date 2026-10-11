@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { RateExportRow } from './baseRates';
 import { segmentNotes } from './ch99Notes';
 import type { StrippedText } from './ch99Text';
-import { buildHeadingTable, headingsInRange, outOfForce, overrideQuoteHolds, VERIFIED_OVERRIDES } from './headings';
+import { buildHeadingTable, headingsInRange, outOfForce, overrideQuoteHolds, overrideTies, VERIFIED_OVERRIDES } from './headings';
 import { headingAppliesTo, originOf } from './origin';
 
 // Real Rev 21 text (export rows and note text), cut down; marked where synthetic.
@@ -49,8 +49,21 @@ describe('outOfForce', () => {
     expect(o['9903.05.85']).toMatchObject({ why: 'entry_window_closed' });
     expect(outOfForce(table, notes, '2026-07-27')['9903.05.85']).toBeUndefined();
   });
-  it('IEEPA headings by the docs-verified override; everything else stays in force', () => {
-    expect(o['9903.01.25']).toMatchObject({ why: 'verified_override', ref: 'docs/SPEC.md' });
+  it('the docs-verified IEEPA override terminates only headings tied to one of its EOs (own text or a cited note); untied ones stay in force', () => {
+    expect(o['9903.01.25']).toBeUndefined(); // neither its text nor note 2 here names one of the seven EOs
+    const t2 = buildHeadingTable([
+      ...rows,
+      row('9903.01.77', 0, 'Except for products described in headings 9903.01.78-9903.01.83 and 9903.01.90, articles the product of Brazil …, as provided for in subdivision (x) of U.S. note 2 to this subchapter [Compiler’s note: Executive Order 14323 (90 Fed. Reg. 37739) was signed on July 30, 2025, and became effective on August 6, 2025.]', 'The duty provided in the applicable subheading + 40%'),
+      row('9903.02.99', 0, 'synthetic: articles the product of any country, as provided for in subdivision (zz) of U.S. note 2 to this subchapter', 'The duty provided in the applicable subheading + 10%'),
+      row('9903.02.98', 0, 'synthetic: articles the product of any country', 'The duty provided in the applicable subheading + 10%'),
+    ]);
+    const n2 = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '2. (a) synthetic: imposed under Executive Order 14257 (synthetic)']));
+    const o2 = outOfForce(t2, n2, '2026-10-11');
+    expect(o2['9903.01.77']).toMatchObject({ why: 'verified_override', ref: 'docs/SPEC.md (Executive Order 14323, named in heading 9903.01.77)' });
+    expect(o2['9903.02.99']).toMatchObject({ why: 'verified_override', ref: 'docs/SPEC.md (Executive Order 14257, named in note III 2(a))' });
+    expect(o2['9903.02.98']).toBeUndefined(); // cites no note, names no EO
+    const ties = overrideTies(t2, n2, VERIFIED_OVERRIDES[0]!, (h) => !!o2[h] && o2[h]!.why !== 'verified_override');
+    expect(ties.untied).toEqual(['9903.01.25', '9903.02.98']);
     expect(o['9903.05.49']).toBeUndefined();
     expect(o['9903.41.05']).toBeUndefined();
     expect(o['9903.88.15']).toBeUndefined();

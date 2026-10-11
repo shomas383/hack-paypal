@@ -49,23 +49,67 @@ export interface OutOfForce {
   quote: string;
 }
 
-/** A fact the HTS text doesn't carry, recorded in docs from a verified source. The gate checks `quote` is in `file`. */
+/**
+ * A fact the HTS text doesn't carry, recorded in docs from a primary source. The gate checks `quote` is in `file` (G0), and a
+ * heading counts as terminated only when its own text, or the text of a U.S. note it cites, names one of `executiveOrders`
+ * ("Executive Order 14323"); a heading that can't be tied stays in force (fails closed).
+ */
 export interface VerifiedOverride {
   /** Heading prefixes it covers ("9903.01.", "9903.02."). */
   prefixes: string[];
   file: string;
   quote: string;
+  executiveOrders: string[];
 }
 
-/** docs/SPEC.md §4.2 (from HTS_VERIFICATION_SPEC §2: Learning Resources, Inc. v. Trump, Feb 20, 2026). */
+/**
+ * docs/SPEC.md §4.2: CBP CSMS # 67834313 (2026-02-22, read 2026-10-11) — IEEPA duties not collected for goods entered on or
+ * after 12:00 a.m. ET Feb 24, 2026, per the Feb 20, 2026 EO "Ending Certain Tariff Actions" (EOs 14193, 14194, 14195,
+ * 14245, 14257, 14323, 14329; "affects IEEPA duties only").
+ */
 export const VERIFIED_OVERRIDES: VerifiedOverride[] = [
   {
     prefixes: ['9903.01.', '9903.02.'],
     file: 'docs/SPEC.md',
     quote:
       'IEEPA tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but terminated (CBP stopped collecting for entries on/after Feb 24, 2026) — never add them.',
+    executiveOrders: ['14193', '14194', '14195', '14245', '14257', '14323', '14329'],
   },
 ];
+
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII'];
+const EO_NUMBER = /\bExecutive Order (?:No\. )?(\d{5})\b/g;
+
+/** Where a heading names one of the EOs: its own text, else a note it cites ("U.S. note 2"); null when nowhere. */
+export function executiveOrderTie(h: string, t: HeadingTable, notes: Ch99Notes, eos: string[]): { eo: string; where: string } | null {
+  const info = t[h];
+  if (!info) return null;
+  const hit = (text: string) => [...text.matchAll(EO_NUMBER)].map((m) => m[1]!).find((n) => eos.includes(n));
+  const own = hit(info.chain);
+  if (own) return { eo: own, where: `heading ${h}` };
+  const section = ROMAN[Number(h.slice(2, 4))];
+  for (const n of new Set([...info.chain.matchAll(/(?<!general )\bU\.S\. notes? (\d+)/g)].map((m) => Number(m[1])))) {
+    for (const s of notes.subdivisions) {
+      if (s.section !== section || s.note !== n) continue;
+      const e = hit(s.text);
+      if (e) return { eo: e, where: `note ${s.section} ${s.path}` };
+    }
+  }
+  return null;
+}
+
+/** Headings an override covers that aren't out of force for another reason, split into tied (→ terminated) and untied. */
+export function overrideTies(t: HeadingTable, notes: Ch99Notes, o: VerifiedOverride, alreadyOut: (h: string) => boolean) {
+  const tied: Record<string, { eo: string; where: string }> = {};
+  const untied: string[] = [];
+  for (const h of Object.keys(t).sort()) {
+    if (!o.prefixes.some((p) => h.startsWith(p)) || alreadyOut(h)) continue;
+    const tie = executiveOrderTie(h, t, notes, o.executiveOrders);
+    if (tie) tied[h] = tie;
+    else untied.push(h);
+  }
+  return { tied, untied };
+}
 
 const OWN_NOTE = /\[Compiler['’]s note:[^\]]*?\b(terminated|suspended|expired)\b[^\]]*\]/i;
 const COMPILER_NOTE = /\[Compiler['’]s note:([^\]]*)\]/gi;
@@ -105,7 +149,8 @@ export function outOfForce(t: HeadingTable, notes: Ch99Notes, asOf: string, over
     }
   }
   for (const o of overrides) {
-    for (const h of Object.keys(t)) if (o.prefixes.some((p) => h.startsWith(p))) set(h, { why: 'verified_override', ref: o.file, quote: o.quote });
+    const { tied } = overrideTies(t, notes, o, (h) => !!out[h]);
+    for (const [h, tie] of Object.entries(tied)) set(h, { why: 'verified_override', ref: `${o.file} (Executive Order ${tie.eo}, named in ${tie.where})`, quote: o.quote });
   }
   return out;
 }

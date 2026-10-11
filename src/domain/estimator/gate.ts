@@ -20,7 +20,7 @@ import { normaliseText } from './ch99Text';
 import { coverageIndex, lineVerdicts, originGaps, type CoverageContext } from './coverage';
 import type { EstimatorData } from './data';
 import { estimateLine } from './estimate';
-import { overrideQuoteHolds, type VerifiedOverride, VERIFIED_OVERRIDES } from './headings';
+import { overrideQuoteHolds, overrideTies, type VerifiedOverride, VERIFIED_OVERRIDES } from './headings';
 import { originOf, type OriginGroup } from './origin';
 import { toEngineMfn } from './rateText';
 import { compareToReference, RuleSchema, type Rule } from './rules';
@@ -69,6 +69,8 @@ export interface GateReport {
   alerts: string[];
   listCounts: Record<string, { codes: number; ch98: number; unknown: string[] }>;
   coverage: Record<string, { lines: number; refused: number; byRef: Record<string, number> }>;
+  /** Per override: headings tied to one of its Executive Orders (terminated) and those that couldn't be (in force). */
+  overrideTies: { file: string; tied: Record<string, { eo: string; where: string }>; untied: string[] }[];
 }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -113,9 +115,19 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
   const groups = [...new Set(input.origins.map((o) => originOf(o)!.group))];
 
   // G0
+  const overrideTieReport: GateReport['overrideTies'] = [];
   for (const o of input.overrides ?? VERIFIED_OVERRIDES) {
     const ok = check('G0', o.file, overrideQuoteHolds(input.docs[o.file] ?? '', o.quote), `override for ${o.prefixes.join(', ')}: quote must be in ${o.file}`);
     if (!ok) for (const g of groups) blockOrigin(g, `G0 ${o.file} no longer says what the override claims`);
+    // each heading it would terminate must be tied to one of its EOs; an untied one stays in force (G7 then decides)
+    const { tied, untied } = overrideTies(data.headings, data.notes, o, (h) => !!data.outOfForce[h] && data.outOfForce[h]!.why !== 'verified_override');
+    overrideTieReport.push({ file: o.file, tied, untied });
+    check(
+      'G0',
+      `${o.file} EO ties`,
+      untied.length === 0,
+      `${Object.keys(tied).length} heading(s) tied to EO ${o.executiveOrders.join('/')} (${Object.entries(tied).map(([h, x]) => `${h}: EO ${x.eo} in ${x.where}`).join('; ') || 'none'}); ${untied.length} untied, kept in force: ${untied.join(', ') || 'none'}`,
+    );
   }
 
   // G1–G6 per rule
@@ -303,6 +315,6 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
   result.blocked.origins = blockedOrigins;
   return {
     data: result,
-    report: { checks, blockedRules: blockedRules.map((b) => ({ id: b.id, reasons: b.reasons })), blockedOrigins, alerts, listCounts, coverage },
+    report: { checks, blockedRules: blockedRules.map((b) => ({ id: b.id, reasons: b.reasons })), blockedOrigins, alerts, listCounts, coverage, overrideTies: overrideTieReport },
   };
 }
