@@ -24,6 +24,11 @@ describe('draftContext / draftPrompt — official text only', () => {
   it('a heading, its neighbours, the note 52 subdivision that defines it, 52(a) and 52(k)', () => {
     expect(draftContext('9903.05.86', data).sources).toEqual(['heading 9903.05.85', 'heading 9903.05.86', 'heading 9903.05.87', 'note III 52(b)', 'note III 52(a)', 'note III 52(k)']);
     expect(draftContext('9903.05.49', data).sources).toEqual(['heading 9903.05.48', 'heading 9903.05.49', 'heading 9903.05.85', 'note III 52(a)', 'note III 52(k)']);
+    // a list of particular articles comes with its items
+    const c = draftContext('9903.05.87', data).sources;
+    expect(c.slice(3, 6)).toEqual(['note III 52(c)', 'note III 52(c)(1)', 'note III 52(c)(2)']);
+    expect(c.filter((s) => /^note III 52\(c\)\(\d+\)$/.test(s))).toHaveLength(16);
+    expect(draftPrompt(draftContext('9903.05.87', data), data)).toContain('Etrogs (classifiable in subheading 0805.90.01);');
   });
   it('the prompt carries the texts and General columns, elides code lists, and never the reference rules', () => {
     const p = draftPrompt(draftContext('9903.05.86', data), data);

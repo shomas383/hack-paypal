@@ -1,4 +1,4 @@
-// pnpm estimator:build [--draft [--max-calls 15]] --out <dir> — builds the estimator data from the official sources and runs
+// pnpm estimator:build [--draft [--max-calls 15] [--draft-headings 9903.05.87,…]] --out <dir> — builds the estimator data from the official sources and runs
 // the gate. Sources: the export named by data/source/hts/current-export.meta.json (pnpm hts:download), the Chapter 99 PDF of
 // the same release (downloaded from hts.usitc.gov if missing; the file endpoint is pinned to the release), the committed
 // HTS index, verified rates and golden cases, and docs/SPEC.md (G0). pdftotext must be xpdf 4.06 (-enc UTF-8 -layout).
@@ -81,10 +81,13 @@ async function main() {
   let drafting: { calls: number; usage: { input: number; output: number }; failed: { heading: string; error: string }[] } | undefined;
   if (draft) {
     if (!process.env.ANTHROPIC_API_KEY && existsSync('.env')) process.loadEnvFile('.env');
-    const tasks = reference.rules.map((r) => ({ id: r.id, heading: r.heading }));
-    console.log(`LIVE: drafting ${tasks.length} rules with ${DRAFT_MODEL}, at most ${budget} calls (retries included)…`);
+    // --draft-headings 9903.05.87[,…]: re-draft only these; the other rules stay the reference rules
+    const only = arg('--draft-headings')?.split(',');
+    const tasks = reference.rules.filter((r) => !only || only.includes(r.heading)).map((r) => ({ id: r.id, heading: r.heading }));
+    assert(tasks.length > 0, `--draft-headings ${only?.join(',')}: no reference rule for those headings`);
+    console.log(`LIVE: drafting ${tasks.length} rule(s) with ${DRAFT_MODEL}, at most ${budget} calls (retries included)…`);
     const d = await draftRules(tasks, data, anthropic(DRAFT_MODEL), { budget, draftedBy: `${DRAFT_MODEL} (${asOf})` });
-    rules = d.rules;
+    rules = only ? reference.rules.map((r) => d.rules.find((x) => x.heading === r.heading) ?? r) : d.rules;
     drafting = { calls: d.calls, usage: d.usage, failed: d.failed };
   }
 

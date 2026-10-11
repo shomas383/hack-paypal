@@ -37,14 +37,21 @@ export interface DraftContext {
   sources: string[];
 }
 
-/** The texts a heading's rule is drafted from: the heading and its neighbours, the note 52 subdivision that defines it, 52(a) and 52(k). */
+/**
+ * The texts a heading's rule is drafted from: the heading and its neighbours, the note 52 subdivision that defines it with
+ * its items, 52(a) and 52(k).
+ */
 export function draftContext(heading: string, data: GateInput['data']): DraftContext {
   const all = Object.keys(data.headings).sort();
   const i = all.indexOf(heading);
   const near = [all[i - 1], heading, all[i + 1]].filter((h): h is string => !!h && h.startsWith(heading.slice(0, 7)));
   const defining = data.notes.subdivisions
     .filter((s) => s.section === 'III' && s.note === 52 && s.asProvidedIn.headings.includes(heading) && s.shallNotApply)
-    .map((s) => `note III ${s.path}`);
+    .flatMap((s) => [
+      `note III ${s.path}`,
+      // its items ("(1) Etrogs (classifiable in subheading 0805.90.01);" …)
+      ...data.notes.subdivisions.filter((c) => c.section === 'III' && c.path.startsWith(`${s.path}(`)).map((c) => `note III ${c.path}`),
+    ]);
   const sources = [...near.map((h) => `heading ${h}`), ...defining, 'note III 52(a)', 'note III 52(k)'];
   return { heading, sources: [...new Set(sources)] };
 }
