@@ -253,3 +253,85 @@ Total = N + Q (+ any active legacy list or 232 add-on already in Q). Sanity chec
 | P12 | Recorded anime Blu-ray (JP) | 8523.49.4000 | Free | 9903.05.92 (informational) | 0% | H236026 (not yet read) |
 | P13 | Automatic watch, 21 jewels, steel bracelet (CN; verified 2026-10-08, rates-v3) | 9102.21.70 (component reporting) | $1.53 + 4.2% case + 9.8% band (AVE 5.7% @ $280) | 9903.05.31 (+12.5%, note 52) + 9903.88.15 (+7.5%, note 20(r)/(s)(i); not in List 4B; no in-effect exclusion), cumulative per note 52(a) | $72.09 @ $280 (case 230 / band 50) | none |
 | P14 | Automatic watch, 21 jewels, steel bracelet (DE; verified 2026-10-09, rates-v4) | 9102.21.70 (component reporting) | $1.53 + 4.2% case + 9.8% band (AVE 5.7% @ $290) | 9903.05.39 (combined 10%, note 52(k)); not in note 52(j)(2) (9903.05.97); no note 52(b) exemption; not in note 16 | 10%: $29.00 @ $290 (case 240 / band 50) = MFN $16.51 + $12.49 | none |
+
+---
+
+## 8. Re-verification on a new revision: Rev 20 → Rev 21 (compared 2026-10-11 UTC)
+This is the evidence for re-verifying every VERIFIED row on **HTS 2026 Revision 21** without re-researching them. A
+re-verification by comparison is allowed only when the comparison shows **no change to any rate, heading or note text a
+row depends on**. Otherwise that row goes back through §3.
+
+### 8.1 Release facts (hts.usitc.gov `reststop/releaseList`, read 2026-10-11 UTC)
+| Release | Status | Created | In effect |
+|---|---|---|---|
+| 2026HTSRev21 | current | 10/07/2026 | from **10/09/2026** (`releaseStartDate`), open-ended |
+| 2026HTSRev20 | archive | 09/23/2026 | **09/28/2026 – 10/09/2026** (`releaseStartDate` / `releaseEndDate`) |
+
+This confirms the rows' Rev 20 `effective_from` of 2026-09-28, which until now was an accepted assumption.
+
+### 8.2 Sources (all from hts.usitc.gov, saved in gitignored `data/source/hts/`)
+| File | URL | sha256 |
+|---|---|---|
+| `ch99-2026-rev20.pdf` | `reststop/file?release=2026HTSRev20&filename=Chapter%2099` | `53c7858d3c70583537684f7e78b9fc1bd222a51a857d5f331f67d2468d48986c` (= the copy downloaded by hand for Rev 20 work) |
+| `ch99-2026-rev21.pdf` | `reststop/file?release=2026HTSRev21&filename=Chapter%2099` | `07911877d541dce23ddef3f89aa05503faa5acb03fd95715f4ee1ba9ea2a53ad` |
+| `hts-2026-rev20-full.pdf` | `reststop/file?release=2026HTSRev20&filename=finalCopy` | `be471de69f55d7b909f090f7a080b429debe69a3a5c07b59653ac24d5bee6060` (= the hand-downloaded `2026HTSRev20.pdf`) |
+| `hts-2026-rev21-full.pdf` | `reststop/file?release=2026HTSRev21&filename=finalCopy` | `6eb8af206472da27052ee85e2b75add42731f17fb04c3ce7c96c3e478f7f54d4` |
+| `change-record-2026-rev21.pdf` | `reststop/file?release=2026HTSRev21&filename=Change%20Record` | `bedd4806d596c8d6ed2afa44e14c3e57b11fad7ea147f93d3d120a72af8a8a02` |
+| `hts-export-2026-10-10.json` | `reststop/exportList?from=0101&to=9999&format=JSON&styles=false` | `bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09` |
+
+- **The JSON export can't be pinned to a release.** `exportList` ignores any release parameter: `release=2026HTSRev20`,
+  `=2026HTSRev21` and `=NOPE` all return the same bytes.
+- Its JSON names no revision. On 2026-10-11, with `currentRelease` = 2026HTSRev21, it was byte-identical to the
+  2026-10-07 (Rev 20) export. That's consistent with 8.3: Rev 21 changed only note text, which the export doesn't carry.
+- Since then, `pnpm hts:download` records `currentRelease` before and after each download. The base-rate comparison
+  therefore uses the per-release full-schedule PDFs, which can be pinned.
+- The shell network now works (`curl`); §2.2 predates this.
+
+### 8.3 Change Record (Rev 21, October 9, 2026; "chapters affected: 38 and 99")
+| Item | Nature | Effective | Source |
+|---|---|---|---|
+| Subheading note 1, ch. 38 | Errata | January 1, 2022 | PP 10326 |
+| U.S. note 20(vvv)(i)(20), subch. III, ch. 99 | Modified | July 1, 2026 | Notice (USTR conforming amendment to a product exclusion, 91 Fed. Reg. 64211) |
+
+The Change Record excludes "staged rates, endnotes or minor nonsubstantive format adjustments", so it is not relied on
+alone. 8.4 checks the full text.
+
+### 8.4 Method
+1. Extract the text with `pdftotext -layout` (xpdf 4.06), the same tool and options for both revisions.
+2. Normalise both sides the same way: the revision name in page headers ("Revision 20/21 (2026)", "2026HTSRev20/21") is
+   replaced by a placeholder, whitespace runs are folded to one space, and empty lines are dropped. Nothing else changes.
+3. Diff the full schedule and the Ch. 99 PDF line by line.
+4. For each item a row depends on, cut the same block from both sides and compare their sha256:
+   - a base line: from its 8-digit number to the next numbered line, which covers description, units and rate columns;
+   - a Ch. 99 heading: its row in the tariff table;
+   - a note subdivision: from its opening words to the next subdivision, with page furniture removed.
+
+**What this can't see:** shading (the PDFs mark expired provisions only by shading) and pure layout changes. The export
+couldn't be compared between revisions (8.2).
+
+### 8.5 Result
+**Full-schedule diff, every chapter:**
+- front matter (date, publication number 5798 → 5802, list of instruments);
+- one sentence of ch. 38 subheading note 1 ("Subheading 3808.59 also covers dustable powder formulations…", the erratum);
+- one line of note 20(vvv)(i)(20): the exclusion's statistical reporting number 8479.90.9596 gains "through June 30, 2026;
+  … 8479.90.9591 effective July 1, 2026";
+- the embedded Change Record.
+
+The Ch. 99 PDF diff is that one note 20 line only.
+
+| Checked item | Rev 20 = Rev 21 |
+|---|---|
+| Base lines of all 13 VERIFIED rows: 9504.40.00 (P01, P02), 9102.21.70 (P03, P13, P14), 9006.53.02 (P04), 9503.00.00 (P05), 9507.30.60 (P06), 6203.42.45 (P08), 9504.50.00 (P09), 9506.31.00 (P10), 8211.92.90 (P11), 8523.49.40 (P12): description, stat suffixes, General rate text | identical (all 10 blocks) |
+| Ch. 99 headings used: 9903.05.31, .38, .39, .48, .49, .90, .92, .97; 9903.88.15; 9903.88.16 (not applied, suspended); 9903.82.09 | identical (11 blocks) |
+| Note 52: (a), (b), (j)(2), (k) | identical |
+| Note 20: (b), (d), (f), (s)(i), (u) | identical; 9102.21.70 still in (s)(i), still not in (u) |
+| Note 31 (whole) | identical |
+| Note 20 (whole) | differs only in (vvv)(i)(20), an 8479.90 exclusion; no VERIFIED row is in heading 8479 |
+| Base-rate changes, all chapters | **0** |
+| 99xx heading rows | 3,123 in both; **0 added, 0 removed, 0 changed** |
+
+**Conclusion.** Every rate, heading and note text the 13 VERIFIED rows depend on is unchanged in Rev 21. The rows are
+re-verified on 2026 Rev. 21 with `effective_from` 2026-10-09, and their numbers stay unchanged. P07 stays EXCLUDED.
+
+Note text for column W of each VERIFIED row (appended; keep the existing text):
+> Re-verified against 2026 Rev. 21 by full text comparison; no change to rate, heading or note text; see HTS_VERIFICATION_SPEC §8.
