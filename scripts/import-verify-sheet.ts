@@ -13,9 +13,11 @@ import { inflateRawSync } from 'node:zlib';
 import type { Ch99Lookup, HtsIndex } from '../src/domain/hts/buildIndex';
 import { usd } from '../src/domain/money/money';
 import { checkCh99Headings, parseCh99Headings } from '../src/domain/rates/ch99Headings';
+import { releaseFromLabel } from '../src/domain/hts/release';
 import { CURRENT_HTS_REVISION, CURRENT_RATE_VERSION, goldenFileName, rateFileName } from '../src/domain/rates/current';
 import { quoteDuty } from '../src/domain/rates/engine';
 import { checkRateKeysAgainstHts } from '../src/domain/rates/htsKeys';
+import { excelSerialDate, readSheetRevision } from '../src/domain/rates/sheetRevision';
 import { validateRateFile } from '../src/domain/rates/validate';
 import type { Additional, Component, RateFile, RateRow } from '../src/domain/rates/schema';
 
@@ -26,15 +28,11 @@ const SOURCE = join('data', 'source', 'DDP_product_test_sheet_verify.xlsx');
 // v4 (2026-10-09): EU watch P14 (Germany, 9903.05.39, combined 10% cap per note 52(k)); output text cites heading and note
 // numbers only (no "List 4A/4B" / "301" wording).
 // v5 (2026-10-10): no CSMS citation (no verified sheet row backs it); note 52 / heading citations unchanged. Rates unchanged.
+// 2026-rev21-v1 (2026-10-11): re-verified on HTS 2026 Rev. 21 by full text comparison (HTS_VERIFICATION_SPEC §8); rates
+// unchanged. The HTS revision (Verify column Y) and each row's effective date (column Z) come from the sheet, not this file;
+// the revision must equal the HTS index's and CURRENT_HTS_REVISION (src/domain/rates/sheetRevision.ts).
 const VERSION = CURRENT_RATE_VERSION;
-const HTS_REVISION = CURRENT_HTS_REVISION;
-// Every rate key must be a real line in the official HTS index of the same revision (built by pnpm hts:import).
-const HTS_INDEX = join('data', 'hts', '2026-rev20.json');
-// Every Chapter 99 heading a row applies must exist in the official Ch. 99 lookup and not be marked suspended.
-const CH99_LOOKUP = join('data', 'hts', '2026-rev20-ch99.json');
 const VERIFIED_BY = 'Shoma';
-// Accepted assumption (2026-10-05): Rev. 20 publication date. VERIFY: Rev. 20 effective date if it differs.
-const EFFECTIVE_FROM = '2026-09-28';
 const OUT_RATES = join('data', 'rates', rateFileName(VERSION));
 const OUT_PRODUCTS = join('data', 'eval', 'products.json');
 const OUT_GOLDEN = join('data', 'eval', goldenFileName(VERSION));
@@ -258,11 +256,6 @@ function toPpm(raw: string | undefined, where: string): number {
   return ppm;
 }
 
-function excelDate(serial: string | undefined, where: string): string {
-  assert(serial && /^\d+$/.test(serial), `${where}: expected an Excel date serial, got "${serial}"`);
-  return new Date(Date.UTC(1899, 11, 30) + Number(serial) * 86_400_000).toISOString().slice(0, 10);
-}
-
 const hts8 = (hts10: string): string => hts10.slice(0, 10); // "9102.21.7000" → "9102.21.70"
 const rest = (hts8dots: string): string => `https://hts.usitc.gov/reststop/search?keyword=${hts8dots}`;
 const RULING = /^[A-Z]{1,2}\d{6}$/;
@@ -271,10 +264,6 @@ const RULING = /^[A-Z]{1,2}\d{6}$/;
 function main(): void {
   const buf = readFileSync(SOURCE);
   const sha256 = createHash('sha256').update(buf).digest('hex');
-  const htsIndex = JSON.parse(readFileSync(HTS_INDEX, 'utf8')) as HtsIndex;
-  const htsCodes = new Map(htsIndex.codes.map((c) => [c.c, c.componentReporting ? { componentReporting: true as const } : {}]));
-  const ch99 = JSON.parse(readFileSync(CH99_LOOKUP, 'utf8')) as Ch99Lookup;
-  assert(ch99.hts_revision === HTS_REVISION, `Ch. 99 lookup revision "${ch99.hts_revision}" ≠ "${HTS_REVISION}"`);
   const evalSkipped: string[] = [];
   const sheets = readWorkbook(readZip(buf));
   const verify = sheets.get('Verify');
@@ -288,6 +277,7 @@ function main(): void {
     A: /^ID$/, C: /^Origin$/, I: /^CBP ruling to check$/, K: /^Demo priority$/, L: /^L\. Code exists/, M: /^M\. Verified HTS/,
     N: /^N\. Verified base/, O: /^O\. Ch\.99 heading$/, P: /^P\. Exemptions checked/, Q: /^Q\. Verified add-on/,
     R: /^Verified total/, U: /^U\. Ruling supports/, V: /^V\. Verified on/, W: /^W\. Notes$/, X: /^Status$/,
+    Y: /^Y\. HTS revision$/, Z: /^Z\. Effective from \(date\)$/,
   };
   for (const [col, re] of Object.entries(expectV)) assert(re.test(vh.get(col) ?? ''), `Verify header ${col}11 = "${vh.get(col)}"`);
   const ph = products.get(2);
@@ -394,6 +384,26 @@ function main(): void {
       expected: 'OK',
     });
   }
+
+  // HTS revision (column Y) and effective dates (column Z) of the VERIFIED rows. Every rate key must be a real line in the
+  // official HTS index of that revision (pnpm hts:import), and every applied Ch. 99 heading must be in its Ch. 99 lookup.
+  assert(imported.length > 0, 'Verify: no VERIFIED rows');
+  const firstY = imported[0]!.cells.get('Y');
+  assert(firstY, `${imported[0]!.id} Y: HTS revision missing`);
+  const slug = releaseFromLabel(firstY).slug;
+  const HTS_INDEX = join('data', 'hts', `${slug}.json`);
+  const CH99_LOOKUP = join('data', 'hts', `${slug}-ch99.json`);
+  const htsIndex = JSON.parse(readFileSync(HTS_INDEX, 'utf8')) as HtsIndex;
+  const htsCodes = new Map(htsIndex.codes.map((c) => [c.c, c.componentReporting ? { componentReporting: true as const } : {}]));
+  const ch99 = JSON.parse(readFileSync(CH99_LOOKUP, 'utf8')) as Ch99Lookup;
+  const { revision, effectiveFrom } = readSheetRevision(
+    imported.map((r) => ({ id: r.id, y: r.cells.get('Y'), z: r.cells.get('Z') })),
+    { indexRevision: htsIndex.hts_revision, currentRevision: CURRENT_HTS_REVISION },
+  );
+  const HTS_REVISION = revision.label;
+  assert(ch99.hts_revision === HTS_REVISION, `Ch. 99 lookup revision "${ch99.hts_revision}" ≠ "${HTS_REVISION}"`);
+  // The engine self-check below quotes at the latest effective date (every row is in force by then).
+  const selfCheckDate = Object.values(effectiveFrom).sort().at(-1)!;
 
   // JP cap rate comes from the sheet itself: every JP 9903.05.49 row must total the same rate.
   const jpCaps = new Set(imported.filter((r) => r.origin === 'JP' && r.cells.get('O') === '9903.05.49').map((r) => r.total));
@@ -578,9 +588,9 @@ function main(): void {
       ruling,
       evidence: genericize(w),
       verified_by: VERIFIED_BY,
-      verified_on: excelDate(r.cells.get('V'), `${where} V`),
+      verified_on: excelSerialDate(r.cells.get('V'), `${where} V`),
       hts_revision: HTS_REVISION,
-      effective_from: EFFECTIVE_FROM,
+      effective_from: effectiveFrom[r.id]!,
       effective_to: null,
     };
 
@@ -599,6 +609,7 @@ function main(): void {
       existing.ruling = { ...existing.ruling, note: [existing.ruling.note, `also ${row.ruling.number} (${row.ruling.status}, ${r.id})`].filter(Boolean).join('; ') };
     }
     assert(existing.verified_on === row.verified_on, `${where}: verified_on differs within merged row`);
+    assert(existing.effective_from === row.effective_from, `${where}: effective_from (Z) differs within merged row`);
   }
 
   const file: RateFile = {
@@ -627,7 +638,7 @@ function main(): void {
     const q = quoteDuty(file, {
       origin: g.origin,
       hts10: g.hts10,
-      entryDate: EFFECTIVE_FROM,
+      entryDate: selfCheckDate,
       customsValue: usd(g.price_minor!),
       quantity: 1,
       ...(g.value_split ? { valueSplit: { case: usd(g.value_split.case_minor), band: usd(g.value_split.band_minor) } } : {}),

@@ -26,7 +26,9 @@ export function parseReleaseName(name: string): HtsRelease {
 
 /** "2026 Rev. 21" (an hts_revision label) → its release. */
 export function releaseFromLabel(label: string): HtsRelease {
-  throw new Error(`not implemented: ${label}`);
+  const m = /^(\d{4}) Rev\. (\d{1,3})$/.exec(label);
+  if (!m) throw new Error(`unexpected HTS revision label "${label}" (expected e.g. "2026 Rev. 21")`);
+  return parseReleaseName(`${m[1]}HTSRev${m[2]}`);
 }
 
 const Release = z.object({ name: z.string(), description: z.string().optional(), title: z.string().optional() });
