@@ -14,9 +14,11 @@ import { devToolsEnabled } from '@/server/devOnly';
 
 export const dynamic = 'force-dynamic';
 
-const dir = join(process.cwd(), 'src', 'agent', '__fixtures__');
-/** Allowlist: the query parameter picks a name, never a path. */
-const FIXTURES: Record<string, string> = { default: join(dir, 'replay-de-compare.ndjson'), ja: join(dir, 'replay-de-compare-ja.ndjson') };
+/** Allowlist: the query parameter picks a name, never a path. Literal paths, so the build traces only these two files. */
+const FIXTURES: Record<string, () => string> = {
+  default: () => readFileSync(join(process.cwd(), 'src', 'agent', '__fixtures__', 'replay-de-compare.ndjson'), 'utf8'),
+  ja: () => readFileSync(join(process.cwd(), 'src', 'agent', '__fixtures__', 'replay-de-compare-ja.ndjson'), 'utf8'),
+};
 
 const int = (v: string | null, d: number) => (v !== null && /^\d+$/.test(v) ? Number(v) : d);
 
@@ -26,9 +28,9 @@ export async function POST(req: Request): Promise<Response> {
   const delay = Math.min(int(url.searchParams.get('delay'), 30), 2000);
   const hold = url.searchParams.has('hold') ? int(url.searchParams.get('hold'), 0) : null;
   const fail = url.searchParams.has('fail') ? int(url.searchParams.get('fail'), 0) : null;
-  const fixture = FIXTURES[url.searchParams.get('fixture') ?? 'default'];
-  if (!fixture) return new Response('Unknown fixture', { status: 400 });
-  const lines = readFileSync(fixture, 'utf8').split('\n').filter((l) => l.trim());
+  const read = FIXTURES[url.searchParams.get('fixture') ?? 'default'];
+  if (!read) return new Response('Unknown fixture', { status: 400 });
+  const lines = read().split('\n').filter((l) => l.trim());
   const enc = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
