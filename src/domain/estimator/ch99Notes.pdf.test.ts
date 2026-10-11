@@ -29,7 +29,7 @@ describe.skipIf(!local)('Chapter 99 notes — the real Rev 20 / Rev 21 PDFs (loc
 
   it('subchapter III: notes and deleted notes', () => {
     const iii = rev21.sections.find((s) => s.id === 'III');
-    expect(iii).toEqual({ id: 'III', notes: [1, 2, 3, 5, 6, 7, ...range(13, 33), ...range(35, 41), 43, 50, 51, 52], deleted: [4, 8, 9, 10, 11, 12] });
+    expect(iii).toEqual({ id: 'III', notes: [1, 2, 3, 5, 6, 7, ...range(13, 21), ...range(29, 33), 35, ...range(37, 41), 43, 50, 51, 52], deleted: [4, ...range(8, 12), ...range(22, 28), 36] });
     expect(rev21.revision).toBe('Revision 21 (2026)');
     expect(rev20.revision).toBe('Revision 20 (2026)');
   });

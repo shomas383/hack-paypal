@@ -8,10 +8,11 @@ import { buildMentions, mentionsOf } from './mentions';
 // Note text is real Rev 21 text, cut down; headings are their real Rev 21 text, cut down.
 const doc = (lines: string[]): StrippedText => ({ revision: 'Revision 21 (2026)', pages: ['p1'], lines: lines.map((text) => ({ page: 'p1', text })) });
 const notes = segmentNotes(doc([
-  'SUBCHAPTER III', 'U.S. Notes', '52.',
+  'SUBCHAPTER III', 'U.S. Notes', '52.', '(a) synthetic: a list only opens at its first label',
   '(b) As provided in heading 9903.05.86, the duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles',
   '                       0712.32.00    0712.90.8550  0713.10.10',
   '(j)',
+  '(1) synthetic',
   '(2) As provided in heading 9903.05.97, the duties imposed by headings 9903.05.38–9903.05.39 shall not apply to articles',
   '                   3823.11.00  3823.12.00  3823.19.20',
   '53. (a) synthetic: assemblies of the goods of subheading 8504.40 for telecommunication; vehicles of headings 8701 to 8705',
@@ -64,6 +65,7 @@ describe('buildMentions / mentionsOf', () => {
     const j2 = fx.subdivisions.find((s) => s.path === '52(j)(2)')!;
     expect(j2.codes8).toHaveLength(43);
     for (const c of j2.codes8) expect(mentionsOf(c, i)).toContain('note III 52(j)(2)');
-    expect(mentionsOf('9102.21.70', i).filter((r) => /^note III 52\(/.test(r))).toEqual([]);
+    // 52(a) names every line ("subheadings in chapters 1 to 97"); no exemption subdivision names the watch line
+    expect(mentionsOf('9102.21.70', i)).toEqual(['note III 52(a)']);
   });
 });

@@ -7,6 +7,8 @@ import { stripPageFurniture, type StrippedText } from './ch99Text';
 
 // Text is real Rev 21 Chapter 99 text (pdftotext -layout, indentation kept where it matters) unless marked synthetic.
 const doc = (lines: string[]): StrippedText => ({ revision: 'Revision 21 (2026)', pages: ['p1'], lines: lines.map((text) => ({ page: 'p1', text })) });
+// synthetic "(a) synthetic" … lines: a list only opens at its first label
+const upTo = (last: string) => 'abcdefghijk'.slice(0, 'abcdefghijk'.indexOf(last) + 1).split('').map((c) => `(${c}) synthetic`);
 const paths = (n: Ch99Notes) => n.subdivisions.map((s) => `${s.section} ${s.path}`);
 const sub = (n: Ch99Notes, path: string, section = 'III'): Subdivision => {
   const s = n.subdivisions.find((x) => x.section === section && x.path === path);
@@ -60,15 +62,16 @@ describe('segmentNotes', () => {
       'SUBCHAPTER III', 'TEMPORARY MODIFICATIONS ESTABLISHED PURSUANT TO TRADE LEGISLATION', 'U.S. Notes',
       '1.  (a) For the purposes of heading 9903.88.01, products of China', '(b) second',
       '[U.S. note 2 deleted]',
-      '3.', '(a) As provided in heading 9903.88.15:',
+      '3. [Note deleted.]', // note 36's form
+      '4.', '(a) As provided in heading 9903.88.15:',
       '1. Other seats with wooden frames, not upholstered, provided for in [subheading] 9401.69.60, except for such seats', // list item
-      '13. (a)  For the purposes of subheading 9903.53.01, the duties', // gap of 10
+      '13. (a)  For the purposes of subheading 9903.53.01, the duties', // gap of 9
       '24. synthetic: a gap of 11 is text, not a note',
       ' Heading/ Stat.                         Unit', '9903.01.01 1/ Except for products described in headings 9903.01.02,',
     ]));
-    expect(n.sections).toEqual([{ id: 'III', notes: [1, 3, 13], deleted: [2] }]);
-    expect(paths(n)).toEqual(['III 1(a)', 'III 1(b)', 'III 3(a)', 'III 13(a)']);
-    expect(sub(n, '3(a)').codes8).toEqual(['9401.69.60']);
+    expect(n.sections).toEqual([{ id: 'III', notes: [1, 4, 13], deleted: [2, 3] }]);
+    expect(paths(n)).toEqual(['III 1(a)', 'III 1(b)', 'III 4(a)', 'III 13(a)']);
+    expect(sub(n, '4(a)').codes8).toEqual(['9401.69.60']);
     expect(sub(n, '13(a)').text).toBe('For the purposes of subheading 9903.53.01, the duties 24. synthetic: a gap of 11 is text, not a note');
     // nothing from the tariff table
     expect(n.subdivisions.some((s) => s.text.includes('9903.01.02'))).toBe(false);
@@ -82,18 +85,18 @@ describe('segmentNotes', () => {
 
   it('(h) → (i) → (j) are letters, not a roman list under (h)', () => {
     const n = segmentNotes(doc([
-      'SUBCHAPTER III', 'U.S. Notes', '52.',
+      'SUBCHAPTER III', 'U.S. Notes', '52.', ...upTo('g'),
       '(h) As provided in heading 9903.05.94, the additional duties imposed by heading 9903.05.55 shall not apply to any products',
       '(i) As provided in heading 9903.05.95, the additional duties imposed by headings 9903.05.33, 9903.05.34, 9903.05.37,',
       '(j)',
       '(1) As provided in heading 9903.05.96, the duty imposed by heading 9903.05.81 shall not apply to articles the product',
     ]));
-    expect(paths(n)).toEqual(['III 52(h)', 'III 52(i)', 'III 52(j)', 'III 52(j)(1)']);
+    expect(paths(n).slice(7)).toEqual(['III 52(h)', 'III 52(i)', 'III 52(j)', 'III 52(j)(1)']);
   });
 
   it('roman lists and upper-case items nest; the next digit closes them', () => {
     const n = segmentNotes(doc([
-      'SUBCHAPTER III', 'U.S. Notes', '52.', '(j)', '(3) As provided in heading 9903.05.98', '(4)',
+      'SUBCHAPTER III', 'U.S. Notes', '52.', ...upTo('i'), '(j)', '(1) synthetic', '(2) synthetic', '(3) As provided in heading 9903.05.98', '(4)',
       '     (i) As provided in heading 9903.05.99, the duty imposed by heading 9903.05.54 shall not apply to articles the product',
       '              of Malaysia that are classifiable in the following provisions of the HTSUS:',
       '                   0106.19.91  0106.20.00  0106.90.01       0410.10.00  0602.90.20',
@@ -103,13 +106,57 @@ describe('segmentNotes', () => {
       '     (C) Argan oil (classifiable in subheading 1515.90.81)',
       '(5)', '     (i) As provided in heading 9903.06.02',
     ]));
-    expect(paths(n)).toEqual([
+    expect(paths(n).filter((p) => !p.endsWith('(1)') && !p.endsWith('(2)')).slice(9)).toEqual([
       'III 52(j)', 'III 52(j)(3)', 'III 52(j)(4)', 'III 52(j)(4)(i)', 'III 52(j)(4)(ii)',
       'III 52(j)(4)(ii)(A)', 'III 52(j)(4)(ii)(B)', 'III 52(j)(4)(ii)(C)', 'III 52(j)(5)', 'III 52(j)(5)(i)',
     ]);
     expect(sub(n, '52(j)(4)(i)').codes8).toEqual(['0106.19.91', '0106.20.00', '0106.90.01', '0410.10.00', '0602.90.20']);
     expect(sub(n, '52(j)(4)(ii)').codes8).toEqual([]); // children keep their own codes
     expect(sub(n, '52(j)(4)(ii)(B)').codes8).toEqual(['1301.90.91']);
+  });
+
+  it('deleted subdivisions leave gaps: note 2 runs (c) → (j) and (m) → (s)', () => {
+    const n = segmentNotes(doc([
+      'SUBCHAPTER III', 'U.S. Notes', '2. (a) For the purposes of heading 9903.01.01', '(b) Heading 9903.01.02', '(c) For the purposes',
+      '(j) For the purposes of heading 9903.01.10, products of Canada, other than products described in headings',
+      '(k) Heading 9903.01.11 covers only products of Canada', '(l) For', '(m) For', '(s) For the purposes of heading 9903.01.20',
+    ]));
+    expect(paths(n)).toEqual(['III 2(a)', 'III 2(b)', 'III 2(c)', 'III 2(j)', 'III 2(k)', 'III 2(l)', 'III 2(m)', 'III 2(s)']);
+  });
+
+  it('wrapped cross-references are text: "(o) of this note" inside (n), "(p) of this note" inside (f)', () => {
+    const n = segmentNotes(doc([
+      'SUBCHAPTER III', 'U.S. Notes', '33.', ...upTo('e'),
+      '(f) Except as provided in subdivision',
+      '(p) of this note, articles of passenger vehicles', // a skip (f) → (p) would swallow (g) … (p)
+      '(g) Subject to a manufacturer\'s import adjustment offset amount',
+      '(h) Heading 9903.94.06 applies to all entries of articles', '(i) Heading 9903.94.31 sets forth', '(j) Heading', '(k) Except', '(l) Except',
+      '(m) As provided', '(n) Except as provided in',
+      '(o) of this note under a provision of chapter 99 that may set forth a lower rate of duty', // exact successor, still a reference
+      '(o) The rates of duty set forth in heading 9903.85.12 apply',
+      '(c), (h), (i), (j), (l), and (m) to this note, that are classified', // a list of references
+    ]));
+    expect(paths(n).slice(5)).toEqual(
+      ['f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o'].map((c) => `III 33(${c})`),
+    );
+    expect(sub(n, '33(f)').text).toBe('Except as provided in subdivision (p) of this note, articles of passenger vehicles');
+    expect(n.ignoredMarkers.map((m) => m.text.slice(0, 12))).toEqual(['(p) of this ', '(o) of this ', '(c), (h), (i']);
+  });
+
+  it('upper-case roman numerals and the US Code (aa)/(bb) level; acronyms in parentheses are text', () => {
+    const n = segmentNotes(doc([
+      'SUBCHAPTER III', 'U.S. Notes', '17. (a) Subheadings 9903.45.01', '(b) For the purposes', '(1) Canada;', '(2) the following',
+      '(A) all stacked washers', '(i) The term', '(ii) The term "covered washers" means',
+      '(aa)(I) it contains payment system electronics;', '(II) it is configured with an externally mounted steel frame',
+      '(III) it contains a push button user interface', '(IV) the console containing the user interface is made of steel',
+      '(bb)(I) it contains payment system electronics;', '(II) the payment system electronics are enabled',
+      '(ABS) plastics (described in statistical reporting number 8413.20.0000)',
+    ]));
+    expect(paths(n).slice(-8)).toEqual([
+      'III 17(b)(2)(A)(ii)(aa)', 'III 17(b)(2)(A)(ii)(aa)(I)', 'III 17(b)(2)(A)(ii)(aa)(II)', 'III 17(b)(2)(A)(ii)(aa)(III)',
+      'III 17(b)(2)(A)(ii)(aa)(IV)', 'III 17(b)(2)(A)(ii)(bb)', 'III 17(b)(2)(A)(ii)(bb)(I)', 'III 17(b)(2)(A)(ii)(bb)(II)',
+    ]);
+    expect(sub(n, '17(b)(2)(A)(ii)(bb)(II)').codes10).toEqual(['8413.20.0000']);
   });
 
   it('a line-start marker that neither continues nor opens a list is text, and is reported', () => {
@@ -125,7 +172,7 @@ describe('segmentNotes', () => {
 
   it('text is whitespace-folded without its marker; sha256 is of that text; "As provided in" headings and ranges', () => {
     const n = segmentNotes(doc([
-      'SUBCHAPTER III', 'U.S. Notes', '52.',
+      'SUBCHAPTER III', 'U.S. Notes', '52.', ...upTo('j'),
       '(k) As provided in headings 9903.05.38, 9903.05.39, 9903.05.48, 9903.05.49, 9903.05.70, 9903.05.71 and',
       '         9903.05.73–9903.05.76, for any good of a member state of the European Union, Japan, South Korea, Switzerland or',
     ]));
@@ -197,11 +244,13 @@ describe('note 52 — the committed Rev 21 excerpt (pages 99-III-393 … 434)', 
     expect(sub(notes, '52(j)(2)').codes8).toContain('8112.92.07');
   });
 
-  it('loses no code: every code token of the excerpt lands in exactly one subdivision', () => {
-    const all = (FIXTURE.match(/\b(?!99)\d{4}\.\d{2}\.\d{2}(?:\d{2})?\b(?![.\d])/g) ?? []).sort();
-    const got = notes.subdivisions.flatMap((s) => [...s.codes8, ...s.codes10]).sort();
-    // codeTokens dedupes within a subdivision; the excerpt repeats no code inside one subdivision
+  it('loses no code: every distinct code token of the excerpt lands in a subdivision', () => {
+    const all = [...new Set(FIXTURE.match(/\b(?!99)\d{4}\.\d{2}\.\d{2}(?:\d{2})?\b(?![.\d])/g) ?? [])].sort();
+    const got = [...new Set(notes.subdivisions.flatMap((s) => [...s.codes8, ...s.codes10]))].sort();
     expect(got).toEqual(all);
+    // codes are unique within a subdivision: 52(a) names 9802.00.40/.50/.60 twice, kept once
+    expect(sub(notes, '52(a)').codes8).toEqual(['9802.00.40', '9802.00.50', '9802.00.60', '9802.00.80']);
+    expect(sub(notes, '52(a)').ranges).toEqual([['01', '97']]); // "subheadings in chapters 1 to 97"
   });
 
   it('52(k): the AVE rule and both caps, verbatim after whitespace folding', () => {
