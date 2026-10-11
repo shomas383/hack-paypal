@@ -12,6 +12,12 @@ export function loadVerifiedRates(): RateFile {
   return v.file;
 }
 
+/** A date on which every verified row is in force (the latest effective_from) — tests quote on it, never a literal. */
+export const inForceDate = (t: RateFile): string => t.rows.map((r) => r.effective_from).sort().at(-1)!;
+
+/** The day before an ISO date. */
+export const dayBefore = (iso: string): string => new Date(Date.parse(`${iso}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+
 export interface GoldenCase {
   id: string;
   origin: string;

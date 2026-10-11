@@ -1,11 +1,15 @@
-// The committed Rev 20 HTS index (codes + description chains, no rates), loaded once per process (server-only).
+// The committed HTS index of the current revision (CURRENT_HTS_REVISION) (codes + description chains, no rates), loaded once per process (server-only).
 // Written only by `pnpm hts:import` (scripts/import-hts.ts).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Ch99Lookup, HtsCode, HtsIndex } from '@/domain/hts/buildIndex';
 import { lookupOf, type HtsLookup } from '@/domain/classifier/hts';
+import { releaseFromLabel } from '@/domain/hts/release';
+import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 
-export const CURRENT_HTS_FILE = join(process.cwd(), 'data', 'hts', '2026-rev20.json');
+const SLUG = releaseFromLabel(CURRENT_HTS_REVISION).slug;
+
+export const CURRENT_HTS_FILE = join(process.cwd(), 'data', 'hts', `${SLUG}.json`);
 
 export interface LoadedHts {
   index: HtsIndex;
@@ -14,7 +18,7 @@ export interface LoadedHts {
   lookup: HtsLookup;
 }
 
-export const CURRENT_CH99_FILE = join(process.cwd(), 'data', 'hts', '2026-rev20-ch99.json');
+export const CURRENT_CH99_FILE = join(process.cwd(), 'data', 'hts', `${SLUG}-ch99.json`);
 let cachedCh99: Ch99Lookup | undefined;
 
 /** Official Chapter 99 subchapter III heading text (verbatim, no rates), written by `pnpm hts:import`. */

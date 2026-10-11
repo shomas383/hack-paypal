@@ -1,9 +1,10 @@
 // pnpm rates:validate — schema + semantic checks on every rate data file; the CURRENT version's keys are also checked
-// against the official HTS index (every key a real Rev 20 line; 8-digit keys only for component reporting). Older
+// against the official HTS index (every key a real line of the current revision; 8-digit keys only for component reporting). Older
 // versions are kept as history (stored quotes reference them) and are not key-checked. Exit 1 on any failure.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HtsIndex } from '../src/domain/hts/buildIndex';
+import { releaseFromLabel } from '../src/domain/hts/release';
 import { CURRENT_HTS_REVISION, rateFileName } from '../src/domain/rates/current';
 import { checkRateKeysAgainstHts } from '../src/domain/rates/htsKeys';
 import { validateRateFile } from '../src/domain/rates/validate';
@@ -11,7 +12,7 @@ import { validateRateFile } from '../src/domain/rates/validate';
 // The HTS revision every row was verified against (docs/HTS_VERIFICATION_SPEC.md). Bump together with a re-verification.
 const REQUIRED_HTS_REVISION = CURRENT_HTS_REVISION;
 const DIR = join('data', 'rates');
-const HTS_INDEX = join('data', 'hts', '2026-rev20.json');
+const HTS_INDEX = join('data', 'hts', `${releaseFromLabel(REQUIRED_HTS_REVISION).slug}.json`);
 
 let files: string[] = [];
 try {
@@ -38,8 +39,10 @@ for (const name of files) {
     failed++;
     continue;
   }
-  const result = validateRateFile(data, { requiredRevision: REQUIRED_HTS_REVISION });
   const current = name === rateFileName();
+  // History files keep the revision they were verified on; only the current file must be on the current revision.
+  const own = (data as { hts_revision?: unknown } | null)?.hts_revision;
+  const result = validateRateFile(data, { requiredRevision: current || typeof own !== 'string' ? REQUIRED_HTS_REVISION : own });
   const keyErrors = result.ok && result.file && current ? checkRateKeysAgainstHts(result.file.rows, htsCodes, REQUIRED_HTS_REVISION) : [];
   if (result.ok && result.file && keyErrors.length === 0) {
     console.log(

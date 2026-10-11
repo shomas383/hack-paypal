@@ -4,12 +4,12 @@
 import { describe, expect, it } from 'vitest';
 import { roundHalfUpDiv, PPM } from '../money/math';
 import { usd } from '../money/money';
-import { loadGolden, loadVerifiedRates, type GoldenCase } from './__fixtures__/verified';
+import { dayBefore, inForceDate, loadGolden, loadVerifiedRates, type GoldenCase } from './__fixtures__/verified';
 import { quoteDuty, type QuoteInput } from './engine';
 
 const table = loadVerifiedRates();
 const golden = loadGolden();
-const ENTRY_DATE = '2026-10-05'; // verification date
+const ENTRY_DATE = inForceDate(table);
 
 function toInput(c: GoldenCase): QuoteInput {
   return {
@@ -23,7 +23,7 @@ function toInput(c: GoldenCase): QuoteInput {
   };
 }
 
-describe('golden: verified sheet rows (HTS 2026 Rev. 20)', () => {
+describe(`golden: verified sheet rows (HTS ${table.hts_revision})`, () => {
   it('uses the committed rate version', () => {
     expect(golden.rate_version).toBe(table.version);
     expect(golden.cases.filter((c) => c.expected === 'OK')).toHaveLength(13);
@@ -146,8 +146,9 @@ describe('golden: verified sheet rows (HTS 2026 Rev. 20)', () => {
     }
   });
 
-  it('refuses entry dates before the Rev. 20 rows take effect', () => {
+  it('refuses entry dates before the rows take effect', () => {
     const c = golden.cases.find((x) => x.id === 'P01')!;
-    expect(quoteDuty(table, { ...toInput(c), entryDate: '2026-09-27' }).kind).toBe('UNSUPPORTED');
+    const row = table.rows.find((r) => r.listings.includes('P01'))!;
+    expect(quoteDuty(table, { ...toInput(c), entryDate: dayBefore(row.effective_from) }).kind).toBe('UNSUPPORTED');
   });
 });

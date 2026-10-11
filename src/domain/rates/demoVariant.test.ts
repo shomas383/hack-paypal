@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { usd } from '../money/money';
 import { quoteDuty } from './engine';
-import { loadVerifiedRates } from './__fixtures__/verified';
+import { inForceDate, loadVerifiedRates } from './__fixtures__/verified';
 
 // Demo variants: seed listings that are NOT golden cases but reuse a verified row. Each declares its expected engine
 // result; this test (and the seed script) check the engine against it exactly.
@@ -30,7 +30,7 @@ describe('seed demo variants: engine result equals the declared expectation', ()
     const r = quoteDuty(loadVerifiedRates(), {
       origin: v.origin,
       hts10: v.hts10,
-      entryDate: '2026-10-08',
+      entryDate: inForceDate(loadVerifiedRates()),
       customsValue: usd(v.price_minor),
       quantity: 1,
       ...(v.value_split ? { valueSplit: { case: usd(v.value_split.case_minor), band: usd(v.value_split.band_minor) } } : {}),
@@ -49,7 +49,7 @@ describe('seed demo variants: engine result equals the declared expectation', ()
           const r = quoteDuty(loadVerifiedRates(), {
             origin: l.origin,
             hts10: l.hts10,
-            entryDate: '2026-10-09',
+            entryDate: inForceDate(loadVerifiedRates()),
             customsValue: usd(l.price_minor),
             quantity: 1,
             ...(l.value_split ? { valueSplit: { case: usd(l.value_split.case_minor), band: usd(l.value_split.band_minor) } } : {}),
@@ -62,7 +62,7 @@ describe('seed demo variants: engine result equals the declared expectation', ()
   });
 
   it('L-P03-B math: MFN $1.53 + 4.2%×$320 + 9.8%×$60 = $20.85 (AVE 5.49% < 12.5%) → combined cap 12.5%×$380 = $47.50 → $452.50 delivered', () => {
-    const r = quoteDuty(loadVerifiedRates(), { origin: 'JP', hts10: '9102.21.70', entryDate: '2026-10-08', customsValue: usd(38_000), quantity: 1, valueSplit: { case: usd(32_000), band: usd(6_000) } });
+    const r = quoteDuty(loadVerifiedRates(), { origin: 'JP', hts10: '9102.21.70', entryDate: inForceDate(loadVerifiedRates()), customsValue: usd(38_000), quantity: 1, valueSplit: { case: usd(32_000), band: usd(6_000) } });
     if (r.kind !== 'OK') throw new Error(r.reason);
     expect(r.lines.map((l) => [l.kind, l.amount.amountMinor])).toEqual([
       ['MFN', 2_085n],

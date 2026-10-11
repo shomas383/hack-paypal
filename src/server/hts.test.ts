@@ -1,15 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { expandHeading, validateHts10 } from '@/domain/classifier/hts';
-import { goldenFileName } from '@/domain/rates/current';
+import { CURRENT_HTS_REVISION, goldenFileName } from '@/domain/rates/current';
 import { checkRateKeysAgainstHts } from '@/domain/rates/htsKeys';
 import { CURRENT_CH99_FILE, currentCh99, currentHtsIndex, CURRENT_HTS_FILE } from './hts';
 import { currentRateTable } from './rates';
 
-// Spot checks against the COMMITTED index (data/hts/2026-rev20.json, built by pnpm hts:import).
+// Spot checks against the COMMITTED index of the current revision (built by pnpm hts:import).
 const { index, codes, chains, lookup } = currentHtsIndex();
 
-describe('committed Rev 20 HTS index', () => {
+describe(`committed HTS index (${CURRENT_HTS_REVISION})`, () => {
   it('6203.42.4511 is present, with "Men\'s trousers and breeches" and "Blue denim" in its chain', () => {
     const chain = chains.get('6203.42.4511')!.join(' > ');
     expect(chain).toContain("Men's trousers and breeches");
@@ -35,7 +35,7 @@ describe('committed Rev 20 HTS index', () => {
     expect(missing).toEqual(['9801.00.1098']); // Ch. 98, excluded by design (P07 US goods returned → UNSUPPORTED)
   });
 
-  it('every row of the current rate table is a real Rev 20 line, with the matching component-reporting flag', () => {
+  it('every row of the current rate table is a real line of the current revision, with the matching component-reporting flag', () => {
     expect(checkRateKeysAgainstHts(currentRateTable().rows, { hts_revision: index.hts_revision, codes }, currentRateTable().hts_revision)).toEqual([]);
     expect(currentRateTable().rows.find((r) => r.hts10 === '9102.21.70')).toMatchObject({ id: 'JP-9102.21.70', component_reporting: true });
   });
@@ -71,7 +71,7 @@ describe('committed Rev 20 HTS index', () => {
   });
 
   it('revision lock: the HTS index revision equals the rate table revision', () => {
-    expect(index.hts_revision).toBe('2026 Rev. 20');
+    expect(index.hts_revision).toBe(CURRENT_HTS_REVISION);
     expect(index.hts_revision).toBe(currentRateTable().hts_revision);
   });
 });

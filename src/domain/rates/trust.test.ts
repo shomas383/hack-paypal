@@ -2,7 +2,7 @@
 // A total off by ≥ 0.05 percentage points is a mismatch. Expected: every verified row except P08 is flagged.
 import { describe, expect, it } from 'vitest';
 import { usd } from '../money/money';
-import { loadEvalProducts, loadGolden, loadVerifiedRates } from './__fixtures__/verified';
+import { inForceDate, loadEvalProducts, loadGolden, loadVerifiedRates } from './__fixtures__/verified';
 import { quoteDuty } from './engine';
 
 const MISMATCH_PPM = 500; // 0.05 percentage points
@@ -18,7 +18,7 @@ function compare() {
       const r = quoteDuty(table, {
         origin: c.origin,
         hts10: c.hts10!,
-        entryDate: '2026-10-05',
+        entryDate: inForceDate(table),
         customsValue: usd(c.price_minor!),
         quantity: 1,
         ...(c.value_split ? { valueSplit: { case: usd(c.value_split.case_minor), band: usd(c.value_split.band_minor) } } : {}),

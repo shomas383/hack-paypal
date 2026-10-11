@@ -4,12 +4,12 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { applyPpm, addMoney } from '../money/math';
 import { usd } from '../money/money';
-import { loadVerifiedRates } from './__fixtures__/verified';
+import { inForceDate, loadVerifiedRates } from './__fixtures__/verified';
 import { quoteDuty, type QuoteInput } from './engine';
 import type { RateRow } from './schema';
 
 const table = loadVerifiedRates();
-const DATE = '2026-10-05';
+const DATE = inForceDate(table);
 const centsArb = fc.bigInt({ min: 1n, max: 100_000_000n }); // $0.01 – $1,000,000
 
 /** A valid input for a row: satisfies its conditions and, for case/band compound rates, a random split. */
@@ -130,7 +130,7 @@ describe('properties over the verified table', () => {
   });
 
   it('entry dates before a row takes effect → UNSUPPORTED', () => {
-    const before = fc.date({ min: new Date('2000-01-01'), max: new Date('2026-09-27'), noInvalidDate: true }).map((d) => d.toISOString().slice(0, 10));
+    const before = fc.date({ min: new Date('2000-01-01'), max: new Date(`${DATE}T00:00:00Z`), noInvalidDate: true }).map((d) => d.toISOString().slice(0, 10));
     fc.assert(
       fc.property(fc.constantFrom(...table.rows), before, (row, entryDate) => {
         fc.pre(entryDate < row.effective_from);
