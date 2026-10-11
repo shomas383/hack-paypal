@@ -135,7 +135,7 @@ async function main() {
   console.log('\n══ checks ══');
   for (const [name, pass, detail] of checks) console.log(`  [${pass ? 'PASS' : 'FAIL'}] ${name} — ${detail}`);
   // Advisory: the prompt asks for at least 2 sentences (above 4, or more than one paragraph, is a FAIL above).
-  console.log(`  [${warnings.length ? 'WARN' : 'OK  '}] final message minimum length —${warnings.length ? warnings.join('; ') : `${sentenceCount(final)} sentences`}`);
+  console.log(`  [${warnings.length ? 'WARN' : 'OK  '}] final message minimum length — ${warnings.length ? warnings.join('; ') : `${sentenceCount(final)} sentences`}`);
   // Advisory: quotes not traceable to a tool result; HTS-description matches named without saying how they matched.
   console.log(`  [${textWarnings.length ? 'WARN' : 'OK  '}] agent text quotes / HTS-description mentions — ${textWarnings.length ? textWarnings.join(' · ') : 'none'}`);
   if (out) console.log(`  NDJSON saved: ${out}`);
