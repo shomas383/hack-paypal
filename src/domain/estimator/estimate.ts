@@ -6,7 +6,7 @@ import type { Additional, RateRow } from '@/domain/rates/schema';
 import type { Money } from '@/domain/money/money';
 import { coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
 import type { EstimatorData } from './data';
-import { originOf } from './origin';
+import { headingAppliesTo, originOf } from './origin';
 import { toEngineMfn } from './rateText';
 import type { Rule } from './rules';
 
@@ -139,6 +139,9 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
   // a rule the gate blocked whose scope names the line: we can't know whether it applies
   for (const b of data.blocked.rules) {
     if (!b.rule.origins.includes(origin.group)) continue;
+    // a heading that is out of force, not in the schedule or for other countries can't apply, blocked rule or not
+    const h = data.headings[b.rule.heading];
+    if (!h || data.outOfForce[b.rule.heading] || !headingAppliesTo(h, origin)) continue;
     const s = b.rule.scope;
     const names =
       'list' in s
