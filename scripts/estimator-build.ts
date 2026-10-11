@@ -1,11 +1,17 @@
-// pnpm estimator:build [--draft [--max-calls 15] [--draft-headings 9903.05.87,…]] --out <dir> — builds the estimator data from the official sources and runs
-// the gate. Sources: the export named by data/source/hts/current-export.meta.json (pnpm hts:download), the Chapter 99 PDF of
-// the same release (downloaded from hts.usitc.gov if missing; the file endpoint is pinned to the release), the committed
-// HTS index, verified rates and golden cases, and docs/SPEC.md (G0). pdftotext must be xpdf 4.06 (-enc UTF-8 -layout).
-// Rules: the reference rules (default), or --draft: drafted live by Claude (claude-opus-5-5) within --max-calls, retries
-// included, then gated against the reference rules (GR). LIVE: --draft makes model calls.
-// Output: the gate report (+ drafted rules, manifest) in --out, which must be outside data/. Writing data/estimator comes
-// with its hook protection (plan commit 6) and is not done here.
+// pnpm estimator:build [--draft [--max-calls 15] [--draft-headings 9903.05.87,…]] [--out <dir>] — builds the estimator data
+// from the official sources and runs the gate. Sources: the export named by data/source/hts/current-export.meta.json
+// (pnpm hts:download), the Chapter 99 PDF of the same release (downloaded from hts.usitc.gov if missing; the file endpoint
+// is pinned to the release), the committed HTS index, verified rates and golden cases, the reviewed IEEPA list, and
+// docs/SPEC.md (G0). pdftotext must be xpdf 4.06 (-enc UTF-8 -layout).
+// Two modes:
+// - write (no --out; the only command the hook lets touch the estimator data folder is exactly `pnpm estimator:build`):
+//   writes the next version folder data/estimator/<release>-eN/ (manifest, report, rules, headings, notes, base-rates) and
+//   stages it; data/estimator/current.json moves to it only when no origin is blocked and G0/G9 pass. Rules: the previous
+//   version's (unchanged source text → reused with no model call; changed → G1 blocks them as stale), or for the first
+//   version the recorded drafting run (__fixtures__/rules-drafted-2026-10-11.json); always gated against the reference
+//   rules (GR).
+// - report only (--out <dir>, outside data/): manifest/report/rules to <dir>; rules = the reference rules unless --draft.
+// --draft: LIVE — Claude (claude-opus-5-5) drafts the rules within --max-calls, retries included.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -24,6 +30,9 @@ import { currentRateTable } from '../src/server/rates';
 const PDFTOTEXT = { vendor: 'xpdf', version: '4.06', args: ['-enc', 'UTF-8', '-layout'] } as const;
 const SOURCE_DIR = join('data', 'source', 'hts');
 const REFERENCE = join('src', 'domain', 'estimator', '__fixtures__', 'rules-reference-jp-eu.json');
+/** The first live drafting run (2026-10-11), kept as the model wrote it: the rules of the first data version. */
+const SEED_RULES = join('src', 'domain', 'estimator', '__fixtures__', 'rules-drafted-2026-10-11.json');
+const DATA_DIR = join('data', 'estimator');
 const ORIGINS = ['JP', 'DE'];
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
@@ -46,9 +55,11 @@ function pdftotextVersion(): string {
 
 async function main() {
   const out = arg('--out');
-  assert(out, 'usage: pnpm estimator:build [--draft [--max-calls N]] --out <dir>');
-  const inData = relative(resolve('data'), resolve(out));
-  assert(inData.startsWith('..') || isAbsolute(inData), '--out must be outside data/ (data/estimator is written only once its hook protection is in place)');
+  const write = out === undefined;
+  if (out !== undefined) {
+    const inData = relative(resolve('data'), resolve(out));
+    assert(inData.startsWith('..') || isAbsolute(inData), '--out must be outside data/ (the estimator data folder is written by write mode only)');
+  }
   const draft = process.argv.includes('--draft');
   const budget = Number(arg('--max-calls') ?? 15);
   assert(Number.isInteger(budget) && budget > 0 && budget <= 15, '--max-calls must be 1–15');
@@ -75,11 +86,28 @@ async function main() {
   const ch99Text = execFileSync('pdftotext', [...PDFTOTEXT.args, pdfFile, '-'], { encoding: 'utf8', maxBuffer: 1 << 26 });
 
   const asOf = new Date().toISOString().slice(0, 10);
+  const currentFile = join(DATA_DIR, 'current.json');
+  const previous = existsSync(currentFile) ? (JSON.parse(readFileSync(currentFile, 'utf8')) as { version: string }).version : undefined;
+  const n = previous?.startsWith(`${release.slug}-e`) ? Number(previous.slice(release.slug.length + 2)) + 1 : 1;
+  const version = `${release.slug}-e${n}`;
   const overrides = [ieepaOverride()];
-  const data = buildEstimatorData({ version: `${release.slug}-e1`, asOf, exportRows: JSON.parse(exportBuf.toString('utf8')), ch99Text, index, rules: [], overrides });
+  const data = buildEstimatorData({ version, asOf, exportRows: JSON.parse(exportBuf.toString('utf8')), ch99Text, index, rules: [], overrides });
   const reference = RulesFileSchema.parse(JSON.parse(readFileSync(REFERENCE, 'utf8')));
 
+  // write mode: the previous version's rules (accepted + blocked), else the recorded drafting run
+  let rulesSource = 'reference (hand-written)';
   let rules: Rule[] = reference.rules;
+  if (write) {
+    if (previous) {
+      const prev = JSON.parse(readFileSync(join(DATA_DIR, previous, 'rules.json'), 'utf8')) as { rules: Rule[]; blocked: { rule: Rule | null }[] };
+      rules = [...prev.rules, ...prev.blocked.flatMap((b) => (b.rule ? [b.rule] : []))];
+      rulesSource = `previous version ${previous}`;
+    } else {
+      rules = RulesFileSchema.parse(JSON.parse(readFileSync(SEED_RULES, 'utf8'))).rules;
+      rulesSource = `recorded drafting run ${SEED_RULES.replace(/\\/g, '/')}`;
+    }
+  }
+  const previousListCounts = previous ? (JSON.parse(readFileSync(join(DATA_DIR, previous, 'report.json'), 'utf8')) as { listCounts: Record<string, { codes: number }> }).listCounts : undefined;
   let drafting: { calls: number; usage: { input: number; output: number }; failed: { heading: string; error: string }[] } | undefined;
   if (draft) {
     if (!process.env.ANTHROPIC_API_KEY && existsSync('.env')) process.loadEnvFile('.env');
@@ -89,12 +117,14 @@ async function main() {
     assert(tasks.length > 0, `--draft-headings ${only?.join(',')}: no reference rule for those headings`);
     console.log(`LIVE: drafting ${tasks.length} rule(s) with ${DRAFT_MODEL}, at most ${budget} calls (retries included)…`);
     const d = await draftRules(tasks, data, anthropic(DRAFT_MODEL), { budget, draftedBy: `${DRAFT_MODEL} (${asOf})` });
-    rules = only ? reference.rules.map((r) => d.rules.find((x) => x.heading === r.heading) ?? r) : d.rules;
+    const base = rules;
+    rules = only ? base.map((r) => d.rules.find((x) => x.heading === r.heading) ?? r) : d.rules;
     drafting = { calls: d.calls, usage: d.usage, failed: d.failed };
+    rulesSource = `drafted by ${DRAFT_MODEL}${only ? ` (${only.join(', ')}; others: ${rulesSource})` : ''}`;
   }
 
   const golden = (JSON.parse(readFileSync(join('data', 'eval', goldenFileName()), 'utf8')) as { cases: GoldenCase[] }).cases;
-  const { report } = runGate({
+  const { data: gated, report } = runGate({
     data,
     rules,
     rulesRevision: reference.hts_revision,
@@ -104,7 +134,8 @@ async function main() {
     docs: { 'docs/SPEC.md': readFileSync(join('docs', 'SPEC.md'), 'utf8') },
     origins: ORIGINS,
     overrides,
-    ...(draft ? { reference: reference.rules } : {}),
+    ...(draft || write ? { reference: reference.rules } : {}),
+    ...(previousListCounts ? { previousListCounts: Object.fromEntries(Object.entries(previousListCounts).map(([k, v]) => [k, v.codes])) } : {}),
   });
 
   const manifest = {
@@ -115,17 +146,34 @@ async function main() {
       export: { url: meta.url, file: exportFile.replace(/\\/g, '/'), sha256: sha(exportBuf), release: release.name },
       ch99_pdf: { url: pdfUrl, file: pdfFile.replace(/\\/g, '/'), sha256: pdfSha, pdftotext: { version: pdftotext, args: PDFTOTEXT.args } },
     },
-    rules: draft ? `drafted by ${DRAFT_MODEL}` : 'reference (hand-written)',
+    previous: previous ?? null,
+    rules: rulesSource,
+    reviewed_lists: overrides.map((o) => ({ file: o.listFile, reviewed_on: o.reviewedOn, headings: o.headings.length })),
     drafting,
     gate: { checks: report.checks.length, failed: report.checks.filter((c) => !c.pass).length, blockedRules: report.blockedRules.map((b) => b.id), blockedOrigins: report.blockedOrigins },
   };
-  mkdirSync(out, { recursive: true });
-  writeFileSync(join(out, 'manifest.json'), JSON.stringify(manifest, null, 1) + '\n');
-  writeFileSync(join(out, 'report.json'), JSON.stringify(report, null, 1) + '\n');
-  writeFileSync(join(out, 'rules.json'), JSON.stringify({ hts_revision: reference.hts_revision, rules }, null, 2) + '\n');
+  const dir = out ?? join(DATA_DIR, version);
+  mkdirSync(dir, { recursive: true });
+  const files: Record<string, unknown> = {
+    'manifest.json': manifest,
+    'report.json': report,
+    'rules.json': { hts_revision: reference.hts_revision, rules: gated.rules, blocked: gated.blocked.rules },
+  };
+  if (write) {
+    // what the runtime loader needs (mentions and description chains are rebuilt from these and the committed HTS index)
+    files['headings.json'] = { hts_revision: data.hts_revision, headings: data.headings, outOfForce: data.outOfForce };
+    files['notes.json'] = data.notes;
+    files['base-rates.json'] = data.base;
+  }
+  for (const [f, v] of Object.entries(files)) writeFileSync(join(dir, f), JSON.stringify(v, null, f === 'rules.json' || f === 'manifest.json' || f === 'report.json' ? 1 : 0) + '\n');
+  const globalFailure = Object.keys(report.blockedOrigins).length > 0 || report.checks.some((c) => (c.id === 'G0' || c.id === 'G9') && !c.pass);
+  if (write) {
+    if (!globalFailure) writeFileSync(currentFile, JSON.stringify({ version }, null, 1) + '\n');
+    execFileSync('git', ['add', '--', dir, ...(globalFailure ? [] : [currentFile])], { stdio: 'inherit' });
+  }
 
   console.log(`release ${release.label} · ${pdftotext} · as of ${asOf} · ${Object.keys(data.base.codes).length} lines · ${data.notes.subdivisions.length} note subdivisions`);
-  console.log(`rules: ${rules.length} (${manifest.rules})`);
+  console.log(`version ${version}${previous ? ` (previous ${previous})` : ' (first)'} · rules: ${rules.length} (${rulesSource})`);
   if (drafting) {
     console.log(`drafting: ${drafting.calls} calls, ${drafting.usage.input} input + ${drafting.usage.output} output tokens; failed: ${drafting.failed.map((f) => `${f.heading} (${f.error})`).join('; ') || 'none'}`);
     for (const r of rules) {
@@ -140,7 +188,8 @@ async function main() {
   const failed = report.checks.filter((c) => !c.pass);
   console.log(`gate: ${report.checks.length} checks, ${failed.length} failed; blocked rules: ${report.blockedRules.map((b) => b.id).join(', ') || 'none'}; blocked origins: ${Object.keys(report.blockedOrigins).join(', ') || 'none'}`);
   for (const a of report.alerts) console.log(`ALERT ${a}`);
-  console.log(`wrote ${out}/manifest.json, report.json, rules.json`);
+  console.log(`wrote ${dir.replace(/\\/g, '/')}/ ${Object.keys(files).join(', ')}`);
+  if (write) console.log(globalFailure ? 'current.json NOT advanced (an origin is blocked, or G0/G9 failed)' : `current.json → ${version}; staged (git add) — review with git diff --cached --stat, then commit.`);
   if (failed.length) process.exitCode = 1;
 }
 
