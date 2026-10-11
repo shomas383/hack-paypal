@@ -23,7 +23,7 @@ const doc = (lines: string[]): StrippedText => ({ revision: 'Revision 21 (2026)'
 const notes = segmentNotes(doc([
   'SUBCHAPTER III', 'TEMPORARY MODIFICATIONS ESTABLISHED PURSUANT TO TRADE LEGISLATION', 'U.S. Notes',
   '16. (a) synthetic preamble naming heading 9903.82.09',
-  '(c) synthetic list of derivative steel articles:', '8211.92.90  8211.94.10',
+  '(c) synthetic: Heading 9903.82.09 applies to the following derivative steel articles:', '8211.92.90  8211.94.10',
   '(g) Heading 9903.82.13 applies to articles that otherwise meet the criteria of subdivisions (c)(vi)–(viii) and (xi) that are motorcycle parts classifiable in chapter 84, 85 or 87 for use in the manufacturing of motorcycles in the United States.',
   '19. (a) synthetic', '(k) The rates of duty in heading 9903.85.08 apply to all entries of derivative aluminum products classifiable in the following HTSUS provisions: 9507.30.20; 9507.30.60',
   '20. (a) synthetic', ...'bcdefghijklmnopqr'.split('').map((l) => `(${l}) synthetic`),
@@ -48,8 +48,7 @@ const v = (code: string) => lineVerdicts(code, jp, c, idx).map((x) => `${x.ref}:
 describe('coverage verdicts (JP)', () => {
   it('a line in a modeled list is modeled; a line named by a 232 list is unmodeled with its open heading', () => {
     expect(v('0712.90.8550')).toEqual(['note III 52(b): modeled']);
-    // no heading named in 16(c) itself → every heading of note 16 (named in it, or citing it) governs
-    expect(lineVerdicts('8211.92.9030', jp, c, idx)).toEqual([{ ref: 'note III 16(c)', verdict: 'unmodeled', open: ['9903.82.01', '9903.82.09'] }]);
+    expect(lineVerdicts('8211.92.9030', jp, c, idx)).toEqual([{ ref: 'note III 16(c)', verdict: 'unmodeled', open: ['9903.82.09'] }]);
   });
   it('a chapter named in note text is context, not a list (16(g) "chapter 84, 85 or 87")', () => {
     expect(v('8523.49.4000')).toEqual([]);
@@ -84,5 +83,20 @@ describe('originGaps', () => {
     const lone = buildHeadingTable([row('9903.45.99', 0, 'synthetic: Articles of any country', 'The duty provided in the applicable subheading + 5%')]);
     const c3 = { ...c, headings: { ...headings, ...lone } };
     expect(originGaps(jp, c3, coverageIndex(c3))).toEqual(['9903.45.99']);
+  });
+
+  it('an exemption list does not place the heading it exempts from (the IEEPA 9903.01.25 hole); a cited list does place its heading', () => {
+    const h = buildHeadingTable([
+      row('9903.01.25', 0, 'Articles the product of any country, … as provided for in subdivision (v) of U.S. note 2 to this subchapter', 'The duty provided in the applicable subheading + 10%'),
+      row('9903.04.62', 0, 'Patented pharmaceutical articles that are the product of Japan, … as provided for in subdivisions (c) and (f) of U.S. note 40 to this subchapter', '15%'),
+    ]);
+    const n = segmentNotes(doc([
+      'SUBCHAPTER III', 'U.S. Notes', '2. (a) synthetic', ...'bcdefghijklmnopqrstu'.split('').map((l) => `(${l}) synthetic`),
+      '(v) (i) synthetic', '(ii) synthetic', '(iii) The additional duties imposed by heading 9903.01.25 shall not apply to articles classifiable in the following provisions: 0101.21.00  0101.29.00',
+      '10. synthetic', '20. synthetic', '30. synthetic', '40. (a) synthetic', '(b) synthetic',
+      '(c) The headings provided in subdivision (a) of this note apply to articles that are classifiable in the following provisions of the HTSUS: 3002.12.00  3004.90.92',
+    ]));
+    const cx: CoverageContext = { headings: h, outOfForce: {}, notes: n, mentions: buildMentions(n, {}), rules: [] };
+    expect(originGaps(jp, cx, coverageIndex(cx))).toEqual(['9903.01.25']);
   });
 });

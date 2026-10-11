@@ -39,7 +39,8 @@ const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
 /** 9903.xx.xx → "III": Chapter 99 headings are numbered by subchapter. */
 export const subchapterOf = (heading: string) => ROMAN[Number(heading.slice(2, 4))] ?? '?';
 const ADDS_NOTHING = /^(No change|The duty provided in the applicable subheading|Free)$/;
-const CITES_NOTE =/(?<!general )\bU\.S\. notes? (\d+)/g;
+const CITES_NOTE = /(?<!general )\bU\.S\. notes? (\d+)/g;
+const CITES_SUBDIVISIONS = /\bsubdivisions? ((?:\([a-z0-9]+\))+(?:,? (?:and |or )?(?:\([a-z0-9]+\))+)*) of U\.S\. note (\d+)/g;
 
 export function isSpecialProgramSection(notes: Ch99Notes, section: string): boolean {
   const title = notes.subchapterTitles[section.replace(/-stat$/, '')] ?? '';
@@ -100,7 +101,41 @@ export function coverageIndex(ctx: CoverageContext) {
     return out;
   };
   const missingOf = (ref: string) => (governingOf(ref), missing.get(ref)!);
-  return { governingOf, missingOf, bySectionPath };
+  /**
+   * Headings whose scope this mention's list defines (for G7's origin-level check). A list scopes the heading it is
+   * "As provided in", or the headings named by the nearest level that names any — unless that level is an exemption
+   * ("… the duties imposed by heading 9903.01.25 shall not apply to …"): an exemption list doesn't scope the heading it
+   * exempts from. No heading named on the way up → it scopes none (the note-wide fallback is for refusing lines only).
+   */
+  const scopedBy = (ref: string): string[] => {
+    if (!ref.startsWith('note ')) return governingOf(ref);
+    const [, section, path] = /^note (\S+) (.+)$/.exec(ref)!;
+    const levels: Subdivision[] = [];
+    for (let p = path!; ; p = p.replace(/\([^()]*\)$/, '')) {
+      const s = bySectionPath.get(`${section} ${p}`);
+      if (s) levels.push(s);
+      if (!p.includes('(')) break;
+    }
+    const provided = levels.find((s) => s.asProvidedIn.headings.length || s.asProvidedIn.ranges.length);
+    if (provided) return expand({ ch99: provided.asProvidedIn.headings, ch99Ranges: provided.asProvidedIn.ranges }).filter((h) => ctx.headings[h]);
+    const named = levels.find((s) => s.ch99.length || s.ch99Ranges.length);
+    return named && !named.shallNotApply ? expand(named).filter((h) => ctx.headings[h]) : [];
+  };
+  /**
+   * Note subdivisions a heading's own text cites ("… as provided for in subdivisions (c) and (f) of U.S. note 40 to this
+   * subchapter") that list codes in their own text: the heading declares that list as its scope.
+   */
+  const citedLists = (h: string): string[] => {
+    const out: string[] = [];
+    for (const m of ctx.headings[h]?.chain.matchAll(CITES_SUBDIVISIONS) ?? []) {
+      for (const sub of m[1]!.match(/(?:\([a-z0-9]+\))+/g) ?? []) {
+        const s = bySectionPath.get(`${subchapterOf(h)} ${m[2]}${sub}`);
+        if (s && s.codes8.length + s.codes10.length + s.codes6.length + s.headings4.length > 0) out.push(`note ${s.section} ${s.path}`);
+      }
+    }
+    return out;
+  };
+  return { governingOf, missingOf, scopedBy, citedLists, bySectionPath };
 }
 
 export type CoverageIndex = ReturnType<typeof coverageIndex>;
@@ -157,11 +192,12 @@ export function originGaps(origin: Origin, ctx: CoverageContext, idx: CoverageIn
   const m = modeledFor(ctx.rules, origin.group);
   const lineScoped = new Set<string>();
   const refs = new Set<string>([...Object.values(ctx.mentions.byDigits).flat(), ...ctx.mentions.ranges.filter((r) => !r.broad).map((r) => r.ref)]);
-  for (const ref of refs) for (const h of idx.governingOf(ref)) lineScoped.add(h);
+  for (const ref of refs) for (const h of idx.scopedBy(ref)) lineScoped.add(h);
   const gaps: string[] = [];
   for (const [h, info] of Object.entries(ctx.headings)) {
     if (isSpecialProgramSection(ctx.notes, subchapterOf(h))) continue;
     if (m.headings.has(h) || ctx.outOfForce[h] || lineScoped.has(h) || !headingAppliesTo(info, origin)) continue;
+    if (idx.citedLists(h).length) continue;
     // adds nothing to the General rate ("No change", "The duty provided in the applicable subheading", "Free"): it can only
     // lower duty, so it can't make an estimate too low
     if (ADDS_NOTHING.test(info.general)) continue;
