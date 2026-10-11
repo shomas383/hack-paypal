@@ -34,6 +34,25 @@ describe.skipIf(!local)('Chapter 99 notes — the real Rev 20 / Rev 21 PDFs (loc
     expect(rev20.revision).toBe('Revision 20 (2026)');
   });
 
+  // Tracked for the CN step (plan: "Note 20 numbering oddities"): before CN rules may use note 20 lists, each of these is
+  // either resolved to its correct subdivision or makes the affected codes fail closed. Pinned so a silent change shows.
+  it('out-of-sequence labels in the official numbering are pinned (none in note 52)', () => {
+    const odd = rev21.ignoredMarkers.filter((m) => m.why === 'out_of_sequence').map((m) => [m.note, m.path, m.page, m.text.slice(0, 40)]);
+    expect(odd).toEqual([
+      [17, '17(c)(2)(B)(iii)', '99 - III - 72', '(cc) a flat wrap spring clutch.'],
+      [20, '20(a)', '99 - III - 87', '(11) heading 9903.88.58 and U.S. note 20'],
+      [20, '20(a)', '99 - III - 87', '(14) heading 9903.88.66 and U.S. note 20'],
+      [20, '20(r)', '99 - III - 156', '(4) heading 9903.88.47 and U.S. note 20('],
+      [20, '20(r)', '99 - III - 156', '(www) are now in effect.]'],
+      [20, '20(gg)', '99 - III - 193', '(II) The U.S. Trade Representative deter'],
+      [20, '20(gg)(62)', '99 - III - 196', '(62) Insulated electric conductors, for '],
+      [20, '20(ttt)(iii)(180)', '99 - III - 309', '(180) Foldable tables with frames of ste'],
+      [40, '40(i)', '99 - III - 368', '(2) are “pharmaceutical articles” but ar'],
+    ]);
+    expect(rev21.ignoredMarkers.filter((m) => m.why === 'reference')).toHaveLength(13);
+    expect(rev21.ignoredMarkers.filter((m) => m.why === 'not_a_label')).toHaveLength(16);
+  });
+
   it('Rev 20 → Rev 21: same subdivisions; the only changed text is in note 20(vvv)(i)', () => {
     const a = key(rev20);
     const b = key(rev21);

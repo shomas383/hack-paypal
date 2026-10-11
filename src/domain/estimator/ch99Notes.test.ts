@@ -167,7 +167,12 @@ describe('segmentNotes', () => {
     ]));
     expect(paths(n)).toEqual(['III 20(a)', 'III 20(b)']);
     expect(sub(n, '20(a)').text).toContain('(vvv) and (www)of this note');
-    expect(n.ignoredMarkers).toEqual([{ page: 'p1', text: '(vvv) and (www)of this note indicating exclusions are now in effect; consult Customs for more information.]' }]);
+    expect(n.ignoredMarkers).toEqual([{
+      section: 'III', note: 20, path: '20(a)', page: 'p1', why: 'reference',
+      text: '(vvv) and (www)of this note indicating exclusions are now in effect; consult Customs for more information.]',
+    }]);
+    const odd = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '20. (a) x', '(1) one', '(2) two', '(5) synthetic: a skip whose skipped (3) comes later', '(ABS) plastics', '(3) three']));
+    expect(odd.ignoredMarkers.map((m) => [m.path, m.why])).toEqual([['20(a)(2)', 'out_of_sequence'], ['20(a)(2)', 'not_a_label']]);
   });
 
   it('text is whitespace-folded without its marker; sha256 is of that text; "As provided in" headings and ranges', () => {

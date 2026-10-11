@@ -46,7 +46,22 @@ export interface Ch99Notes {
   sections: { id: string; notes: number[]; deleted: number[] }[];
   subdivisions: Subdivision[];
   /** Line-start markers read as text (neither a continuation nor a new list). */
-  ignoredMarkers: { page: string; text: string }[];
+  ignoredMarkers: IgnoredMarker[];
+}
+
+export interface IgnoredMarker {
+  section: string;
+  note: number;
+  /** The subdivision whose text the line was kept in. */
+  path: string;
+  page: string;
+  text: string;
+  /**
+   * reference: a wrapped cross-reference ("(o) of this note"); not_a_label: an acronym such as "(ABS)"; out_of_sequence:
+   * a real-looking label that neither continues nor opens a list (an oddity of the official numbering — its text, and the
+   * codes in it, stay in the previous subdivision).
+   */
+  why: 'reference' | 'not_a_label' | 'out_of_sequence';
 }
 
 export interface SegmentOptions {
@@ -409,8 +424,11 @@ export function segmentNotes(s: StrippedText, opts: SegmentOptions = {}): Ch99No
         rest = mk.rest;
         accepted++;
       }
-      if (accepted === 0 && found.length > 0) ignoredMarkers.push({ page: line.page, text: line.text.trim() });
       if (!open) open = { path: pathOf(), page: line.page, raw: [], always: false };
+      if (accepted === 0 && found.length > 0) {
+        const why = reference ? 'reference' : readings(found[0]!.label).length === 0 ? 'not_a_label' : 'out_of_sequence';
+        ignoredMarkers.push({ section: n.section, note: n.note, path: open.path, page: line.page, text: line.text.trim(), why });
+      }
       open.raw.push(rest);
     }
     close();
