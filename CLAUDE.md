@@ -153,13 +153,18 @@ Carried over:
   make it required for a production server (not during `next build`: skip when `NEXT_PHASE === 'phase-production-build'`).
 - Render: `corepack enable` fails (EROFS on /usr/bin/pnpm, 2026-10-07) → every `render.yaml` step runs
   `npx --yes pnpm@10.32.1 …`.
-- VERIFY: Rev. 20 effective date (rows start at the 2026-09-28 publication date); P12 ruling H236026 not yet read.
+- Rev. 20 effective date RESOLVED (releaseList: Rev 20 was in force 09/28–10/09/2026). VERIFY: P12 ruling H236026 not yet read.
+- HTS 2026 Rev. 21 (current from 10/09/2026): DONE 2026-10-11. A full-text comparison (HTS_VERIFICATION_SPEC §8) found no change
+  to any rate, heading or note text our rows use; the user updated sheet Y/Z/V/W; index `2026-rev21`, rates `2026-rev21-v1`
+  (numbers identical to v5, test). `exportList` can't be pinned to a release, so `pnpm hts:download` records currentRelease.
+  On each new revision: hts:download → compare (§8 method) → sheet Y/Z/V → hts:import → bump current.ts → rates:import.
 - rates-v2 DONE (2026-10-08): sheet M14 = 9102.21.70, V14 = 2026-10-08; the import (now 2026-rev20-v2) aborts unless every rate
   key is a real line in data/hts/2026-rev20.json (8-digit keys only with componentReporting). The current version is named in
   `src/domain/rates/current.ts`; v1 files stay as history (stored v1 quotes reference them and are refused as stale).
   rates-v4 (2026-10-10) supersedes it; rates-v5 (polish-1, 2026-10-10) = v4 minus the CSMS citation (rates unchanged; a
   published version's content never changes, so any change to generated data is a new version). After the Render deploy,
-  `/api/health` should show `rateVersion: 2026-rev20-v5` (pre-deploy re-seeds the listings, incl. L-P14).
+  `/api/health` should show `rateVersion: 2026-rev21-v1` after the next deploy (was 2026-rev20-v5). The pre-deploy step re-seeds
+  the listings, incl. L-P14; open v5 quotes become stale and are re-quoted.
 
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3

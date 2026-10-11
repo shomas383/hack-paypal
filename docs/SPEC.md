@@ -35,8 +35,10 @@ Rules (B1 as first specified):
 
 Grounded classifier (B2, current; `src/domain/classifier/classifyGrounded.ts`). Rules recorded as they are on 2026-10-08 —
 **not tuned on the eval** (n = 11 would be overfitting):
-- Source of valid codes: the official HTS 2026 Rev. 20 export (hts.usitc.gov, 2026-10-07) → committed index
-  `data/hts/2026-rev20.json` (`pnpm hts:import`; codes + description chains, no rates). Valid = a 10-digit statistical line, or
+- Source of valid codes: the official HTS export of the current revision → committed index `data/hts/<revision>.json`
+  (Rev. 20 from the 2026-10-07 export; since 2026-10-11 `2026-rev21.json` via `pnpm hts:download` + `pnpm hts:import`, with
+  release 2026HTSRev21 recorded at download; codes + description chains, no rates; identical to Rev 20's, test). Valid = a
+  10-digit statistical line, or
   an 8-digit Ch. 91 component-reporting line (Statistical Note 1: watches/clocks reported by component suffix, e.g. 9102.21.70).
   Ch. 98/99 excluded. The index revision must equal the rate table's (test).
 - Call 1: up to 3 headings (6 or 8 digits). Code expands them to real lines (unknown headings counted as invalid);
@@ -119,7 +121,7 @@ Input: `{ origin: ISO-3166 alpha-2 (EU members: one verified row per member stat
 quantity, valueSplit?: { case, band } (compound watch rates), facts?: Record<string, boolean> (row conditions, e.g.
 steel ≥15% of weight, informational material) }`. A missing split or fact the row needs → `UNSUPPORTED`.
 Output: `{ lines: [{ kind: 'MFN'|<program, e.g. the Chapter 99 U.S. note 52 additional duty (9903.05.xx); renamed CH99_NOTE52 in rates-v3>|'S232_…'|..., chapter99?, amount: Money, basis, sourceRef }], totalDuty: Money, effectiveRatePpm, avePpm?, rateVersion }` or `UNSUPPORTED{reason}`.
-Data file schema (`data/rates/<version>.json`, current `2026-rev20-v5` — 12 rows incl. the CN and DE watches; v1–v4 kept as history (v5 = v4 minus the CSMS citation, rates unchanged); the name is set in `src/domain/rates/current.ts`),
+Data file schema (`data/rates/<version>.json`, current `2026-rev21-v1` — 12 rows incl. the CN and DE watches, re-verified on HTS 2026 Rev. 21 (2026-10-11, HTS_VERIFICATION_SPEC §8), rates identical to `2026-rev20-v5`; v1–v5 kept as history (v5 = v4 minus the CSMS citation, rates unchanged); the name is set in `src/domain/rates/current.ts`),
 one row per (hts10, origin); generated only by `scripts/import-verify-sheet.ts` from the human-verified sheet, never
 hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
 - The key (`hts10`) is a 10-digit statistical line, **or** an 8-digit line reported by component (HTS Ch. 91 Statistical
@@ -127,8 +129,8 @@ hand-edited. Integers only: rates in ppm, specific amounts in USD micros.
   such rows carry `component_reporting: true`. v2 (2026-10-08) keys the watch as `9102.21.70` (it was `9102.21.7000`, which
   does not exist); duty amounts are unchanged.
 - Every key of the current version must be a real line in the committed HTS index of the same revision
-  (`data/hts/2026-rev20.json`); `pnpm rates:import` aborts and `pnpm rates:validate` fails otherwise. v1 stays as history.
-- `hts10`, `origin`, `listings[]`, generic `description`, `hts_revision` ("2026 Rev. 20"), `mfn`: `free` | `ad_valorem` |
+  (`data/hts/2026-rev21.json`); `pnpm rates:import` aborts and `pnpm rates:validate` fails otherwise. v1 stays as history.
+- `hts10`, `origin`, `listings[]`, generic `description`, `hts_revision` ("2026 Rev. 21"; from Verify column Y, which must equal the index revision and `CURRENT_HTS_REVISION`), `effective_from` (Verify column Z; the Rev. 21 rows use 2026-10-09, Rev 21's `releaseStartDate`), `mfn`: `free` | `ad_valorem` |
   `specific` | `compound` with `components[]` (specific per unit, or ad valorem on full value / case / band) + verbatim `text`.
   **Never store a compound rate as a flat %**; the AVE is computed per listing price.
 - `additional[]`: `{ program, chapter99, rule: 'combined_cap'|'additive'|'exempt', rate_ppm, basis: 'full_value', conditions[] }`;
@@ -167,7 +169,7 @@ Rules (HTS 2026 Rev. 20 regime; each must be backed by a source_ref in data):
   round(cap × value) − round(MFN line), so the total is exactly round(cap × value) (12.5% JP, 10% EU). (Estimate, not a CBP liquidation figure.)
 - Engine is versioned: every quote stores `rateVersion`; capture re-checks that version is still current.
 Seeding:
-- Import the developer's verified sheet (Verify tab; HTS 2026 Rev. 20, verified 2026-10-05) into `data/rates/` and
+- Import the developer's verified sheet (Verify tab; HTS 2026 Rev. 20, verified 2026-10-05; re-verified on 2026 Rev. 21 on 2026-10-11) into `data/rates/` and
   `data/eval/`; only rows with Status = VERIFIED. P07 (US goods returned, 9801.00.10) is EXCLUDED → UNSUPPORTED.
   Do NOT invent rows for origins/codes not in the sheet; mark them UNSUPPORTED until verified by a human.
 - The USITC API (`https://hts.usitc.gov/reststop/search?keyword=…`) returns the schedule (general/special rates), not
