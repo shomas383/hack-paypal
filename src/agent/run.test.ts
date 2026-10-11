@@ -44,6 +44,10 @@ describe('systemPrompt — the final-message rule (agent:live fails > 4 sentence
     expect(p).toMatch(/no line breaks/i);
   });
 
+  it("doesn't restate checkout or approval steps (the proposal card shows them)", () => {
+    expect(p).toContain("Don't restate checkout or approval steps; the proposal card shows them.");
+  });
+
   it('describes duty composition as "made up of the base rate plus heading …", never "under the base rate plus …"', () => {
     expect(p).toContain('made up of the base rate plus heading 9903.05.39');
     expect(p).toMatch(/never "under the base rate plus/i);
