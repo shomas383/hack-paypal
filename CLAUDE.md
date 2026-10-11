@@ -140,6 +140,11 @@ undo / publish (case/band split; quotable only with a verified rate row), AG Gri
 with CSV. Migrations 0008–0010. `pnpm seller:seed` (live) exists, not run on Render. SPEC §4.1/§4.4/§4.5 ACs ticked.
 Next: go-live (merge ui-refresh, push, Render deploy runs migrations 0008–0010; set SELLER_CONSOLE_PASSCODE in Render; then
 `pnpm seller:seed` once), then polish and the demo video.
+Estimate mode (branch `estimate-mode`, not pushed): **Oct 20 checkpoint MET on 2026-10-11** — JP/EU data layer green incl.
+G8: Ch. 99 note extraction + mentions index, rules (reference + first live drafting run; 9903.05.87 blocked by GR), gate
+G0–G9 + GR, coverage (G7), reviewed IEEPA list (data/reviews/, 120 headings, EO 14389 §1 / CSMS # 67834313, sha-checked by
+G0), first committed data version `2026-rev21-e1` (pnpm estimator:build; JP 5,512 / DE 5,007 of 19,926 lines refused).
+Next: loader + verified-first + no-charge guards, estimates API (migration 0011), /estimate page; CN after that.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
 the official HTS export, add-on rules encoded per Chapter 99 program).
 

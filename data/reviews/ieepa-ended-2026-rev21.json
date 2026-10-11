@@ -4,8 +4,7 @@
  "review_document": "docs/IEEPA_HEADINGS_REVIEW.md",
  "reviewed_on": "2026-10-11",
  "reviewers": [
-  "Shoma",
-  "co-reviewer (approved with Shoma in the Claude Code session of 2026-10-11)"
+  "Shoma (owner); reviewed with Claude (AI assistant)"
  ],
  "sources": [
   {
