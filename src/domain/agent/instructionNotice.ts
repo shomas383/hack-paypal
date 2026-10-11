@@ -6,6 +6,11 @@ export function withheldNotice(count: number | undefined): string | null {
   return count && count > 0 ? `${count} listing(s) contained seller instructions; withheld.` : null;
 }
 
+/** The /agent notice for seller text in a script the filter cannot check (search_listings' withheld_unchecked_script). */
+export function uncheckedScriptNotice(count: number | undefined): string | null {
+  return count && count > 0 ? `${count} listing(s) in a language the filter cannot check; text withheld.` : null;
+}
+
 /** The same notice from per-result flags (results that were returned). */
 export function instructionNotice(results: { seller_text_contains_instructions?: boolean }[]): string | null {
   return withheldNotice(results.filter((r) => r.seller_text_contains_instructions === true).length);

@@ -72,7 +72,39 @@ const INSTRUCTION_PATTERNS = [
   /\b(?:system prompt|developer message|as an ai)\b/i,
 ];
 
+// Japanese (and Simplified Chinese, since Han text counts as checked): ignore earlier instructions, buy/pay/approve now,
+// budget doesn't matter, skip the review, system prompt. Deliberately NOT flagged: ordinary marketplace wording such as
+// 即購入OK, コメントなしで購入してください, 24時間以内に決済してください, 動作確認済み (tested).
+const CJK_INSTRUCTION_PATTERNS = [
+  /(?:以前|前|上記|これまで|今まで)の(?:指示|命令|指令|ルール|プロンプト)(?:を|は)?(?:すべて|全て)?(?:無視|忘れ)/,
+  /(?:指示|命令|指令)を?無視/,
+  /(?:今すぐ|すぐに|直ちに|ただちに)(?:購入|買|注文|支払|決済|承認)/,
+  /承認(?:して|しろ|せよ|しなさい)/,
+  /予算(?:は|を)?(?:関係(?:ない|ありません|なし)|気にしな|無視)/,
+  /(?:確認|承認|レビュー|審査)(?:を|は)?(?:スキップ|省略|飛ばし)/,
+  /システムプロンプト|開発者メッセージ/,
+  /(?:忽略|无视|無視)(?:之前|以前|上面|以上|所有)?的?(?:所有)?(?:指令|指示|说明)/,
+  /立即(?:购买|付款|批准|支付)/,
+  /系统提示/,
+];
+
+/** Letters outside the scripts the patterns cover (Latin, Hiragana, Katakana, Han; Common/Inherited = digits, punctuation, symbols, marks). */
+const UNCHECKED_SCRIPT = /[^\p{Script=Latin}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}\p{Script=Common}\p{Script=Inherited}]/u;
+
+export type SellerTextCheck = 'ok' | 'instructions' | 'unchecked_script';
+
+/**
+ * Seller text → ok | instructions | unchecked_script (code only, no model). Normalised first: NFKC (fullwidth → ASCII,
+ * halfwidth katakana → katakana) and format characters (zero-width, soft hyphen) removed, so hidden variants match.
+ * Text with letters in any other script (e.g. Cyrillic look-alikes, Hangul) can't be checked and is withheld (fail closed).
+ */
+export function sellerTextCheck(text: string): SellerTextCheck {
+  const t = text.normalize('NFKC').replace(/\p{Cf}/gu, '');
+  if (INSTRUCTION_PATTERNS.some((p) => p.test(t)) || CJK_INSTRUCTION_PATTERNS.some((p) => p.test(t))) return 'instructions';
+  return UNCHECKED_SCRIPT.test(t) ? 'unchecked_script' : 'ok';
+}
+
 /** Display-only flag: seller text that reads like instructions to an agent. It never changes what the agent may do. */
 export function looksLikeInstructions(text: string): boolean {
-  return INSTRUCTION_PATTERNS.some((p) => p.test(text));
+  return sellerTextCheck(text) === 'instructions';
 }
