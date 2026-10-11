@@ -87,6 +87,17 @@ describe('parseServerEnv — TRUSTED_PROXY_HOPS', () => {
   });
 });
 
+describe('parseServerEnv — estimate limits (public /estimate, its own budget)', () => {
+  it('defaults when unset (5/session/hour, 10/IP/hour, 100/day)', () => {
+    expect(parseServerEnv(valid).estimateLimits).toEqual({ perSessionPerHour: 5, perIpPerHour: 10, dailyCeiling: 100 });
+  });
+  it('reads ESTIMATE_LIMIT_PER_SESSION_PER_HOUR / _PER_IP_PER_HOUR / ESTIMATE_DAILY_CEILING', () => {
+    const env = parseServerEnv({ ...valid, ESTIMATE_LIMIT_PER_SESSION_PER_HOUR: '2', ESTIMATE_LIMIT_PER_IP_PER_HOUR: '4', ESTIMATE_DAILY_CEILING: '20' });
+    expect(env.estimateLimits).toEqual({ perSessionPerHour: 2, perIpPerHour: 4, dailyCeiling: 20 });
+    expect(env.classifierLimits).toEqual({ perSessionPerHour: 10, perIpPerHour: 20, dailyCeiling: 200 }); // separate budgets
+  });
+});
+
 describe('parseServerEnv — classifier limits', () => {
   it('defaults when unset (10/session/hour, 20/IP/hour, 200/day)', () => {
     expect(parseServerEnv(valid).classifierLimits).toEqual({ perSessionPerHour: 10, perIpPerHour: 20, dailyCeiling: 200 });

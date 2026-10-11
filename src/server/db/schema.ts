@@ -14,6 +14,7 @@ export interface GroundedResult {
   meta: GroundedMeta;
 }
 import type { ClassifierOutputT } from '@/domain/classifier/schema';
+import type { EstimateInputRecord } from '@/domain/estimator/request';
 import type { StoredLine } from '@/domain/quote/buildQuote';
 
 const money = (name: string) => bigint(name, { mode: 'bigint' });
@@ -227,6 +228,43 @@ export const sellerLoginAttempts = pgTable(
     ok: boolean('ok').notNull(),
   },
   (t) => [index('seller_login_attempts_ip_at_idx').on(t.ip, t.at)],
+);
+
+/** What an estimate stores from the grounded classifier: its candidate lines (official code + chain) and run meta. No amounts. */
+export interface EstimateClassification {
+  outcome: 'OK' | 'STOPPED' | 'INVALID_OUTPUT';
+  candidates: { code: string; chain: string[]; confidence: number }[];
+  separating: { name: string; value_from_listing: string | null }[];
+  reasons: string[];
+  meta: GroundedMeta | null;
+}
+
+/**
+ * Estimate mode (/estimate, SPEC §4.7). Never charged and never a quote: nothing on the checkout / capture / agent path
+ * reads this table. Duties are computed by code from the committed estimator data each time the estimate is read; `result`
+ * keeps the last computed view for the record. `cachedFrom`: the estimate whose classification was reused (same
+ * description and origin within 24 h — no model call, no rate-limit reservation).
+ */
+export const estimates = pgTable(
+  'estimates',
+  {
+    id: uuid('id').primaryKey(),
+    sessionId: text('session_id').notNull(),
+    input: jsonb('input').$type<EstimateInputRecord>().notNull(),
+    descriptionKey: text('description_key').notNull(),
+    status: text('status').$type<'ESTIMATING' | 'READY' | 'FAILED'>().notNull(),
+    stage: jsonb('stage').$type<GroundedStage | null>(),
+    classification: jsonb('classification').$type<EstimateClassification | null>(),
+    result: jsonb('result').$type<unknown>(),
+    estimatorVersion: text('estimator_version'),
+    rateVersion: text('rate_version'),
+    callId: bigint('call_id', { mode: 'bigint' }),
+    cachedFrom: uuid('cached_from'),
+    error: text('error'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    updatedAt: ts('updated_at').notNull().defaultNow(),
+  },
+  (t) => [index('estimates_description_key_created_at_idx').on(t.descriptionKey, t.createdAt), index('estimates_session_id_idx').on(t.sessionId)],
 );
 
 export const auditLog = pgTable('audit_log', {

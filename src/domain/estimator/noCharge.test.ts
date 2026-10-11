@@ -44,6 +44,17 @@ describe('no money-moving or quoting code imports the estimator', () => {
   });
 });
 
+describe('the estimates service and routes touch only the estimates table (no quotes, listings, orders, approvals, PayPal)', () => {
+  const files = ['src/server/estimates.ts', ...walk('src/app/api/estimates').filter((f) => !f.endsWith('.test.ts'))];
+  it.each(files.map((f) => [f]))('%s', (rel) => {
+    const src = code(readFileSync(join(root, rel), 'utf8'));
+    expect(src).not.toMatch(/\b(quotes|listings|orders|approvals|invoices|purchaseProposals)\b(?=[^'"]*(?:,|}|\)))/);
+    expect(src).not.toMatch(/from\s+['"](?:@\/server\/|\.\/)(?:paypal|invoiceFlow|policy)/);
+    expect(src).not.toMatch(/\b(capture|authorize|createOrder)\w*\(/);
+  });
+  it('covers the service and the three routes', () => expect(files).toHaveLength(4));
+});
+
 describe('the estimator writes nothing and never touches quotes, listings or the rate data', () => {
   const files = [...walk('src/domain/estimator'), 'src/server/estimator.ts', 'src/server/estimatorReview.ts'].filter((f) => !/\.test\.ts$|__fixtures__/.test(f));
   it.each(files.map((f) => [f]))('%s', (rel) => {

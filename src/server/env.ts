@@ -28,6 +28,8 @@ export interface ServerEnv {
   agentLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
   /** Classifier call budget (checked before any LLM call). */
   classifierLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
+  /** Public /estimate budget (one row per estimate = 2 classifier calls; checked before any model call; own limits). */
+  estimateLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
   /** Shared seller-console passcode (≥ 12 chars). Optional: without it /seller and /api/seller/* are 404. */
   sellerConsolePasscode?: string;
 }
@@ -105,6 +107,11 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
       perSessionPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR', 10),
       perIpPerHour: positiveIntOr(raw, 'CLASSIFIER_LIMIT_PER_IP_PER_HOUR', 20),
       dailyCeiling: positiveIntOr(raw, 'CLASSIFIER_DAILY_CEILING', 200),
+    },
+    estimateLimits: {
+      perSessionPerHour: positiveIntOr(raw, 'ESTIMATE_LIMIT_PER_SESSION_PER_HOUR', 5),
+      perIpPerHour: positiveIntOr(raw, 'ESTIMATE_LIMIT_PER_IP_PER_HOUR', 10),
+      dailyCeiling: positiveIntOr(raw, 'ESTIMATE_DAILY_CEILING', 100),
     },
     ...(email ? { sandboxBuyerEmail: email } : {}),
     ...(webhookId ? { paypalWebhookId: webhookId } : {}),
