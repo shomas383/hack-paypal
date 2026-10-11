@@ -72,7 +72,10 @@ export function LedgerGrid() {
   const [error, setError] = useState<string | null>(null);
   const grid = useRef<AgGridReact<Row>>(null);
   const narrow = useNarrow();
-  const mid = useNarrow(1399); // below 1400 px: drop rate version + PayPal order so every column fits
+  // Listing (the only flex column) keeps real width. The grid is at most 1152 px wide (the app width), so goods, shipping
+  // and the PayPal order id live in tooltips (Total, Status) and the CSV; below 1200 px date, HTS and Ch. 99 are dropped
+  // too. Rate version is always shown. The CSV always has every column.
+  const tablet = useNarrow(1199);
 
   useEffect(() => {
     let stop = false;
@@ -117,19 +120,21 @@ export function LedgerGrid() {
 
   const columns = useMemo<ColDef<Row>[]>(
     () => [
-      { field: 'date', headerName: 'Date', valueFormatter: (p) => (p.value ? dateFmt.format(p.value as Date) : ''), filter: 'agDateColumnFilter', width: 145, sort: 'desc', hide: narrow, tooltipValueGetter: (p) => (p.value ? (p.value as Date).toISOString() : '') },
-      { field: 'listing', headerName: 'Listing', flex: 2, minWidth: narrow ? 120 : 160, filter: 'agTextColumnFilter', tooltipField: 'listing', cellClass: (p) => (p.data?.pinned ? (s.pinnedLabel ?? '') : '') },
-      { ...moneyColumn<Row>('Goods', (r) => r.goods), width: 105, hide: narrow },
-      { ...moneyColumn<Row>('Shipping', (r) => r.shipping), width: 115, hide: narrow },
+      { field: 'date', headerName: 'Date', valueFormatter: (p) => (p.value ? dateFmt.format(p.value as Date) : ''), filter: 'agDateColumnFilter', width: 130, sort: 'desc', hide: tablet, tooltipValueGetter: (p) => (p.value ? (p.value as Date).toISOString() : '') },
+      // The only flex column: it takes all the remaining width; the full "id · title" shows on hover.
+      { field: 'listing', headerName: 'Listing', flex: 1, minWidth: narrow ? 140 : 240, filter: 'agTextColumnFilter', tooltipField: 'listing', cellClass: (p) => (p.data?.pinned ? (s.pinnedLabel ?? '') : '') },
+      { ...moneyColumn<Row>('Goods', (r) => r.goods), width: 105, hide: true },
+      { ...moneyColumn<Row>('Shipping', (r) => r.shipping), width: 115, hide: true },
       { ...moneyColumn<Row>('Duty', (r) => r.duty), width: narrow ? 90 : 100 },
-      { ...moneyColumn<Row>('Total', (r) => r.total), width: 105, hide: narrow },
-      { field: 'hts10', headerName: 'HTS', width: 135, cellClass: MONO, hide: narrow },
-      { field: 'ch99', headerName: 'Ch. 99 headings', width: 150, cellClass: MONO, hide: narrow, tooltipField: 'ch99' },
-      { field: 'rateVersion', headerName: 'Rate version', width: 140, hide: mid },
-      { field: 'status', headerName: 'Status', width: narrow ? 110 : 120, cellRenderer: StatusCell, filter: 'agTextColumnFilter' },
-      { field: 'paypalOrderId', headerName: 'PayPal order', width: 190, cellClass: MONO, hide: mid },
+      { ...moneyColumn<Row>('Total', (r) => r.total), width: 105, hide: narrow, tooltipValueGetter: (p) => (p.data && !p.data.pinned && p.data.goods && p.data.shipping && p.data.duty ? `Goods ${formatUsd(p.data.goods)} · shipping ${formatUsd(p.data.shipping)} · duty ${formatUsd(p.data.duty)}` : '') },
+      { field: 'hts10', headerName: 'HTS', width: 125, cellClass: MONO, hide: tablet },
+      { field: 'ch99', headerName: 'Ch. 99 headings', width: 145, cellClass: MONO, hide: tablet, tooltipField: 'ch99' },
+      // Always shown: legacy orders (rates v1, pre-rekey code 9102.21.7000) are told apart by it.
+      { field: 'rateVersion', headerName: 'Rate version', width: narrow ? 125 : 130, cellClass: MONO },
+      { field: 'status', headerName: 'Status', width: narrow ? 110 : 120, cellRenderer: StatusCell, filter: 'agTextColumnFilter', tooltipValueGetter: (p) => (p.data?.paypalOrderId ? `PayPal order ${p.data.paypalOrderId}` : '') },
+      { field: 'paypalOrderId', headerName: 'PayPal order', width: 190, cellClass: MONO, hide: true },
     ],
-    [narrow, mid],
+    [narrow, tablet],
   );
 
   const exportCsv = () =>

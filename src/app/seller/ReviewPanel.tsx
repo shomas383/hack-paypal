@@ -3,6 +3,7 @@
 // generated from the official chains, the actions (accept / override / publish) and the audit trail. Accept and override
 // are optimistic with a 6 s Undo; publish asks for confirmation (and the case/band split when the line needs it).
 import { useEffect, useRef, useState } from 'react';
+import { citesStatisticalNumber } from '@/domain/classifier/questions';
 import { parseUsdInput } from '@/domain/seller/form';
 import { usd } from '@/domain/money/money';
 import { formatUsd } from '@/lib/money';
@@ -259,17 +260,26 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
             Questions for the seller
           </h3>
           <p className={s.muted}>Built by code from the official HTS descriptions. Your answers are recorded as statements; &ldquo;Not sure&rdquo; records nothing.</p>
-          {d.questions.choices.map((q) => (
-            <fieldset key={q.id} className={s.fieldset}>
-              <legend>{q.text}</legend>
-              {[...q.options, { id: NOT_SURE, text: 'Not sure', codes: [] }].map((o) => (
-                <label key={o.id} className={s.radio}>
-                  <input type="radio" name={q.id} value={o.id} checked={(draft[q.id] ?? NOT_SURE) === o.id} onChange={() => setDraft({ ...draft, [q.id]: o.id })} />
-                  <span>{o.text}</span>
-                </label>
-              ))}
-            </fieldset>
-          ))}
+          {d.questions.choices.map((q) => {
+            // An option that cites a statistical reporting number: the seller may not know, and "Not sure" is safe.
+            const statHint = q.options.some((o) => citesStatisticalNumber(o.text));
+            return (
+              <fieldset key={q.id} className={s.fieldset} aria-describedby={statHint ? `${q.id}-hint` : undefined}>
+                <legend>{q.text}</legend>
+                {statHint ? (
+                  <p id={`${q.id}-hint`} className={s.questionHint} data-testid="question-stat-hint">
+                    If you don&rsquo;t know, choose Not sure &mdash; the listing stays in review.
+                  </p>
+                ) : null}
+                {[...q.options, { id: NOT_SURE, text: 'Not sure', codes: [] }].map((o) => (
+                  <label key={o.id} className={s.radio}>
+                    <input type="radio" name={q.id} value={o.id} checked={(draft[q.id] ?? NOT_SURE) === o.id} onChange={() => setDraft({ ...draft, [q.id]: o.id })} />
+                    <span>{o.text}</span>
+                  </label>
+                ))}
+              </fieldset>
+            );
+          })}
           {d.questions.exclusions.length ? (
             <fieldset className={s.fieldset}>
               <legend>Do any of these apply to the item?</legend>
@@ -323,20 +333,21 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
           )}
         </div>
       ) : (
+        // Primary action first (Accept, or Publish once settled), then Override.
         <div className={s.actions}>
           {canAccept && settledCode ? (
             <Button variant="primary" onClick={accept} loading={busy === 'accept'} disabled={busy !== null || !settledCode} data-testid="review-accept">
               Accept classification
             </Button>
           ) : null}
-          {canOverride ? (
-            <Button onClick={() => setOverrideOpen((v) => !v)} aria-expanded={overrideOpen} disabled={busy !== null}>
-              Override code…
-            </Button>
-          ) : null}
           {canPublish ? (
             <Button variant={canAccept ? 'secondary' : 'primary'} onClick={() => dialog.current?.showModal()} disabled={busy !== null} data-testid="review-publish">
               Publish listing…
+            </Button>
+          ) : null}
+          {canOverride ? (
+            <Button onClick={() => setOverrideOpen((v) => !v)} aria-expanded={overrideOpen} disabled={busy !== null}>
+              Override code…
             </Button>
           ) : null}
         </div>

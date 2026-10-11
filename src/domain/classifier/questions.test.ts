@@ -1,6 +1,6 @@
 // Synthetic chains (test fixtures, not HTS text): the questions are built only from whatever official chain the index holds.
 import { describe, expect, it } from 'vitest';
-import { applySellerAnswers, buildQuestions } from './questions';
+import { applySellerAnswers, buildQuestions, citesStatisticalNumber } from './questions';
 import type { HtsLine } from './hts';
 
 const line = (code: string, ...chain: string[]): HtsLine => ({ code, componentReporting: false, chain });
@@ -125,5 +125,22 @@ describe('applySellerAnswers (routing reruns in code)', () => {
     expect(() => applySellerAnswers(qs, { 'level-9': 'o-0' }, null, ['9102.21.70'], [])).toThrow(/unknown question/);
     expect(() => applySellerAnswers(qs, { 'level-2': 'o-7' }, null, ['9102.21.70'], [])).toThrow(/unknown option/);
     expect(() => applySellerAnswers(qs, { 'level-2': 'none' }, null, ['9102.21.70'], [])).toThrow(/unknown option/);
+  });
+});
+
+describe('citesStatisticalNumber — an option a seller cannot judge without the statistical annex (hint: choose Not sure)', () => {
+  it('official texts that cite statistical reporting numbers or statistical notes', () => {
+    expect(citesStatisticalNumber('Of the woodland log handling equipment of statistical reporting number 8428.90.0310')).toBe(true);
+    expect(citesStatisticalNumber('Containing compact yarns described in statistical reporting numbers 5205.42.0021, 5205.43.0021 or 5205.47.0021 (347)')).toBe(true);
+    expect(citesStatisticalNumber('Steel racks, other than those described in statistical reporting number 9403.20.0075')).toBe(true);
+    expect(citesStatisticalNumber('Lockers as described in statistical note 5 to this chapter')).toBe(true);
+    expect(citesStatisticalNumber('Other (not: Parts for steel racks of statistical reporting number 9403.20.0082)')).toBe(true);
+  });
+
+  it('ordinary official texts, heading/subheading references and the component-reporting note do not', () => {
+    expect(citesStatisticalNumber('With automatic winding')).toBe(false);
+    expect(citesStatisticalNumber('Other (not: Recreational performance outerwear)')).toBe(false);
+    expect(citesStatisticalNumber('Wrist watches, pocket watches and other watches, including stop watches, other than those of heading 9101')).toBe(false);
+    expect(citesStatisticalNumber('Of subheading 8501.64')).toBe(false);
   });
 });

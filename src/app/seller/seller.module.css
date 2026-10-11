@@ -325,6 +325,13 @@
   margin-bottom: var(--space-1);
 }
 
+.questionHint {
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-13);
+  line-height: var(--leading-13);
+}
+
 .radio {
   display: flex;
   align-items: flex-start;

@@ -99,6 +99,14 @@ function withSiblings(text: string, parent: string[], at: number, lines: readonl
   return siblings.length ? `${text} (not: ${siblings.join('; ')})` : text;
 }
 
+/**
+ * An official text that cites a statistical reporting number (dddd.dd.dddd) or a statistical note: a seller can rarely
+ * judge it without the statistical annex, so the console suggests "Not sure" (which records nothing).
+ */
+export function citesStatisticalNumber(text: string): boolean {
+  return /\bstatistical (?:reporting numbers?|notes?)\b/i.test(text) || /\b\d{4}\.\d{2}\.\d{4}\b/.test(text);
+}
+
 const CLEARED_BY_ANSWERS = new Set(['MISSING_ATTRIBUTES', 'TOP2_DIFFER_6']);
 
 /**
