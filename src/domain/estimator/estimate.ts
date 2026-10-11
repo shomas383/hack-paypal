@@ -1,8 +1,8 @@
 // Automated duty estimate for one HTS line, origin and price. Pure. NEVER charged: the result types are not QuoteResult,
 // and nothing on the checkout / capture / agent path imports this module (noCharge.test.ts). Every amount comes from the
 // official base rate text (rateText.ts) and gate-accepted rules, computed by the verified engine's math (computeRow).
-import { computeRow, type QuoteResult } from '@/domain/rates/engine';
-import type { Additional, RateRow } from '@/domain/rates/schema';
+import { computeRow, quoteDuty, type QuoteResult } from '@/domain/rates/engine';
+import type { Additional, RateFile, RateRow } from '@/domain/rates/schema';
 import type { Money } from '@/domain/money/money';
 import { coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
 import type { EstimatorData } from './data';
@@ -53,10 +53,16 @@ export interface Question {
   heading: string;
 }
 
+/** Where the figure comes from: a human-verified rate row (verified first), or the automated estimator. */
+export type EstimateSource = { kind: 'verified'; rateVersion: string } | { kind: 'automated'; estimatorVersion: string };
+
+export const sourceLabel = (s: EstimateSource) => (s.kind === 'verified' ? `Verified rate row (${s.rateVersion})` : `Automated estimate (${s.estimatorVersion})`);
+
 export interface Estimate {
   kind: 'ESTIMATE';
   code: string;
   origin: string;
+  source: EstimateSource;
   estimatorVersion: string;
   /** Without any unanswered conditional exemption (the higher figure). */
   result: EstimateOk;
@@ -236,5 +242,46 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
       ifYes.push({ question: u.question, result: r });
     }
   }
-  return { kind: 'ESTIMATE', code, origin: origin.iso, estimatorVersion: data.version, result, ifYes, disclosures: ['SPECIAL_PROGRAMS', 'NOT_A_RULING'] };
+  return {
+    kind: 'ESTIMATE',
+    code,
+    origin: origin.iso,
+    source: { kind: 'automated', estimatorVersion: data.version },
+    estimatorVersion: data.version,
+    result,
+    ifYes,
+    disclosures: ['SPECIAL_PROGRAMS', 'NOT_A_RULING'],
+  };
+}
+
+/**
+ * Verified first: when a human-verified rate row exists for this origin and line and quotes for this input, its figure
+ * (the checkout's own math and data) is the estimate, labelled as such. Otherwise — no row, or the row needs facts the input
+ * doesn't give (e.g. P11's steel facts) — the automated estimator answers. Still an estimate: nothing here is charged.
+ */
+export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData, verified: RateFile): Estimate | CantEstimate {
+  if (verified.rows.some((r) => r.origin === input.origin && r.hts10 === input.code)) {
+    const q = quoteDuty(verified, {
+      origin: input.origin,
+      hts10: input.code,
+      entryDate: input.entryDate,
+      customsValue: input.customsValue,
+      quantity: input.quantity ?? 1,
+      ...(input.valueSplit ? { valueSplit: input.valueSplit } : {}),
+      ...(input.facts ? { facts: input.facts } : {}),
+    });
+    if (q.kind === 'OK') {
+      return {
+        kind: 'ESTIMATE',
+        code: input.code,
+        origin: input.origin,
+        source: { kind: 'verified', rateVersion: verified.version },
+        estimatorVersion: data.version,
+        result: q,
+        ifYes: [],
+        disclosures: ['SPECIAL_PROGRAMS', 'NOT_A_RULING'],
+      };
+    }
+  }
+  return estimateLine(input, data);
 }
