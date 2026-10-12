@@ -329,6 +329,79 @@ AC:
 - [x] Sandbox invoice shows goods, shipping, and a clearly labeled duty amount equal to our quote. (e2e: watch invoice SENT with
       "US import duty (est.) – HTS 9102.21.70: $37.50", 2026-10-07; exempt items show an explicit $0.00 line — spike (e).)
 
+### 4.7 Estimate mode (`/estimate`) — automated, gated duty estimates that are never charged
+A public page and API that estimate US import duty for a product description, an origin and a selling price, before a seller
+sources it. Labelled "Estimate — not a customs ruling." Checkout, listings and the agent stay on verified rows only (§4.2);
+nothing on the checkout / capture / quote / agent path imports the estimator (`noCharge.test.ts`).
+
+**Sources (official, per HTS release).** The HTS export (https://hts.usitc.gov, `pnpm hts:download` records the release)
+for base rates and Chapter 99 heading text; the release's Chapter 99 PDF
+(`https://hts.usitc.gov/reststop/file?release=<release>&filename=Chapter%2099`) through xpdf `pdftotext` 4.06 for the U.S.
+notes. `pnpm estimator:build` writes a data version `data/estimator/<release>-eN/` (manifest, report, rules, headings,
+notes, base rates) and moves `current.json` only when no origin is blocked and G0/G9 pass. Versions are never edited: e1
+(JP/EU), e2 (CN lists), e3 (current: CN note 52 exemptions, civil-aircraft origin naming, valid_until) are kept as history.
+
+**How a line is estimated.** Base rate parsed from the official General column (`rateText.ts`; unparseable shapes refuse).
+Chapter 99 layer from gate-accepted rules (data; kinds `combined_cap`, `additive`, `exempt`, `conditional_exempt`,
+`not_for_sale`, `via_coverage`, `not_applied`), computed with the verified engine's math (`computeRow`). Verified rows win
+where they exist ("Verified rate row" vs "Automated estimate" label).
+- JP: 9903.05.49/.48 combined 12.5% (note 52(k)); EU (DE only until the member list is verified): 9903.05.39/.38 combined
+  10%, 52(j)(2) → 9903.05.97.
+- CN: 9903.05.31 adds 12.5%, cumulative with the note 20 list duties (note 52(a)): 9903.88.01 on 20(b) (856 subheadings),
+  .02 on 20(d) (283), .03 on 20(f) (5,906), .15 on 20(s)(i) (2,958); 9903.88.16 (20(u)) is `not_applied` — the gate
+  requires its "[Compiler's note: provision suspended.]". Note 52's exemptions (9903.05.86–.92) lift only 9903.05.31, never
+  a list duty. Products 20(s)(ii) describes in words, 20(g) (9903.88.04) and note 31 (9903.91.xx) are not modeled: their
+  lines refuse.
+- Conditional exemptions are asked as questions built by code from the official text; unanswered → both figures.
+
+**Coverage — every regime that names a line is handled, or the line refuses.** A mentions index maps every code named in
+the Chapter 99 notes, heading texts and line footnotes to its refs; each ref is modeled, special program (disclosed), out of
+force, not for this origin, an exclusion (below), or unmodeled → the line can't be estimated (G7).
+- Out of force only from official text: a compiler's note (heading or note), an entry window or an entry period in the
+  heading's own text that has ended ("on or after June 4, 2020, and through December 31, 2020"), or the reviewed IEEPA list
+  (§4.2: data/reviews/ieepa-ended-2026-rev21.json, 120 headings, EO 14389 §1 / CBP CSMS # 67834313, each held to the sha256
+  of its reviewed text; G0 checks the docs quote).
+- Origin naming: a heading applies to an origin unless it names countries and never this one ("product of …"; civil-aircraft
+  headings name theirs as "… components of Japan / the European Union"). "Hong Kong, China" is not China.
+
+**Note 20 exclusions are disclosures, not reductions** (decision 2026-10-12). A note 20 subdivision whose text says a list
+duty "shall not apply" to described products is an exclusion: in effect → the line is still estimated with the full list
+duty and the page names the subdivision and heading ("can only lower the duty"); expired → ignored; unclear → the line
+refuses. In effect = named by the note-wide compiler's note ("only subdivisions (vvv) and (www) … are now in effect") and its
+heading's own period not ended; expired = its own compiler's note or its heading out of force. Rev 21: 5 in effect
+(20(vvv)(i)–(iv), 20(www)), 58 expired, 8 unclear (20(z)–(gg)). Items under an exclusion that name other Chapter 99
+headings are not part of it (note 21's 9903.89 text is printed "(21) (a)" right after 20(www)(14)).
+
+**Official numbering oddities** are resolved by explicit, pinned fixes (`NUMBERING_FIXES`): "(II)" is 20(ll); item numbers
+printed twice become 20(ll)(62bis) and 20(ttt)(iii)(180bis); six in-sentence enumerations stay text. A fix that no longer
+matches fails closed (its label stays out of sequence; a list containing one is blocked, G5).
+
+**valid_until.** Each data version records the last date it stays right: before the earliest future date in an in-force
+heading's or a note's own period text (e3: 2026-11-09, heading 9903.88.69 "through November 9, 2026"). After it the API
+refuses before any model call (503) and every line refuses: "Estimate data needs a rebuild (valid until <date>)".
+
+**Gate** (`gate.ts`, every build): G0 reviewed overrides still quoted in docs; G1 schema/shape and stale source text; G2 every
+quote verbatim in its cited source; G3 every number read by code from the rule's own quote and equal to the official General
+column; G4 headings exist and are in force (a `not_applied` heading suspended by a compiler's note), lists belong to their
+heading; G5 list codes are real lines (≤ 0.5% unknown), ±20% drift, no unresolved numbering oddity; G6 footnotes agree; G7
+coverage; G8 golden: every verified case of the origin reproduced exactly (total and Chapter 99 headings) or refused on the
+regime its row records — else the whole origin is blocked; G9 the parser re-reads every verified row; GR every drafted rule
+equals the hand-written reference rule (`__fixtures__/rules-reference-*.json`).
+
+**Rules are drafted by Claude from official text only** (never the reference, amounts or answers) and accepted only through
+the gate. Recorded runs: JP/EU 2026-10-11; CN 2026-10-12 (lists: 7 calls — first 9903.88.15 run scoped all of 20(s), blocked
+by G4/GR; re-drafted once after the prompt said what a list scope is; exemptions: 7 calls, 9903.05.87 drafted as
+unconditional → blocked by GR, as for JP/EU, so its 16 note 52(c) items refuse).
+
+AC:
+- [x] G8 green for JP, DE and CN on the committed data (e3, 2026-10-12): P01–P04, P06, P08, P10, P12, P14 exact; P11 refused
+      on note 16; P07 refused; P05 $8.13, P09 $15.00, P13 $72.09 (MFN + 9903.05.31 + 9903.88.15) exact.
+- [x] Deliberately broken rules are blocked and only their lines stop (gate tests, CN tests on the committed data).
+- [x] Lines refused (e3, of 19,926): JP 4,532, DE 5,004, CN 3,739.
+- [x] After valid_until the API and page refuse with the rebuild message (tests before/after).
+- [x] Public API: strict body, owner-only GET, `estimate` rate limit (`ESTIMATE_LIMIT_PER_SESSION_PER_HOUR` 5, `_PER_IP_PER_HOUR`
+      10, `ESTIMATE_DAILY_CEILING` 100), 24 h classification cache; migration 0011.
+
 ## 5. Data model (initial)
 listings, classifications (+review status), rate_versions, quotes (immutable: lines, totals, rateVersion, expiresAt),
 approvals (quoteId, approvedBy=human session id, amount hash, timestamp), orders (paypal ids, authorization id,

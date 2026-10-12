@@ -50,6 +50,20 @@ compared in constant time; 5 wrong attempts per IP lock sign-in for 15 minutes; 
 - **Orders and duty** (AG Grid Community): every sandbox order with goods, shipping, duty, HTS and Chapter 99 headings, a
   captured-duty total, and **Export CSV**.
 
+## Estimate mode (`/estimate`)
+For sellers deciding what to source: describe a product (any language), pick where it was made (Japan, Germany or China
+for now) and the selling price, and get the US import duty and the delivered (DDP) price. **Estimate — not a customs
+ruling, never charged**: checkout and the buyer agent use only the human-verified rate rows.
+- The classifier proposes HTS lines; duties come from **official text only**: the base rate from the HTS export's General
+  column and the Chapter 99 add-ons (Japan's 12.5% / the EU's 10% combined rates, China's 12.5% plus the U.S. note 20 list
+  duties) from rules that pass an automated gate against the official text and every verified case.
+- A line that any Chapter 99 provision names but the estimator doesn't model is **refused, not guessed** (e.g. steel and
+  aluminum derivatives, U.S. note 31). Exclusions that can only lower a China list duty are named on the line, not applied.
+- Each data version has a **valid-until date** (the next date an official period starts or ends); after it the page asks for
+  a rebuild instead of estimating.
+- Rules are drafted by Claude from the official text and accepted only if they equal hand-written reference rules.
+  Details: [docs/SPEC.md §4.7](docs/SPEC.md).
+
 ## How classification stays safe
 The AI proposes a code; the code decides what happens with it.
 - **Only real codes.** The model first names up to 3 HTS headings. The app expands them into the actual lines of the official
@@ -118,6 +132,7 @@ wrong answer went to review. A classification takes about 12–14 s (max 34 s).
 | `pnpm hts:download` | Download the official HTS export into `data/source/hts/` (not committed) and record which release it is (read from hts.usitc.gov before and after the download) |
 | `pnpm hts:import` | Build the HTS index of the recorded release (codes + description chains, no rates); the file names and revision label come from that release |
 | `pnpm rates:validate` | Schema + verification-metadata checks on `data/rates/*.json` |
+| `pnpm estimator:build` | Build the next estimate-mode data version from the official sources of the recorded release (export + Chapter 99 PDF; needs xpdf `pdftotext` 4.06), run the gate, stage it. `--out <dir>` writes a report only; `--draft [--draft-ids …] [--max-calls N]` is **live** (Claude drafts the rules, ≤ 15 calls) |
 | `pnpm eval:classifier [--runs N]` | Classifier eval on `data/eval/products.json` (needs `ANTHROPIC_API_KEY`; ~11 Claude calls per run). Exits 1 if a wrong code would have been auto-accepted |
 
 ## Sandbox spikes (`scripts/spike/`)
@@ -131,8 +146,8 @@ Each prints a PASS/FAIL table and exits non-zero on failure.
 - **g** — Invoicing v2: is `invoice_number` unique and searchable? (Yes.) Drafts only, deleted afterwards.
 
 ## Roadmap
-- **Automatic base-rate import (deferred).** Rate rows are human-verified today, one product line at a time. Next: import base
-  (MFN) rates from the official HTS export, and encode the add-on rules once per Chapter 99 program.
+- **Automatic base-rate import.** Done for estimates (estimate mode, above); checkout stays on human-verified rows. Next: more
+  origins (the full EU member list), U.S. note 31 and 20(s)(ii), and a scheduled rebuild before each valid-until date.
 
 ## License
 MIT — see [LICENSE](LICENSE).

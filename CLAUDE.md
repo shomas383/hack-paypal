@@ -42,7 +42,9 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
   sidecar; the revision label and file names come from the recorded release; stages the output
 - `pnpm eval:classifier [--runs N]` — runs the classifier on `data/eval/products.json` (live Claude calls, ~11 per run); prints
   wrong ∧ auto (exit 1 if > 0), auto rate, 6/8/10-digit accuracy vs the 8/11 baseline, confusion matrix, per-product reasons
-- `pnpm estimator:build --out <dir> [--draft [--max-calls N] [--draft-headings 9903.05.87,…]]` — builds the estimate-mode data
+- `pnpm estimator:build` (exactly; write mode) — next data version `data/estimator/<release>-eN/` (previous version's rules +
+  recorded drafting runs `__fixtures__/rules-drafted-*.json` for reference rules it lacks), records valid_until, stages it.
+- `pnpm estimator:build --out <dir> [--draft [--max-calls N] [--draft-headings 9903.05.87,…|--draft-ids cn-exempt-…,…]]` — builds the estimate-mode data
   from the official sources (export of current-export.meta.json; the release's Ch. 99 PDF, downloaded if missing; pdftotext
   must be xpdf 4.06) and runs the gate (G0–G9) with the reference rules; writes manifest/report/rules to `--out` (refused
   inside data/). `--draft` is LIVE: Claude drafts the rules (≤ 15 calls, retries included) and GR compares them to the reference
@@ -144,7 +146,13 @@ Estimate mode (branch `estimate-mode`, not pushed): **Oct 20 checkpoint MET on 2
 G8: Ch. 99 note extraction + mentions index, rules (reference + first live drafting run; 9903.05.87 blocked by GR), gate
 G0–G9 + GR, coverage (G7), reviewed IEEPA list (data/reviews/, 120 headings, EO 14389 §1 / CSMS # 67834313, sha-checked by
 G0), first committed data version `2026-rev21-e1` (pnpm estimator:build; JP 5,512 / DE 5,007 of 19,926 lines refused).
-Next: loader + verified-first + no-charge guards, estimates API (migration 0011), /estimate page; CN after that.
+Loader, verified-first, no-charge guards, estimates API (migration 0011) and /estimate page DONE (2026-10-11).
+CN DONE (2026-10-12, data `2026-rev21-e3`, valid until 2026-11-09): 9903.05.31 + note 20 lists 20(b)/(d)/(f)/(s)(i) additive,
+9903.88.16 not applied (suspended), CN note 52 exemptions; note 20 exclusions are disclosures (5 in effect / 58 expired /
+8 unclear → refuse); numbering fixes for the 9 official oddities; ended entry periods out of force; civil-aircraft headings
+name their origin. G8 green JP/DE/CN (P13 $72.09). Refused of 19,926: JP 4,532 / DE 5,004 / CN 3,739. Drafting: CN lists
+7 calls, exemptions 7 calls; 9903.05.87 blocked by GR for JP/EU and CN. e1, e2 kept as history. SPEC §4.7.
+Next: rebuild before 2026-11-09 (valid_until: 9903.88.69/.70 end; 9903.91.12–.16 start Nov 10), then merge/push.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
 the official HTS export, add-on rules encoded per Chapter 99 program).
 
@@ -207,5 +215,10 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   (terminated)') changes with P14's W, and rates:import makes a new version.
 - CURRENT_HTS_REV_SHORT (src/domain/rates/current.ts): the regex is /^d{4} Rev. / (missing backslash) — labels read
   "2026 Rev. 21" instead of "Rev 21". One-character fix; on main since d0dba74.
+- Estimator: split note 21 out of 20(www). The official text prints the 9903.89 note as "(21) (a) …" right after
+  20(www)(14), so it segments as 20(www)(21); today exclusionOf() keeps it out of the 20(www) exclusion (items naming other
+  Ch. 99 headings), and a second "21." (infant formula, 9903.19.23) follows — a proper fix needs a duplicate-note-number
+  scheme. Also: 9903.05.87 (52(c)) drafted as unconditional twice → blocked; CN refuses its 16 items.
+- Estimator: rebuild before valid_until (2026-11-09); EU members beyond DE; note 31 and 20(s)(ii) not modeled.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
