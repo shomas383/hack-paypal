@@ -1,0 +1,46 @@
+{
+ "version": "2026-rev21-e4",
+ "hts_revision": "2026 Rev. 21",
+ "as_of": "2026-10-12",
+ "valid_until": null,
+ "valid_until_source": null,
+ "sources": {
+  "export": {
+   "url": "https://hts.usitc.gov/reststop/exportList?from=0101&to=9999&format=JSON&styles=false",
+   "file": "data/source/hts/hts-export-2026-rev21-2026-10-11.json",
+   "sha256": "bea73f235732215a4bfab973be7495c16c450c65b78e40f58324031ebf092a09",
+   "release": "2026HTSRev21"
+  },
+  "ch99_pdf": {
+   "url": "https://hts.usitc.gov/reststop/file?release=2026HTSRev21&filename=Chapter%2099",
+   "file": "data/source/hts/ch99-2026-rev21.pdf",
+   "sha256": "07911877d541dce23ddef3f89aa05503faa5acb03fd95715f4ee1ba9ea2a53ad",
+   "pdftotext": {
+    "version": "xpdf 4.06",
+    "args": [
+     "-enc",
+     "UTF-8",
+     "-layout"
+    ]
+   }
+  }
+ },
+ "previous": "2026-rev21-e3",
+ "rules": "previous version 2026-rev21-e3",
+ "reviewed_lists": [
+  {
+   "file": "data/reviews/ieepa-ended-2026-rev21.json",
+   "reviewed_on": "2026-10-11",
+   "headings": 120
+  }
+ ],
+ "gate": {
+  "checks": 544,
+  "failed": 2,
+  "blockedRules": [
+   "cond-9903-05-87",
+   "cn-cond-9903-05-87"
+  ],
+  "blockedOrigins": {}
+ }
+}

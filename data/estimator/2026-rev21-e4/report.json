@@ -1,0 +1,4764 @@
+{
+ "checks": [
+  {
+   "id": "G0",
+   "subject": "docs/SPEC.md",
+   "pass": true,
+   "detail": "override for 9903.01., 9903.02.: quote must be in docs/SPEC.md"
+  },
+  {
+   "id": "G0",
+   "subject": "data/reviews/ieepa-ended-2026-rev21.json reviewed headings",
+   "pass": true,
+   "detail": "120 of 120 reviewed heading(s) present with their reviewed text (terminated); RE-REVIEW — text changed, kept in force: none; RE-REVIEW — no longer in the schedule: none"
+  },
+  {
+   "id": "G0",
+   "subject": "data/reviews/ieepa-ended-2026-rev21.json not listed",
+   "pass": true,
+   "detail": "2 heading(s) under 9903.01., 9903.02. not in the list and not out of force by their own text, kept in force: 9903.02.76, 9903.02.81"
+  },
+  {
+   "id": "G5",
+   "subject": "numbering fixes",
+   "pass": true,
+   "detail": "9 applied; not holding: none; still out of sequence: 0"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "heading 9903.05.48 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "heading 9903.05.49 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "note III 52(k) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.49: \"articles the product of Japan, with an ad valorem (or ad valorem equivalent) rat…\""
+  },
+  {
+   "id": "G2",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(k): \"For headings 9903.05.49, 9903.05.71 and 9903.05.74, articles for which the appli…\""
+  },
+  {
+   "id": "G2",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.48: \"articles the product of Japan, with an ad valorem (or ad valorem equivalent) rat…\""
+  },
+  {
+   "id": "G3",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "rate 12.5% must be every percentage in quote 1 (found 12.5, 12.5)"
+  },
+  {
+   "id": "G3",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "the rate quote must name 9903.05.49"
+  },
+  {
+   "id": "G3",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.49 General column is \"12.5%\", expected \"12.5%\""
+  },
+  {
+   "id": "G3",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.49 text must say \"less than 12.5 percent\""
+  },
+  {
+   "id": "G3",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.48 must say \"equal to or greater than 12.5 percent\" and add nothing"
+  },
+  {
+   "id": "G4",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.49 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.49 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.48 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "9903.05.48 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "jp-cap-9903-05-49",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "heading 9903.05.38 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "heading 9903.05.39 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "note III 52(k) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(k): \"For headings 9903.05.39 and 9903.05.76, articles for which the applicable column…\""
+  },
+  {
+   "id": "G2",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.39: \"articles the product of a member state of the European Union, with an ad valorem…\""
+  },
+  {
+   "id": "G2",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.38: \"articles the product of a member state of the European Union, with an ad valorem…\""
+  },
+  {
+   "id": "G3",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "rate 10% must be every percentage in quote 0 (found 10, 10)"
+  },
+  {
+   "id": "G3",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "the rate quote must name 9903.05.39"
+  },
+  {
+   "id": "G3",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.39 General column is \"10%\", expected \"10%\""
+  },
+  {
+   "id": "G3",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.39 text must say \"less than 10 percent\""
+  },
+  {
+   "id": "G3",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.38 must say \"equal to or greater than 10 percent\" and add nothing"
+  },
+  {
+   "id": "G4",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.39 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.39 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.38 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "9903.05.38 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "eu-cap-9903-05-39",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "heading 9903.05.86 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.86: \"Articles provided for in subdivision (b) of U.S. note 52 to this subchapter…\""
+  },
+  {
+   "id": "G2",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(b): \"As provided in heading 9903.05.86, the duties imposed by headings 9903.05.20–990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "9903.05.86 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "9903.05.86 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "9903.05.86 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b) must open \"As provided in heading 9903.05.86\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b): 863 codes vs 863 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(b) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.86 outside note III 52(b): "
+  },
+  {
+   "id": "GR",
+   "subject": "exempt-9903-05-86",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "heading 9903.05.88 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.88: \"Articles of civil aircraft (all aircraft other than military aircraft); their en…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(d): \"the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply …\""
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "9903.05.88 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "9903.05.88 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "9903.05.88 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d) must open \"As provided in heading 9903.05.88\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d): 541 codes vs 541 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(d) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.88 outside note III 52(d): "
+  },
+  {
+   "id": "GR",
+   "subject": "cond-9903-05-88",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "heading 9903.05.89 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.89: \"Articles for use in pharmaceutical applications, as provided for in subdivision …\""
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(e): \"As provided in heading 9903.05.89, the additional duties imposed by headings 990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "9903.05.89 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "9903.05.89 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "9903.05.89 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e) must open \"As provided in heading 9903.05.89\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e): 700 codes vs 700 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(e) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.89 outside note III 52(e): "
+  },
+  {
+   "id": "GR",
+   "subject": "cond-9903-05-89",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "heading 9903.05.90 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "note III 52(f) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.90: \"Articles of aluminum, of steel or of copper or derivative aluminum or steel arti…\""
+  },
+  {
+   "id": "G2",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(f): \"As provided in heading 9903.05.90, the additional duties imposed by headings 990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "9903.05.90 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "9903.05.90 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "9903.05.90 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "via-9903-05-90",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "heading 9903.05.91 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "note III 52(a) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.91: \"Articles that are donations by persons subject to the jurisdiction of the United…\""
+  },
+  {
+   "id": "G2",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(a): \"Except as provided in headings 9903.05.85–9903.06.21 and in subdivisions (b) thr…\""
+  },
+  {
+   "id": "G3",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "9903.05.91 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "9903.05.91 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "9903.05.91 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "sale-9903-05-91",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "heading 9903.05.92 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "note III 52(a) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.92: \"Articles that are informational materials, including but not limited to publicat…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(a): \"Except as provided in headings 9903.05.85–9903.06.21 and in subdivisions (b) thr…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "9903.05.92 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "9903.05.92 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "9903.05.92 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "heading_words must be the rule heading"
+  },
+  {
+   "id": "GR",
+   "subject": "cond-9903-05-92",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "heading 9903.05.97 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "note III 52(j)(2) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.97: \"Articles the product of a member state of the European Union, as provided for in…\""
+  },
+  {
+   "id": "G2",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(j)(2): \"As provided in heading 9903.05.97, the duties imposed by headings 9903.05.38–990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "9903.05.97 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "9903.05.97 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "9903.05.97 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "note III 52(j)(2) must open \"As provided in heading 9903.05.97\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "note III 52(j)(2) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "note III 52(j)(2): 43 codes vs 43 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(j)(2) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.97 outside note III 52(j)(2): "
+  },
+  {
+   "id": "GR",
+   "subject": "exempt-9903-05-97",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "general 9903.05.31 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "heading 9903.05.31 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.31: \"Except for products described in headings 9903.05.85–9903.05.92, articles the pr…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "quote not verbatim in general 9903.05.31: \"The duty provided in the applicable subheading + 12.5%…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "rate 12.5% must be every percentage in quote 1 (found 12.5)"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "the rate quote must name 9903.05.31 or be its General column"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "9903.05.31 General column is \"The duty provided in the applicable subheading + 12.5%\", expected \"The duty provided in the applicable subheading + 12.5%\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "9903.05.31 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "9903.05.31 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "cn-add-9903-05-31",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "general 9903.88.01 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "note III 20(a) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "note III 20(b) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "quote not verbatim in general 9903.88.01: \"The duty provided in the applicable subheading plus 25%…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(b): \"Heading 9903.88.01 applies to all products of China that are classified in the f…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(a): \"For the purposes of heading 9903.88.01, products of China, as provided for in th…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "rate 25% must be every percentage in quote 0 (found 25)"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "the rate quote must name 9903.88.01 or be its General column"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "9903.88.01 General column is \"The duty provided in the applicable subheading plus 25%\", expected \"The duty provided in the applicable subheading + 25%\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "9903.88.01 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "9903.88.01 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "note III 20(b) must be a list of 8-digit subheadings under \"Heading 9903.88.01 applies to\", cited by the heading's own text"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "note III 20(b) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "note III 20(b): 856 codes vs 856 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 20(b) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.88.01 outside note III 20(b): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-add-9903-88-01",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "general 9903.88.02 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "note III 20(c) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "note III 20(d) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "quote not verbatim in general 9903.88.02: \"The duty provided in the applicable subheading + 25%…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(c): \"For the purposes of heading 9903.88.02, products of China, as provided for in th…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(d): \"Heading 9903.88.02 applies to all products of China that are classified in the f…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "rate 25% must be every percentage in quote 1 (found 25)"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "the rate quote must name 9903.88.02 or be its General column"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "9903.88.02 General column is \"The duty provided in the applicable subheading + 25%\", expected \"The duty provided in the applicable subheading + 25%\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "9903.88.02 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "9903.88.02 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "note III 20(d) must be a list of 8-digit subheadings under \"Heading 9903.88.02 applies to\", cited by the heading's own text"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "note III 20(d) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "note III 20(d): 283 codes vs 283 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 20(d) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.88.02 outside note III 20(d): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-add-9903-88-02",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "heading 9903.88.03 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "note III 20(e) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "note III 20(f) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.88.03: \"articles the product of China, as provided for in U.S. note 20(e) to this subcha…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(e): \"For the purposes of heading 9903.88.03, products of China, as provided for in th…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(f): \"Heading 9903.88.03 applies to all products of China that are classified in the f…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "rate 25% must be every percentage in quote 1 (found 25)"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "the rate quote must name 9903.88.03 or be its General column"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "9903.88.03 General column is \"The duty provided in the applicable subheading + 25%\", expected \"The duty provided in the applicable subheading + 25%\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "9903.88.03 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "9903.88.03 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "note III 20(f) must be a list of 8-digit subheadings under \"Heading 9903.88.03 applies to\", cited by the heading's own text"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "note III 20(f) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "note III 20(f): 5906 codes vs 5906 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 20(f) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.88.03 outside note III 20(f): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-add-9903-88-03",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "general 9903.88.15 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "note III 20(r) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "note III 20(s)(i) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "quote not verbatim in general 9903.88.15: \"The duty provided in the applicable subheading + 7.5%…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(r): \"For the purposes of heading 9903.88.15, products of China, as provided for in th…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(s)(i): \"all products of China that are classified in the following 8-digit subheadings:…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "rate 7.5% must be every percentage in quote 0 (found 7.5)"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "the rate quote must name 9903.88.15 or be its General column"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "9903.88.15 General column is \"The duty provided in the applicable subheading + 7.5%\", expected \"The duty provided in the applicable subheading + 7.5%\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "9903.88.15 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "9903.88.15 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "note III 20(s)(i) must be a list of 8-digit subheadings under \"Heading 9903.88.15 applies to\", cited by the heading's own text"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "note III 20(s)(i) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "note III 20(s)(i): 2958 codes vs 2958 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 20(s)(i) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.88.15 outside note III 20(s)(i): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-add-9903-88-15",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "heading 9903.88.16 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "note III 20(t) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.88.16: \"Articles the product of China, as provided for in U.S. note 20(t) to this subcha…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "quote not verbatim in note III 20(t): \"[Compiler's note:Subdivisions (t) and (u) of this note and heading 9903.88.16 su…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "9903.88.16 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "9903.88.16 must be suspended by a compiler's note, and a quote must say so (it is compiler_note: [Compiler's note: provision suspended.])"
+  },
+  {
+   "id": "GR",
+   "subject": "cn-not-9903-88-16",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "heading 9903.05.86 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.86: \"Articles provided for in subdivision (b) of U.S. note 52 to this subchapter…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(b): \"As provided in heading 9903.05.86, the duties imposed by headings 9903.05.20–990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "9903.05.86 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "9903.05.86 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "9903.05.86 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b) must open \"As provided in heading 9903.05.86\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "note III 52(b): 863 codes vs 863 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(b) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.86 outside note III 52(b): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-exempt-9903-05-86",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "heading 9903.05.88 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.88: \"Articles of civil aircraft (all aircraft other than military aircraft); their en…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(d): \"As provided in heading 9903.05.88, the additional duties imposed by headings 990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "9903.05.88 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "9903.05.88 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "9903.05.88 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d) must open \"As provided in heading 9903.05.88\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "note III 52(d): 541 codes vs 541 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(d) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.88 outside note III 52(d): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-cond-9903-05-88",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "heading 9903.05.89 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.89: \"Articles for use in pharmaceutical applications, as provided for in subdivision …\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(e): \"As provided in heading 9903.05.89, the additional duties imposed by headings 990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "9903.05.89 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "9903.05.89 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "9903.05.89 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e) must open \"As provided in heading 9903.05.89\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "note III 52(e): 700 codes vs 700 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(e) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.89 outside note III 52(e): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-cond-9903-05-89",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "heading 9903.05.90 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "note III 52(f) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "note III 52(f)(1) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.90: \"Articles of aluminum, of steel or of copper or derivative aluminum or steel arti…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(f): \"As provided in heading 9903.05.90, the additional duties imposed by headings 990…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(f)(1): \"articles of aluminum, of steel or of copper, nor to derivative aluminum or steel…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "9903.05.90 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "9903.05.90 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "9903.05.90 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "cn-via-9903-05-90",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "heading 9903.05.91 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.91: \"Articles that are donations by persons subject to the jurisdiction of the United…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "9903.05.91 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "9903.05.91 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "9903.05.91 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "GR",
+   "subject": "cn-sale-9903-05-91",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "heading 9903.05.92 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "note III 52(a) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.92: \"Articles that are informational materials, including but not limited to publicat…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(a): \"Except as provided in headings 9903.05.85–9903.06.21 and in subdivisions (b) thr…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "9903.05.92 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "9903.05.92 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "9903.05.92 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "heading_words must be the rule heading"
+  },
+  {
+   "id": "GR",
+   "subject": "cn-cond-9903-05-92",
+   "pass": true,
+   "detail": "matches the reference rule"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "heading 9903.05.87 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.87: \"Articles provided for in subdivision (c) of U.S. note 52 to this subchapter…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(c): \"As provided in heading 9903.05.87, the duties imposed by headings 9903.05.20–990…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "9903.05.87 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "9903.05.87 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "9903.05.87 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c) must open \"As provided in heading 9903.05.87\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c): 16 codes vs 16 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(c) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cond-9903-05-87",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.87 outside note III 52(c): "
+  },
+  {
+   "id": "GR",
+   "subject": "cond-9903-05-87",
+   "pass": false,
+   "detail": "kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "rules are for 2026 Rev. 21, data is 2026 Rev. 21"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "cap_heading_at_or_above is for combined_cap and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "combined_cap applies to all lines"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "additive applies to all lines or to a list"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "not_applied has scope all (its heading decides, being out of force)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "condition is for conditional_exempt and required there"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "an exemption needs a list or heading_words scope"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "drafted_from_sha256 must name exactly the quoted sources"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "heading 9903.05.87 text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G1",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c)(1) text changed since drafting (stale; needs re-drafting)"
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "quote not verbatim in heading 9903.05.87: \"Articles provided for in subdivision (c) of U.S. note 52 to this subchapter…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(c): \"As provided in heading 9903.05.87, the duties imposed by headings 9903.05.20–990…\""
+  },
+  {
+   "id": "G2",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "quote not verbatim in note III 52(c)(1): \"Etrogs (classifiable in subheading 0805.90.01);…\""
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "this kind carries no number"
+  },
+  {
+   "id": "G3",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "9903.05.87 General column must add nothing (\"The duty provided in the applicable subheading\"), is \"The duty provided in the applicable subheading\""
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "9903.05.87 is not a heading of 2026 Rev. 21"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "9903.05.87 is out of force (undefined: undefined)"
+  },
+  {
+   "id": "G4",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c) must open \"As provided in heading 9903.05.87\" and say \"shall not apply\""
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c) must exist and list codes"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "0 listed codes are not 2026 Rev. 21 lines: "
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "note III 52(c): 16 codes vs 16 in the previous version (> ±20%)"
+  },
+  {
+   "id": "G5",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "an out-of-sequence label inside note III 52(c) (): its codes are in doubt"
+  },
+  {
+   "id": "G6",
+   "subject": "cn-cond-9903-05-87",
+   "pass": true,
+   "detail": "lines with a footnote to 9903.05.87 outside note III 52(c): "
+  },
+  {
+   "id": "GR",
+   "subject": "cn-cond-9903-05-87",
+   "pass": false,
+   "detail": "kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true"
+  },
+  {
+   "id": "G9",
+   "subject": "parser",
+   "pass": true,
+   "detail": "12 verified rows re-parsed"
+  },
+  {
+   "id": "G7",
+   "subject": "origin JP",
+   "pass": true,
+   "detail": "no origin-level gap"
+  },
+  {
+   "id": "G7",
+   "subject": "origin DE",
+   "pass": true,
+   "detail": "no origin-level gap"
+  },
+  {
+   "id": "G7",
+   "subject": "origin CN",
+   "pass": true,
+   "detail": "no origin-level gap"
+  },
+  {
+   "id": "G8",
+   "subject": "P01 JP 9504.40.0000",
+   "pass": true,
+   "detail": "estimate 1188 (9903.05.49) vs verified 1188 (9903.05.49)"
+  },
+  {
+   "id": "G8",
+   "subject": "P02 JP 9504.40.0000",
+   "pass": true,
+   "detail": "estimate 3125 (9903.05.49) vs verified 3125 (9903.05.49)"
+  },
+  {
+   "id": "G8",
+   "subject": "P03 JP 9102.21.70",
+   "pass": true,
+   "detail": "estimate 3750 (9903.05.49) vs verified 3750 (9903.05.49)"
+  },
+  {
+   "id": "G8",
+   "subject": "P04 JP 9006.53.0205",
+   "pass": true,
+   "detail": "estimate 2250 (9903.05.49) vs verified 2250 (9903.05.49)"
+  },
+  {
+   "id": "G8",
+   "subject": "P05 CN 9503.00.0090",
+   "pass": true,
+   "detail": "estimate 813 (9903.05.31) vs verified 813 (9903.05.31)"
+  },
+  {
+   "id": "G8",
+   "subject": "P06 JP 9507.30.6000",
+   "pass": true,
+   "detail": "estimate 4375 (9903.05.49) vs verified 4375 (9903.05.49)"
+  },
+  {
+   "id": "G8",
+   "subject": "P07 JP 9801.00.1098",
+   "pass": true,
+   "detail": "refused as expected (SPECIAL_PROVISION)"
+  },
+  {
+   "id": "G8",
+   "subject": "P08 JP 6203.42.4511",
+   "pass": true,
+   "detail": "estimate 3320 (9903.05.48) vs verified 3320 (9903.05.48)"
+  },
+  {
+   "id": "G8",
+   "subject": "P09 CN 9504.50.0000",
+   "pass": true,
+   "detail": "estimate 1500 (9903.05.31) vs verified 1500 (9903.05.31)"
+  },
+  {
+   "id": "G8",
+   "subject": "P10 JP 9506.31.0000",
+   "pass": true,
+   "detail": "estimate 3750 (9903.05.49) vs verified 3750 (9903.05.49)"
+  },
+  {
+   "id": "G8",
+   "subject": "P11 JP 8211.92.9030",
+   "pass": true,
+   "detail": "refused (UNMODELED_REGIME: note III 16(c)(vii)); verified row records note(s) 16 outside the rules"
+  },
+  {
+   "id": "G8",
+   "subject": "P12 JP 8523.49.4000",
+   "pass": true,
+   "detail": "estimate 0 (9903.05.92) vs verified 0 (9903.05.92)"
+  },
+  {
+   "id": "G8",
+   "subject": "P13 CN 9102.21.70",
+   "pass": true,
+   "detail": "estimate 7209 (9903.05.31 + 9903.88.15) vs verified 7209 (9903.05.31 + 9903.88.15)"
+  },
+  {
+   "id": "G8",
+   "subject": "P14 DE 9102.21.70",
+   "pass": true,
+   "detail": "estimate 2900 (9903.05.39) vs verified 2900 (9903.05.39)"
+  }
+ ],
+ "blockedRules": [
+  {
+   "id": "cond-9903-05-87",
+   "reasons": [
+    "GR: kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true"
+   ]
+  },
+  {
+   "id": "cn-cond-9903-05-87",
+   "reasons": [
+    "GR: kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true"
+   ]
+  }
+ ],
+ "blockedOrigins": {},
+ "alerts": [
+  "GR cond-9903-05-87: kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true",
+  "GR cn-cond-9903-05-87: kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true"
+ ],
+ "listCounts": {
+  "note III 52(b)": {
+   "codes": 863,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 52(d)": {
+   "codes": 541,
+   "ch98": 6,
+   "unknown": []
+  },
+  "note III 52(e)": {
+   "codes": 700,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 52(j)(2)": {
+   "codes": 43,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 20(b)": {
+   "codes": 856,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 20(d)": {
+   "codes": 283,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 20(f)": {
+   "codes": 5906,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 20(s)(i)": {
+   "codes": 2958,
+   "ch98": 0,
+   "unknown": []
+  },
+  "note III 52(c)": {
+   "codes": 16,
+   "ch98": 0,
+   "unknown": []
+  }
+ },
+ "coverage": {
+  "JP": {
+   "lines": 19926,
+   "refused": 4532,
+   "byRef": {
+    "heading 9903.54.01": 166,
+    "heading 9903.54.02": 166,
+    "footnote 9904.02.01–9904.02.37": 11,
+    "note III 7": 16,
+    "footnote 9904.02.60": 6,
+    "footnote 9904.04.01–9904.04.08": 3,
+    "footnote 9904.04.09–9904.04.21": 3,
+    "footnote 9904.04.22–9904.04.30": 2,
+    "footnote 9904.04.31–9904.04.39": 2,
+    "footnote 9904.04.40–9904.04.49": 2,
+    "footnote 9904.04.50–9904.05.01": 26,
+    "footnote 9904.05.02–9904.05.19": 4,
+    "footnote 9904.05.20–9904.05.36": 2,
+    "footnote 9904.05.37–9904.05.47": 5,
+    "footnote 9904.06.38–9904.06.49": 5,
+    "footnote 9904.05.48–9904.05.58": 7,
+    "footnote 9904.05.59–9904.05.73": 7,
+    "footnote 9904.05.74–9904.05.82": 7,
+    "footnote 9904.05.83–9904.05.94": 7,
+    "footnote 9904.05.95–9904.06.05": 8,
+    "footnote 9904.06.19–9904.06.28": 5,
+    "footnote 9904.06.29–9904.06.37": 5,
+    "heading 9903.04.10": 9,
+    "heading 9903.04.15": 6,
+    "heading 9903.04.20": 6,
+    "heading 9903.04.05": 3,
+    "footnote 9904.06.06–9904.06.18": 1,
+    "heading 9903.04.25": 2,
+    "note III 52": 78,
+    "footnote 9904.12.01–9904.12.19": 8,
+    "heading 9903.04.35": 4,
+    "heading 9903.17.01": 7,
+    "heading 9903.17.02": 7,
+    "heading 9903.17.03": 7,
+    "heading 9903.17.04": 7,
+    "heading 9903.17.05": 7,
+    "heading 9903.17.06": 7,
+    "heading 9903.17.07": 7,
+    "heading 9903.17.08": 7,
+    "heading 9903.17.09": 7,
+    "heading 9903.17.10": 7,
+    "heading 9903.17.21": 7,
+    "heading 9903.17.22": 7,
+    "heading 9903.17.23": 7,
+    "heading 9903.17.24": 7,
+    "heading 9903.17.25": 7,
+    "heading 9903.17.26": 7,
+    "heading 9903.17.27": 7,
+    "heading 9903.17.28": 7,
+    "heading 9903.17.29": 7,
+    "heading 9903.17.30": 7,
+    "heading 9903.17.31": 7,
+    "heading 9903.17.32": 7,
+    "heading 9903.17.33": 7,
+    "heading 9903.18.01": 7,
+    "heading 9903.18.02": 7,
+    "heading 9903.18.03": 7,
+    "heading 9903.18.04": 7,
+    "heading 9903.18.05": 7,
+    "heading 9903.18.06": 7,
+    "heading 9903.18.07": 7,
+    "heading 9903.18.08": 7,
+    "heading 9903.18.09": 7,
+    "heading 9903.18.10": 7,
+    "footnote 9904.17.08–9904.17.16": 8,
+    "footnote 9904.17.01–9904.17.07": 2,
+    "footnote 9904.17.17–9904.17.48": 13,
+    "footnote 9904.17.49–9904.17.65": 12,
+    "footnote 9904.17.66–9904.17.84": 12,
+    "footnote 9904.18.01–9904.18.08": 3,
+    "footnote 9904.18.09–9904.18.18": 6,
+    "footnote 9904.18.19–9904.18.30": 8,
+    "footnote 9904.19.01–9904.19.10": 2,
+    "heading 9903.19.19": 4,
+    "heading 9903.19.20": 2,
+    "footnote 9904.19.11–9904.19.19": 2,
+    "heading 9903.04.30": 4,
+    "heading 9903.04.40": 1,
+    "note I 3": 7,
+    "footnote 9904.20.01–9904.20.10": 1,
+    "footnote 9904.21.01–9904.21.09": 1,
+    "footnote 9904.21.10–9904.21.18": 1,
+    "heading 9903.19.21": 1,
+    "heading 9903.19.22": 13,
+    "heading 9903.04.45": 1,
+    "note I 2": 4,
+    "heading 9903.04.50": 2,
+    "heading 9903.04.55": 2,
+    "footnote 9904.23.01–9904.23.09": 4,
+    "note III 40": 149,
+    "note III 16": 2048,
+    "note III 35": 1080,
+    "note III 33": 671,
+    "note III 38": 309,
+    "heading 9903.40.05": 11,
+    "heading 9903.40.10": 5,
+    "heading 9903.41.05": 125,
+    "footnote 9903.41.05": 93,
+    "note III 37": 113,
+    "footnote 9903.52.00–9903.52.26": 22,
+    "footnote 9904.52.01–9904.52.34": 12,
+    "footnote 9904.52.35–9904.52.50": 10,
+    "footnote 9903.55.01": 4,
+    "note III 32": 9,
+    "heading 9903.41.10": 391,
+    "footnote 9903.41.10": 85,
+    "note III 41": 3,
+    "heading 9903.82.03": 1392,
+    "heading 9903.91.14": 1,
+    "note III 31": 1,
+    "heading 9903.45.01": 6,
+    "heading 9903.45.02": 6,
+    "note III 17": 26,
+    "heading 9903.45.05": 2,
+    "heading 9903.45.06": 2,
+    "heading 9903.41.35": 15,
+    "heading 9903.41.30": 11,
+    "heading 9903.41.15": 3,
+    "heading 9903.41.20": 2,
+    "heading 9903.41.25": 2,
+    "note III 39": 10,
+    "note III 43": 30,
+    "heading 9903.41.40": 2,
+    "heading 9903.41.45": 2,
+    "heading 9903.74.02": 10
+   }
+  },
+  "DE": {
+   "lines": 19926,
+   "refused": 5004,
+   "byRef": {
+    "heading 9903.54.01": 166,
+    "heading 9903.54.02": 166,
+    "footnote 9904.02.01–9904.02.37": 11,
+    "note III 7": 16,
+    "footnote 9904.02.60": 6,
+    "footnote 9904.04.01–9904.04.08": 3,
+    "footnote 9904.04.09–9904.04.21": 3,
+    "footnote 9904.04.22–9904.04.30": 2,
+    "footnote 9904.04.31–9904.04.39": 2,
+    "footnote 9904.04.40–9904.04.49": 2,
+    "footnote 9904.04.50–9904.05.01": 26,
+    "footnote 9904.05.02–9904.05.19": 4,
+    "footnote 9904.05.20–9904.05.36": 2,
+    "footnote 9904.05.37–9904.05.47": 5,
+    "footnote 9904.06.38–9904.06.49": 5,
+    "footnote 9904.05.48–9904.05.58": 7,
+    "footnote 9904.05.59–9904.05.73": 7,
+    "footnote 9904.05.74–9904.05.82": 7,
+    "footnote 9904.05.83–9904.05.94": 7,
+    "footnote 9904.05.95–9904.06.05": 8,
+    "footnote 9904.06.19–9904.06.28": 5,
+    "footnote 9904.06.29–9904.06.37": 5,
+    "heading 9903.04.10": 9,
+    "heading 9903.04.15": 6,
+    "heading 9903.04.20": 6,
+    "heading 9903.04.05": 3,
+    "footnote 9904.06.06–9904.06.18": 1,
+    "heading 9903.04.25": 2,
+    "note III 52": 78,
+    "footnote 9904.12.01–9904.12.19": 8,
+    "heading 9903.04.35": 4,
+    "heading 9903.17.01": 7,
+    "heading 9903.17.02": 7,
+    "heading 9903.17.03": 7,
+    "heading 9903.17.04": 7,
+    "heading 9903.17.05": 7,
+    "heading 9903.17.06": 7,
+    "heading 9903.17.07": 7,
+    "heading 9903.17.08": 7,
+    "heading 9903.17.09": 7,
+    "heading 9903.17.10": 7,
+    "heading 9903.17.21": 7,
+    "heading 9903.17.22": 7,
+    "heading 9903.17.23": 7,
+    "heading 9903.17.24": 7,
+    "heading 9903.17.25": 7,
+    "heading 9903.17.26": 7,
+    "heading 9903.17.27": 7,
+    "heading 9903.17.28": 7,
+    "heading 9903.17.29": 7,
+    "heading 9903.17.30": 7,
+    "heading 9903.17.31": 7,
+    "heading 9903.17.32": 7,
+    "heading 9903.17.33": 7,
+    "heading 9903.18.01": 7,
+    "heading 9903.18.02": 7,
+    "heading 9903.18.03": 7,
+    "heading 9903.18.04": 7,
+    "heading 9903.18.05": 7,
+    "heading 9903.18.06": 7,
+    "heading 9903.18.07": 7,
+    "heading 9903.18.08": 7,
+    "heading 9903.18.09": 7,
+    "heading 9903.18.10": 7,
+    "footnote 9904.17.08–9904.17.16": 8,
+    "footnote 9904.17.01–9904.17.07": 2,
+    "footnote 9904.17.17–9904.17.48": 13,
+    "footnote 9904.17.49–9904.17.65": 12,
+    "footnote 9904.17.66–9904.17.84": 12,
+    "footnote 9904.18.01–9904.18.08": 3,
+    "footnote 9904.18.09–9904.18.18": 6,
+    "footnote 9904.18.19–9904.18.30": 8,
+    "footnote 9904.19.01–9904.19.10": 2,
+    "heading 9903.19.19": 4,
+    "heading 9903.19.20": 2,
+    "footnote 9904.19.11–9904.19.19": 2,
+    "heading 9903.04.30": 4,
+    "heading 9903.04.40": 1,
+    "note I 3": 7,
+    "footnote 9904.20.01–9904.20.10": 1,
+    "footnote 9904.21.01–9904.21.09": 1,
+    "footnote 9904.21.10–9904.21.18": 1,
+    "heading 9903.19.21": 1,
+    "heading 9903.19.22": 13,
+    "heading 9903.04.45": 1,
+    "note I 2": 4,
+    "heading 9903.04.50": 2,
+    "heading 9903.04.55": 2,
+    "footnote 9904.23.01–9904.23.09": 4,
+    "note III 2": 2207,
+    "note III 40": 149,
+    "heading 9903.08.04": 1,
+    "note III 16": 2048,
+    "note III 33": 671,
+    "note III 38": 309,
+    "heading 9903.40.05": 11,
+    "heading 9903.40.10": 5,
+    "heading 9903.08.07": 1,
+    "heading 9903.08.08": 1,
+    "note III 37": 113,
+    "heading 9903.08.09": 1,
+    "heading 9903.08.10": 2,
+    "heading 9903.08.11": 2,
+    "footnote 9903.52.00–9903.52.26": 22,
+    "footnote 9904.52.01–9904.52.34": 12,
+    "footnote 9904.52.35–9904.52.50": 10,
+    "footnote 9903.55.01": 4,
+    "note III 32": 9,
+    "heading 9903.08.13": 5,
+    "note III 41": 3,
+    "heading 9903.82.03": 1392,
+    "heading 9903.91.14": 1,
+    "note III 31": 1,
+    "heading 9903.45.01": 6,
+    "heading 9903.45.02": 6,
+    "note III 17": 26,
+    "heading 9903.45.05": 2,
+    "heading 9903.45.06": 2,
+    "note III 39": 10,
+    "note III 43": 30,
+    "heading 9903.08.14": 9,
+    "heading 9903.08.15": 4,
+    "heading 9903.74.02": 10
+   }
+  },
+  "CN": {
+   "lines": 19926,
+   "refused": 3739,
+   "byRef": {
+    "heading 9903.54.01": 166,
+    "heading 9903.54.02": 166,
+    "footnote 9904.02.01–9904.02.37": 11,
+    "note III 7": 16,
+    "footnote 9904.02.60": 6,
+    "footnote 9904.04.01–9904.04.08": 3,
+    "footnote 9904.04.09–9904.04.21": 3,
+    "footnote 9904.04.22–9904.04.30": 2,
+    "footnote 9904.04.31–9904.04.39": 2,
+    "footnote 9904.04.40–9904.04.49": 2,
+    "footnote 9904.04.50–9904.05.01": 26,
+    "footnote 9904.05.02–9904.05.19": 4,
+    "footnote 9904.05.20–9904.05.36": 2,
+    "footnote 9904.05.37–9904.05.47": 5,
+    "footnote 9904.06.38–9904.06.49": 5,
+    "footnote 9904.05.48–9904.05.58": 7,
+    "footnote 9904.05.59–9904.05.73": 7,
+    "footnote 9904.05.74–9904.05.82": 7,
+    "footnote 9904.05.83–9904.05.94": 7,
+    "footnote 9904.05.95–9904.06.05": 8,
+    "footnote 9904.06.19–9904.06.28": 5,
+    "footnote 9904.06.29–9904.06.37": 5,
+    "heading 9903.04.10": 9,
+    "heading 9903.04.15": 6,
+    "heading 9903.04.20": 6,
+    "heading 9903.04.05": 3,
+    "footnote 9904.06.06–9904.06.18": 1,
+    "heading 9903.04.25": 2,
+    "note III 52": 78,
+    "footnote 9904.12.01–9904.12.19": 8,
+    "heading 9903.04.35": 4,
+    "heading 9903.17.01": 7,
+    "heading 9903.17.02": 7,
+    "heading 9903.17.03": 7,
+    "heading 9903.17.04": 7,
+    "heading 9903.17.05": 7,
+    "heading 9903.17.06": 7,
+    "heading 9903.17.07": 7,
+    "heading 9903.17.08": 7,
+    "heading 9903.17.09": 7,
+    "heading 9903.17.10": 7,
+    "heading 9903.17.21": 7,
+    "heading 9903.17.22": 7,
+    "heading 9903.17.23": 7,
+    "heading 9903.17.24": 7,
+    "heading 9903.17.25": 7,
+    "heading 9903.17.26": 7,
+    "heading 9903.17.27": 7,
+    "heading 9903.17.28": 7,
+    "heading 9903.17.29": 7,
+    "heading 9903.17.30": 7,
+    "heading 9903.17.31": 7,
+    "heading 9903.17.32": 7,
+    "heading 9903.17.33": 7,
+    "heading 9903.18.01": 7,
+    "heading 9903.18.02": 7,
+    "heading 9903.18.03": 7,
+    "heading 9903.18.04": 7,
+    "heading 9903.18.05": 7,
+    "heading 9903.18.06": 7,
+    "heading 9903.18.07": 7,
+    "heading 9903.18.08": 7,
+    "heading 9903.18.09": 7,
+    "heading 9903.18.10": 7,
+    "footnote 9904.17.08–9904.17.16": 8,
+    "footnote 9904.17.01–9904.17.07": 2,
+    "footnote 9904.17.17–9904.17.48": 13,
+    "footnote 9904.17.49–9904.17.65": 12,
+    "footnote 9904.17.66–9904.17.84": 12,
+    "footnote 9904.18.01–9904.18.08": 3,
+    "footnote 9904.18.09–9904.18.18": 6,
+    "footnote 9904.18.19–9904.18.30": 8,
+    "footnote 9904.19.01–9904.19.10": 2,
+    "heading 9903.19.19": 4,
+    "heading 9903.19.20": 2,
+    "footnote 9904.19.11–9904.19.19": 2,
+    "heading 9903.04.30": 4,
+    "heading 9903.04.40": 1,
+    "note I 3": 7,
+    "footnote 9904.20.01–9904.20.10": 1,
+    "footnote 9904.21.01–9904.21.09": 1,
+    "footnote 9904.21.10–9904.21.18": 1,
+    "note III 20": 841,
+    "heading 9903.19.21": 1,
+    "heading 9903.19.22": 13,
+    "heading 9903.04.45": 1,
+    "note I 2": 4,
+    "heading 9903.04.50": 2,
+    "heading 9903.04.55": 2,
+    "footnote 9904.23.01–9904.23.09": 4,
+    "note III 31": 966,
+    "note III 40": 149,
+    "footnote 9903.88.04": 8,
+    "note III 16": 2048,
+    "note III 33": 671,
+    "note III 38": 309,
+    "heading 9903.40.05": 11,
+    "heading 9903.40.10": 5,
+    "footnote 9903.91.08": 2,
+    "note III 37": 113,
+    "footnote 9903.52.00–9903.52.26": 22,
+    "footnote 9904.52.01–9904.52.34": 12,
+    "footnote 9904.52.35–9904.52.50": 10,
+    "footnote 9903.55.01": 4,
+    "note III 32": 9,
+    "note III 41": 3,
+    "heading 9903.82.03": 1392,
+    "heading 9903.91.09": 1,
+    "heading 9903.91.14": 1,
+    "heading 9903.91.15": 1,
+    "heading 9903.91.16": 1,
+    "heading 9903.92.10": 1,
+    "heading 9903.92.80": 1,
+    "heading 9903.45.01": 6,
+    "heading 9903.45.02": 6,
+    "note III 17": 26,
+    "heading 9903.45.05": 2,
+    "heading 9903.45.06": 2,
+    "note III 39": 10,
+    "note III 43": 30,
+    "heading 9903.74.02": 10,
+    "heading 9903.91.12": 10,
+    "heading 9903.91.13": 10
+   }
+  }
+ },
+ "overrideTies": [
+  {
+   "file": "data/reviews/ieepa-ended-2026-rev21.json",
+   "tied": {
+    "9903.01.01": {
+     "order": "EO 14194 (as amended)",
+     "group": "1a drug-flow: Mexico"
+    },
+    "9903.01.02": {
+     "order": "EO 14194 (as amended)",
+     "group": "1a drug-flow: Mexico"
+    },
+    "9903.01.03": {
+     "order": "EO 14194 (as amended)",
+     "group": "1a drug-flow: Mexico"
+    },
+    "9903.01.04": {
+     "order": "EO 14194 (as amended)",
+     "group": "1a drug-flow: Mexico"
+    },
+    "9903.01.05": {
+     "order": "EO 14194 (as amended)",
+     "group": "1a drug-flow: Mexico"
+    },
+    "9903.01.10": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.11": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.12": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.13": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.14": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.15": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.16": {
+     "order": "EO 14193 (as amended)",
+     "group": "1b drug-flow: Canada"
+    },
+    "9903.01.20": {
+     "order": "EO 14195 (as amended)",
+     "group": "1c drug-flow: China and Hong Kong"
+    },
+    "9903.01.21": {
+     "order": "EO 14195 (as amended)",
+     "group": "1c drug-flow: China and Hong Kong"
+    },
+    "9903.01.22": {
+     "order": "EO 14195 (as amended)",
+     "group": "1c drug-flow: China and Hong Kong"
+    },
+    "9903.01.23": {
+     "order": "EO 14195 (as amended)",
+     "group": "1c drug-flow: China and Hong Kong"
+    },
+    "9903.01.24": {
+     "order": "EO 14195 (as amended)",
+     "group": "1c drug-flow: China and Hong Kong"
+    },
+    "9903.01.25": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.26": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.27": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.28": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.29": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.30": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.31": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.32": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.33": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.34": {
+     "order": "EO 14257 (as amended)",
+     "group": "2 reciprocal baseline and its exceptions"
+    },
+    "9903.01.77": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.78": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.79": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.80": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.81": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.82": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.83": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.01.90": {
+     "order": "EO 14323 (as amended)",
+     "group": "6 Brazil"
+    },
+    "9903.02.01": {
+     "order": "EO 14257 (as amended), via EO 14326 (90 FR 37963)",
+     "group": "5 transshipment"
+    },
+    "9903.02.02": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.03": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.04": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.05": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.06": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.07": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.08": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.09": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.10": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.11": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.12": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.13": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.14": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.15": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.16": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.17": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.18": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.19": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.20": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.21": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.22": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.23": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.24": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.25": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.26": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.27": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.28": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.29": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.31": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.32": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.33": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.34": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.35": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.37": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.38": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.39": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.40": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.41": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.42": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.43": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.44": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.45": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.46": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.47": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.48": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.49": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.50": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.51": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.52": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.53": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.54": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.55": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.57": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.59": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.60": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.61": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.62": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.63": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.64": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.65": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.66": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.67": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.68": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.69": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.70": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.71": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.72": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.73": {
+     "order": "EO 14257 (as amended)",
+     "group": "3 reciprocal country rates"
+    },
+    "9903.02.74": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.75": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.77": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.78": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.79": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.80": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.82": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.83": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.84": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.85": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.86": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.87": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.88": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.89": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.90": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    },
+    "9903.02.91": {
+     "order": "EO 14257 (as amended)",
+     "group": "4 reciprocal framework headings"
+    }
+   },
+   "changed": [],
+   "missing": [],
+   "unlisted": [
+    "9903.02.76",
+    "9903.02.81"
+   ]
+  }
+ ],
+ "exclusions": {
+  "counts": {
+   "in_effect": 5,
+   "expired": 58,
+   "unclear": 8
+  },
+  "inEffect": {
+   "ref": "note III 20(a)",
+   "labels": [
+    "vvv",
+    "www"
+   ],
+   "quote": "only subdivisions (vvv) and (www)of this note indicating exclusions are now in effect"
+  },
+  "foreign": [
+   "20(www)(21)(a)",
+   "20(www)(21)(b)",
+   "20(www)(21)(c)",
+   "20(www)(21)(d)",
+   "20(www)(21)(e)",
+   "20(www)(21)(f)",
+   "20(www)(21)(g)",
+   "20(www)(21)(h)",
+   "20(www)(21)(i)",
+   "20(www)(21)(j)",
+   "20(www)(21)(k)",
+   "20(www)(21)(l)",
+   "20(www)(21)(m)",
+   "20(www)(21)(n)",
+   "20(www)(21)(o)",
+   "20(www)(21)(p)",
+   "20(www)(21)(q)",
+   "20(www)(21)(r)",
+   "20(www)(21)(s)",
+   "20(www)(21)(t)",
+   "20(www)(21)(u)",
+   "20(www)(21)(v)",
+   "20(www)(21)(w)",
+   "20(www)(21)(x)"
+  ],
+  "units": [
+   {
+    "ref": "note III 20(h)",
+    "path": "20(h)",
+    "heading": "9903.88.05",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired]"
+   },
+   {
+    "ref": "note III 20(i)",
+    "path": "20(i)",
+    "heading": "9903.88.06",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(j)",
+    "path": "20(j)",
+    "heading": "9903.88.07",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(k)",
+    "path": "20(k)",
+    "heading": "9903.88.08",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(m)",
+    "path": "20(m)",
+    "heading": "9903.88.10",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(n)",
+    "path": "20(n)",
+    "heading": "9903.88.11",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note:expired.]"
+   },
+   {
+    "ref": "note III 20(o)",
+    "path": "20(o)",
+    "heading": "9903.88.12",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note:expired.]"
+   },
+   {
+    "ref": "note III 20(p)",
+    "path": "20(p)",
+    "heading": "9903.88.13",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(q)",
+    "path": "20(q)",
+    "heading": "9903.88.14",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(v)",
+    "path": "20(v)",
+    "heading": "9903.88.17",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(w)",
+    "path": "20(w)",
+    "heading": "9903.88.18",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(x)",
+    "path": "20(x)",
+    "heading": "9903.88.19",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(y)",
+    "path": "20(y)",
+    "heading": "9903.88.20",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(z)",
+    "path": "20(z)",
+    "heading": "9903.88.21",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(aa)",
+    "path": "20(aa)",
+    "heading": "9903.88.22",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(bb)",
+    "path": "20(bb)",
+    "heading": "9903.88.23",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(cc)",
+    "path": "20(cc)",
+    "heading": "9903.88.24",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(dd)",
+    "path": "20(dd)",
+    "heading": "9903.88.25",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(ee)",
+    "path": "20(ee)",
+    "heading": "9903.88.26",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(ff)",
+    "path": "20(ff)",
+    "heading": "9903.88.27",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(gg)",
+    "path": "20(gg)",
+    "heading": "9903.88.28",
+    "status": "unclear",
+    "why": "no compiler's note marks it expired, but note III 20(a) names only (vvv), (www) as in effect"
+   },
+   {
+    "ref": "note III 20(ll)",
+    "path": "20(ll)",
+    "heading": "9903.88.33",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(mm)",
+    "path": "20(mm)",
+    "heading": "9903.88.34",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(nn)",
+    "path": "20(nn)",
+    "heading": "9903.88.35",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(oo)",
+    "path": "20(oo)",
+    "heading": "9903.88.36",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(pp)",
+    "path": "20(pp)",
+    "heading": "9903.88.37",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(qq)",
+    "path": "20(qq)",
+    "heading": "9903.88.38",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(rr)",
+    "path": "20(rr)",
+    "heading": "9903.88.39",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(ss)",
+    "path": "20(ss)",
+    "heading": "9903.88.40",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(tt)",
+    "path": "20(tt)",
+    "heading": "9903.88.41",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(uu)",
+    "path": "20(uu)",
+    "heading": "9903.88.42",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(vv)",
+    "path": "20(vv)",
+    "heading": "9903.88.43",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(ww)",
+    "path": "20(ww)",
+    "heading": "9903.88.44",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(xx)",
+    "path": "20(xx)",
+    "heading": "9903.88.45",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(yy)",
+    "path": "20(yy)",
+    "heading": "9903.88.46",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(zz)",
+    "path": "20(zz)",
+    "heading": "9903.88.47",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(aaa)",
+    "path": "20(aaa)",
+    "heading": "9903.88.48",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(bbb)",
+    "path": "20(bbb)",
+    "heading": "9903.88.49",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(ccc)",
+    "path": "20(ccc)",
+    "heading": "9903.88.50",
+    "status": "expired",
+    "why": "heading 9903.88.50 is out of force (entry_window_closed: on or after June 4, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(ddd)",
+    "path": "20(ddd)",
+    "heading": "9903.88.51",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(eee)",
+    "path": "20(eee)",
+    "heading": "9903.88.52",
+    "status": "expired",
+    "why": "heading 9903.88.52 is out of force (entry_window_closed: on or after July 9, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(fff)",
+    "path": "20(fff)",
+    "heading": "9903.88.53",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(ggg)",
+    "path": "20(ggg)",
+    "heading": "9903.88.54",
+    "status": "expired",
+    "why": "heading 9903.88.54 is out of force (entry_window_closed: on or after July 31, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(hhh)",
+    "path": "20(hhh)",
+    "heading": "9903.88.55",
+    "status": "expired",
+    "why": "its own compiler's note: [Compiler's note: expired.]"
+   },
+   {
+    "ref": "note III 20(iii)",
+    "path": "20(iii)",
+    "heading": "9903.88.56",
+    "status": "expired",
+    "why": "heading 9903.88.56 is out of force (entry_window_closed: on or after August 7, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(jjj)",
+    "path": "20(jjj)",
+    "heading": "9903.88.57",
+    "status": "expired",
+    "why": "heading 9903.88.57 is out of force (entry_window_closed: on or after September 1, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(kkk)",
+    "path": "20(kkk)",
+    "heading": "9903.88.58",
+    "status": "expired",
+    "why": "heading 9903.88.58 is out of force (entry_window_closed: on or after September 20, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(lll)",
+    "path": "20(lll)",
+    "heading": "9903.88.59",
+    "status": "expired",
+    "why": "heading 9903.88.59 is out of force (entry_window_closed: on or after September 20, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(mmm)",
+    "path": "20(mmm)",
+    "heading": "9903.88.60",
+    "status": "expired",
+    "why": "heading 9903.88.60 is out of force (entry_window_closed: on or after October 2, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(nnn)",
+    "path": "20(nnn)",
+    "heading": "9903.88.61",
+    "status": "expired",
+    "why": "heading 9903.88.61 is out of force (entry_window_closed: on or after October 2, 2020, and through December 31, 2020)"
+   },
+   {
+    "ref": "note III 20(ooo)",
+    "path": "20(ooo)",
+    "heading": "9903.88.62",
+    "status": "expired",
+    "why": "heading 9903.88.62 is out of force (entry_window_closed: on or after January 1, 2021, and through November 30, 2021)"
+   },
+   {
+    "ref": "note III 20(ppp)",
+    "path": "20(ppp)",
+    "heading": "9903.88.63",
+    "status": "expired",
+    "why": "heading 9903.88.63 is out of force (entry_window_closed: on or after January 1, 2021, and through November 30, 2021)"
+   },
+   {
+    "ref": "note III 20(qqq)",
+    "path": "20(qqq)",
+    "heading": "9903.88.64",
+    "status": "expired",
+    "why": "heading 9903.88.64 is out of force (entry_window_closed: on or after January 1, 2021, and through November 30, 2021)"
+   },
+   {
+    "ref": "note III 20(rrr)",
+    "path": "20(rrr)",
+    "heading": "9903.88.65",
+    "status": "expired",
+    "why": "heading 9903.88.65 is out of force (entry_window_closed: on or after January 1, 2021, and through November 30, 2021)"
+   },
+   {
+    "ref": "note III 20(sss)(i)",
+    "path": "20(sss)(i)",
+    "heading": "9903.88.66",
+    "status": "expired",
+    "why": "heading 9903.88.66 is out of force (entry_window_closed: on or after December 1, 2021, and before June 1, 2023)"
+   },
+   {
+    "ref": "note III 20(sss)(ii)",
+    "path": "20(sss)(ii)",
+    "heading": "9903.88.66",
+    "status": "expired",
+    "why": "heading 9903.88.66 is out of force (entry_window_closed: on or after December 1, 2021, and before June 1, 2023)"
+   },
+   {
+    "ref": "note III 20(sss)(iii)",
+    "path": "20(sss)(iii)",
+    "heading": "9903.88.66",
+    "status": "expired",
+    "why": "heading 9903.88.66 is out of force (entry_window_closed: on or after December 1, 2021, and before June 1, 2023)"
+   },
+   {
+    "ref": "note III 20(sss)(iv)",
+    "path": "20(sss)(iv)",
+    "heading": "9903.88.66",
+    "status": "expired",
+    "why": "heading 9903.88.66 is out of force (entry_window_closed: on or after December 1, 2021, and before June 1, 2023)"
+   },
+   {
+    "ref": "note III 20(ttt)(i)",
+    "path": "20(ttt)(i)",
+    "heading": "9903.88.67",
+    "status": "expired",
+    "why": "heading 9903.88.67 is out of force (entry_window_closed: on or after October 12, 2021 and through June 14, 2024)"
+   },
+   {
+    "ref": "note III 20(ttt)(ii)",
+    "path": "20(ttt)(ii)",
+    "heading": "9903.88.67",
+    "status": "expired",
+    "why": "heading 9903.88.67 is out of force (entry_window_closed: on or after October 12, 2021 and through June 14, 2024)"
+   },
+   {
+    "ref": "note III 20(ttt)(iii)",
+    "path": "20(ttt)(iii)",
+    "heading": "9903.88.67",
+    "status": "expired",
+    "why": "heading 9903.88.67 is out of force (entry_window_closed: on or after October 12, 2021 and through June 14, 2024)"
+   },
+   {
+    "ref": "note III 20(ttt)(iv)",
+    "path": "20(ttt)(iv)",
+    "heading": "9903.88.67",
+    "status": "expired",
+    "why": "heading 9903.88.67 is out of force (entry_window_closed: on or after October 12, 2021 and through June 14, 2024)"
+   },
+   {
+    "ref": "note III 20(uuu)(i)",
+    "path": "20(uuu)(i)",
+    "heading": "9903.88.68",
+    "status": "expired",
+    "why": "heading 9903.88.68 is out of force (entry_window_closed: on or after June 1, 2023, and before June 15, 2024)"
+   },
+   {
+    "ref": "note III 20(uuu)(ii)",
+    "path": "20(uuu)(ii)",
+    "heading": "9903.88.68",
+    "status": "expired",
+    "why": "heading 9903.88.68 is out of force (entry_window_closed: on or after June 1, 2023, and before June 15, 2024)"
+   },
+   {
+    "ref": "note III 20(uuu)(iii)",
+    "path": "20(uuu)(iii)",
+    "heading": "9903.88.68",
+    "status": "expired",
+    "why": "heading 9903.88.68 is out of force (entry_window_closed: on or after June 1, 2023, and before June 15, 2024)"
+   },
+   {
+    "ref": "note III 20(uuu)(iv)",
+    "path": "20(uuu)(iv)",
+    "heading": "9903.88.68",
+    "status": "expired",
+    "why": "heading 9903.88.68 is out of force (entry_window_closed: on or after June 1, 2023, and before June 15, 2024)"
+   },
+   {
+    "ref": "note III 20(vvv)(i)",
+    "path": "20(vvv)(i)",
+    "heading": "9903.88.69",
+    "status": "in_effect",
+    "why": "named in effect by note III 20(a); heading 9903.88.69 in force"
+   },
+   {
+    "ref": "note III 20(vvv)(ii)",
+    "path": "20(vvv)(ii)",
+    "heading": "9903.88.69",
+    "status": "in_effect",
+    "why": "named in effect by note III 20(a); heading 9903.88.69 in force"
+   },
+   {
+    "ref": "note III 20(vvv)(iii)",
+    "path": "20(vvv)(iii)",
+    "heading": "9903.88.69",
+    "status": "in_effect",
+    "why": "named in effect by note III 20(a); heading 9903.88.69 in force"
+   },
+   {
+    "ref": "note III 20(vvv)(iv)",
+    "path": "20(vvv)(iv)",
+    "heading": "9903.88.69",
+    "status": "in_effect",
+    "why": "named in effect by note III 20(a); heading 9903.88.69 in force"
+   },
+   {
+    "ref": "note III 20(www)",
+    "path": "20(www)",
+    "heading": "9903.88.70",
+    "status": "in_effect",
+    "why": "named in effect by note III 20(a); heading 9903.88.70 in force"
+   }
+  ]
+ },
+ "validUntil": null,
+ "numbering": {
+  "applied": 9,
+  "unmatched": [],
+  "outOfSequence": []
+ }
+}
