@@ -172,8 +172,9 @@ Carried over:
   `src/domain/rates/current.ts`; v1 files stay as history (stored v1 quotes reference them and are refused as stale).
   rates-v4 (2026-10-10) supersedes it; rates-v5 (polish-1, 2026-10-10) = v4 minus the CSMS citation (rates unchanged; a
   published version's content never changes, so any change to generated data is a new version). After the Render deploy,
-  `/api/health` should show `rateVersion: 2026-rev21-v1` after the next deploy (was 2026-rev20-v5). The pre-deploy step re-seeds
-  the listings, incl. L-P14; open v5 quotes become stale and are re-quoted.
+  `/api/health` should show `rateVersion: 2026-rev21-v2` after the next deploy (was 2026-rev20-v5). The pre-deploy step re-seeds
+  the listings, incl. L-P14; open older-version quotes become stale and are re-quoted. 2026-rev21-v2 (2026-10-11) = v1 with
+  the importer's own text in house style (note/heading numbers only; src/domain/rates/houseStyle.test.ts); figures identical.
 
 Polish backlog (Wk5, before the Nov 4 freeze):
 - Duty line labels: DONE — checkout and agent show the official Ch. 99 heading text, quoted, with no program label; rates-v3
@@ -199,5 +200,12 @@ Polish backlog (Wk5, before the Nov 4 freeze):
 - /agent layout: DONE (polish-1) — quote table fits 721–1280 px (id ellipsis + title; two-line rows ≤ 720 px); search
   table right gutter at ≤ 640 px; notices singular/plural.
 - CSMS citation: REMOVED in rates-v5 (polish-1) — no verified sheet row backed it; note 52 / heading citations kept.
+- Sheet (next sheet edit): Products!S for P11 says a covered knife is "charged on steel CONTENT" — contradicts Rev 21 note
+  16(c) ("Headings 9903.82.02–9903.82.26 apply to the full customs value …"); only feeds data/eval (products.json). Also
+  Verify!W for P05, P09, P13, P14 still name programs ("301", "List 4A/4B", "Section 232", "IEEPA"; pinned in
+  houseStyle.test.ts) and Products!S for P05 — reword to note/heading numbers; then importer EU_EVIDENCE ('IEEPA
+  (terminated)') changes with P14's W, and rates:import makes a new version.
+- CURRENT_HTS_REV_SHORT (src/domain/rates/current.ts): the regex is /^d{4} Rev. / (missing backslash) — labels read
+  "2026 Rev. 21" instead of "Rev 21". One-character fix; on main since d0dba74.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**
