@@ -31,6 +31,8 @@ const SOURCE = join('data', 'source', 'DDP_product_test_sheet_verify.xlsx');
 // 2026-rev21-v1 (2026-10-11): re-verified on HTS 2026 Rev. 21 by full text comparison (HTS_VERIFICATION_SPEC §8); rates
 // unchanged. The HTS revision (Verify column Y) and each row's effective date (column Z) come from the sheet, not this file;
 // the revision must equal the HTS index's and CURRENT_HTS_REVISION (src/domain/rates/sheetRevision.ts).
+// 2026-rev21-v2 (2026-10-11): the importer's own refs, exemption checks and regime notes cite note and heading numbers only
+// (no "Section 232" / "IEEPA" wording; houseStyle.test.ts). Sheet unchanged; rates unchanged.
 const VERSION = CURRENT_RATE_VERSION;
 const VERIFIED_BY = 'Shoma';
 const OUT_RATES = join('data', 'rates', rateFileName(VERSION));
@@ -501,7 +503,7 @@ function main(): void {
       });
       exemptRefs.push(
         'note 20: 9903.88.15 (note 20(r)/(s)(i)) applies to this line; not listed under 9903.88.16 (note 20(u)); no in-effect exclusion',
-        'note 16 (Section 232): 9102 not listed',
+        'note 16: 9102 not listed',
       );
       sources.push(
         { kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(a) cumulative)' },
@@ -520,7 +522,7 @@ function main(): void {
         program: 'CH99_NOTE52', chapter99: '9903.05.39', chapter99_at_or_above_cap: '9903.05.38', rule: 'combined_cap',
         rate_ppm: euCap!, basis: 'full_value', compare: 'ave', conditions: [], ref: 'U.S. note 52(k)',
       });
-      exemptRefs.push('9903.05.97 (note 52(j)(2) EU list) checked', 'note 16 (Section 232): 9102 not listed');
+      exemptRefs.push('9903.05.97 (note 52(j)(2) EU list) checked', 'note 16: 9102 not listed');
       sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 52 (incl. 52(j)(2), 52(k))' });
     } else if (r.origin === 'JP' && o === '9903.82.09') {
       assert(/note 16\(c\)\(vii\)/i.test(w) && /9903\.05\.90/.test(w), `${where}: W must cite note 16(c)(vii) and 9903.05.90`);
@@ -535,10 +537,10 @@ function main(): void {
         },
         {
           program: 'CH99_NOTE52', chapter99: '9903.05.90', rule: 'exempt', rate_ppm: 0, basis: 'full_value', conditions: [],
-          ref: 'note 52(f)(1): Section 232 article',
+          ref: 'U.S. note 52(f)(1)',
         },
       );
-      exemptRefs.push('note 16 (Section 232) checked');
+      exemptRefs.push('note 16 checked');
       sources.push({ kind: 'us_note', ref: 'Ch. 99 Subch. III U.S. note 16(c)(vii); note 52(f)(1)' });
     } else if (r.origin === 'JP' && o === '9903.05.92') {
       assert(r.addon === 0, `${where}: .92 must have no add-on`);
@@ -621,7 +623,7 @@ function main(): void {
       'Chapter 99 U.S. note 52 additional duty (9903.05.xx): headings 9903.05.20–.84 by country, exemptions 9903.05.85–.92; effective July 24, 2026.',
       'China: 9903.88.15 (note 20(r)/(s)(i)) is active and applies cumulatively with 9903.05.31 where the line is listed (note 52(a)); 9903.88.16 (note 20(u)) is suspended.',
       'EU member states: 9903.05.39 (column 1 AVE < 10%) tops the total up to 10%; 9903.05.38 (≥ 10%) adds nothing; exemptions 9903.05.85–.92 and 9903.05.97 (note 52(j)(2)); AVE per note 52(k).',
-      'IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',
+      'Headings 9903.01.xx / 9903.02.xx terminated (EO 14389); CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',
       'Section 122 10% surcharge expired July 24, 2026.',
     ],
     rows: [...rows.values()],

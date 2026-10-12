@@ -55,7 +55,7 @@ test('range: two candidates (verified row vs automated estimate), the separating
   await expect(page.getByTestId('estimate-separating')).toContainText('“Of synthetic fibers”');
   await expect(page.getByTestId('estimate-separating')).toContainText('What decides it: Fiber content.');
   const cotton = page.getByTestId('estimate-candidate-6203.42.4511');
-  await expect(cotton.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v1\)/);
+  await expect(cotton.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v2\)/);
   await expect(cotton.getByTestId('estimate-duty')).toHaveText('33.20');
   await expect(cotton.getByTestId('estimate-ddp')).toHaveText('258.20');
   const synthetic = page.getByTestId('estimate-candidate-6203.43.9011');
@@ -100,7 +100,7 @@ test('verified row: the German watch needs the case/band split, then quotes from
   await page.getByTestId('estimate-case-value').fill('190.00');
   await expect(page.getByText('Strap, band or bracelet: the rest, 100.00.')).toBeVisible();
   await page.getByTestId('estimate-split-submit').click();
-  await expect(watch.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v1\)/);
+  await expect(watch.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v2\)/);
   await expect(watch.getByTestId('estimate-duty')).toHaveText('29.00'); // the verified DE row: combined 10% (note 52(k)) on $290.00
   await check(page, 'verified');
 });
@@ -135,7 +135,7 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
   await expect(knife.getByTestId('estimate-fact-steel_weight_share_ge_15pct')).toHaveCount(0); // answered; one left
   await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/One question to answer/);
   await knife.getByTestId('estimate-fact-steel_us_melted_poured_ge_85pct').getByLabel('No').click();
-  await expect(knife.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v1\)/);
+  await expect(knife.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v2\)/);
   await expect(knife.getByTestId('estimate-duty')).toHaveText(checkoutDuty.replace('$', ''));
   await expect(knife.getByTestId('estimate-ddp')).toHaveText(checkoutTotal.replace('$', ''));
   await expect(knife.getByTestId('estimate-basis')).toHaveText(['General rate: 0.4¢ each + 6.1%', 'Heading 9903.82.09 adds 25% of the price', 'Heading 9903.05.90 applies: no additional duty']);

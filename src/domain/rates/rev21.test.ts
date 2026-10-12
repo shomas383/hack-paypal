@@ -58,6 +58,29 @@ describe('rates 2026-rev21-v1 vs 2026-rev20-v5', () => {
   });
 });
 
+describe('rates 2026-rev21-v2 vs 2026-rev21-v1 (house-style text only)', () => {
+  const v2 = read<RateFile>('data/rates/2026-rev21-v2.json');
+  // The five strings the importer rewrote (note/heading numbers only); everything else, every figure included, is v1's.
+  const HOUSE: Record<string, string> = {
+    'note 52(f)(1): Section 232 article': 'U.S. note 52(f)(1)',
+    'note 16 (Section 232) checked': 'note 16 checked',
+    'note 16 (Section 232): 9102 not listed': 'note 16: 9102 not listed',
+    'IEEPA tariffs (9903.01.xx / 9903.02.xx) terminated; CBP stopped collecting for entries on/after Feb 24, 2026. Never added.':
+      'Headings 9903.01.xx / 9903.02.xx terminated (EO 14389); CBP stopped collecting for entries on/after Feb 24, 2026. Never added.',
+  };
+  const restyle = (v: unknown): unknown =>
+    typeof v === 'string' ? (HOUSE[v] ?? v) : Array.isArray(v) ? v.map(restyle) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, restyle(x)])) : v;
+  it('equals v1 with only those strings rewritten (rows, figures, evidence, regime notes)', () => {
+    expect(v2).toEqual({ ...(restyle(r21) as RateFile), version: '2026-rev21-v2' });
+  });
+  it('golden cases are identical to v1', () => {
+    const g1 = read<{ rate_version: string; cases: unknown[] }>('data/eval/golden-2026-rev21-v1.json');
+    const g2 = read<{ rate_version: string; cases: unknown[] }>('data/eval/golden-2026-rev21-v2.json');
+    expect(g2.rate_version).toBe('2026-rev21-v2');
+    expect(g2.cases).toEqual(g1.cases);
+  });
+});
+
 describe('HTS index 2026-rev21 vs 2026-rev20', () => {
   it('codes and description chains are identical; only the revision and source differ', () => {
     const i20 = read<HtsIndex>('data/hts/2026-rev20.json');
