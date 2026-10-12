@@ -227,6 +227,197 @@
         "note III 20(u)": "e4ab78011752a0f12f341c32fec566d3e3c1b91491b94ab9263d8682ce63ff4b"
       },
       "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-exempt-9903-05-86",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.86",
+      "kind": "exempt",
+      "scope": {
+        "list": "note III 52(b)"
+      },
+      "quotes": [
+        {
+          "source": "note III 52(b)",
+          "text": "As provided in heading 9903.05.86, the duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles that are classifiable in the following provisions of the HTSUS"
+        },
+        {
+          "source": "heading 9903.05.86",
+          "text": "Articles provided for in subdivision (b) of U.S. note 52 to this subchapter"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.86": "678b49fd6ebc3c04f3cfff2a17415e8382f4a0ac6f4e4b9ae7797249c01eefa6",
+        "note III 52(b)": "7d41c1f5d161964eb93566af180554cbd129aa24237265b73d8cb9f7cc04fe62"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-cond-9903-05-87",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.87",
+      "kind": "conditional_exempt",
+      "scope": {
+        "list": "note III 52(c)"
+      },
+      "condition": {
+        "fact": "note52c_article"
+      },
+      "quotes": [
+        {
+          "source": "note III 52(c)",
+          "text": "As provided in heading 9903.05.87, the duties imposed by headings 9903.05.20–9903.05.84 shall not apply to the following particular articles"
+        },
+        {
+          "source": "heading 9903.05.87",
+          "text": "Articles provided for in subdivision (c) of U.S. note 52 to this subchapter"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.87": "586ed9d0a442f241f2080f709f0da8c2af5de221a89f774e21fbc9820e1343c1",
+        "note III 52(c)": "84b4beb6b74a446c0bdfd6c7268c2826fb0941aa18d48c86ac67b2bd53574372"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-cond-9903-05-88",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.88",
+      "kind": "conditional_exempt",
+      "scope": {
+        "list": "note III 52(d)"
+      },
+      "condition": {
+        "fact": "civil_aircraft"
+      },
+      "quotes": [
+        {
+          "source": "note III 52(d)",
+          "text": "As provided in heading 9903.05.88, the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles that are civil aircraft (all aircraft other than military aircraft); their engines, parts and components"
+        },
+        {
+          "source": "heading 9903.05.88",
+          "text": "as provided for in subdivision (d) of U.S. note 52 to this subchapter"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.88": "22b9efaa534ce3ad1974df9babf286fded2fda5f3d5acec3d488fef729f0d4f5",
+        "note III 52(d)": "a3d26b72eee99562469a75b246823a19ea460e5955b5f703cc19bcbfefb7c57d"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-cond-9903-05-89",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.89",
+      "kind": "conditional_exempt",
+      "scope": {
+        "list": "note III 52(e)"
+      },
+      "condition": {
+        "fact": "pharmaceutical_use"
+      },
+      "quotes": [
+        {
+          "source": "note III 52(e)",
+          "text": "As provided in heading 9903.05.89, the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles that are for use in pharmaceutical applications"
+        },
+        {
+          "source": "heading 9903.05.89",
+          "text": "Articles for use in pharmaceutical applications, as provided for in subdivision (e) of U.S. note 52 to this subchapter"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.89": "ba8c84a15a59fe3c71991994d7ab58a8c5828a88376ef1fb70e018f97d7a36d2",
+        "note III 52(e)": "9e51f9e24cd0b510da5de26aa8887b9da9a65716c32d9b0fdda1208c3865baf5"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-via-9903-05-90",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.90",
+      "kind": "via_coverage",
+      "scope": {
+        "all": true
+      },
+      "quotes": [
+        {
+          "source": "note III 52(f)",
+          "text": "As provided in heading 9903.05.90, the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply to:"
+        },
+        {
+          "source": "heading 9903.05.90",
+          "text": "as provided in subdivision (f) of U.S. note 52 to this subchapter"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.90": "a8042089d000c2100ff8d703f736d5ce27760998316c7e93d87322ad0f722e28",
+        "note III 52(f)": "7bfceabfde45a4585a431c2bd18496d5222f5efba7a52e1f4566674d33ab784e"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-sale-9903-05-91",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.91",
+      "kind": "not_for_sale",
+      "scope": {
+        "all": true
+      },
+      "quotes": [
+        {
+          "source": "heading 9903.05.91",
+          "text": "Articles that are donations by persons subject to the jurisdiction of the United States"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.91": "db8f9b8654101c87f288800a597e7ac4e351886d0985a002b42c2231dab95e6c"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-cond-9903-05-92",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.92",
+      "kind": "conditional_exempt",
+      "scope": {
+        "heading_words": "9903.05.92"
+      },
+      "condition": {
+        "fact": "informational_material"
+      },
+      "quotes": [
+        {
+          "source": "heading 9903.05.92",
+          "text": "Articles that are informational materials, including but not limited to publications, films, posters, phonograph records, photographs, microfilms, microfiche, tapes, compact disks, CD ROMs, artworks and news wire feeds"
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.05.92": "f00892273c4b3378e8bef6b9cfaa948d83b5c1f69ac0e91d05839c3177a3394f"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
     }
   ]
 }

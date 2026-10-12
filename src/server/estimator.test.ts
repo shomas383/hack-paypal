@@ -21,7 +21,7 @@ const input = (c: { origin: string; hts10?: string | null; price_minor?: number;
 
 describe('loadEstimator — the committed data version', () => {
   it('is the version current.json names, for the committed HTS revision; rules and blocks as the gate left them', () => {
-    expect(data.version).toBe('2026-rev21-e2');
+    expect(data.version).toBe('2026-rev21-e3');
     expect(manifest.hts_revision).toBe('2026 Rev. 21');
     expect(data.rules.filter((r) => !r.origins.includes('CN')).map((r) => r.heading).sort()).toEqual(['9903.05.39', '9903.05.49', '9903.05.86', '9903.05.88', '9903.05.89', '9903.05.90', '9903.05.91', '9903.05.92', '9903.05.97']);
     expect(data.blocked.rules.map((b) => b.rule.id)).toEqual(['cond-9903-05-87']);
@@ -59,7 +59,7 @@ describe('estimateVerifiedFirst', () => {
   it('a line without one is the automated estimate', () => {
     const e = estimateVerifiedFirst(input({ origin: 'JP', hts10: '0712.90.8550', price_minor: 10000 }), data, verified);
     if (e.kind !== 'ESTIMATE') throw new Error(e.detail);
-    expect(sourceLabel(e.source)).toBe('Automated estimate (2026-rev21-e2)');
+    expect(sourceLabel(e.source)).toBe('Automated estimate (2026-rev21-e3)');
     expect(e.result.lines.map((l) => l.chapter99).filter(Boolean)).toEqual(['9903.05.86']);
   });
   it('a verified row that needs facts the input lacks asks them (P11), with the verified figure for the answers it covers', () => {

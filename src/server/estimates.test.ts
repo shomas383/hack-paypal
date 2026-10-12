@@ -31,6 +31,7 @@ vi.mock('./env', () => ({ serverEnv: () => ({ classifierReviewThreshold: 0.8 }) 
 
 const { answerEstimate, getEstimate, startEstimate } = await import('./estimates');
 const { descriptionKey, toInputRecord } = await import('@/domain/estimator/request');
+const { loadEstimator } = await import('./estimator');
 
 const NOW = new Date('2026-10-11T12:00:00Z');
 const req = { title: 'Pokemon card game booster box, Japanese', origin: 'JP', sellingPriceMinor: 9500 };
@@ -104,7 +105,7 @@ describe('getEstimate / answerEstimate', () => {
     expect(v.candidates).toHaveLength(1);
     expect(v.candidates[0]!.outcome).toMatchObject({ kind: 'ESTIMATE', source: 'verified', dutyMinor: 1188, ddpTotalMinor: 9500 + 1188 });
     expect(v.notice).toBe('Estimate — not a customs ruling.');
-    expect(db.state.updates[0]).toMatchObject({ estimatorVersion: '2026-rev21-e2' });
+    expect(db.state.updates[0]).toMatchObject({ estimatorVersion: '2026-rev21-e3' });
     expect(classifier.classifyListingGrounded).not.toHaveBeenCalled();
   });
 
@@ -131,5 +132,17 @@ describe('getEstimate / answerEstimate', () => {
     db.state.selectResults = [[readyRow({ status: 'ESTIMATING' })]];
     await expect(answerEstimate(readyRow().id, 'sess-1', { facts: {} }, NOW)).rejects.toMatchObject({ status: 409 });
     await expect(answerEstimate(readyRow().id, 'sess-1', { facts: { 'Bad Key': true } }, NOW)).rejects.toMatchObject({ status: 400 });
+  });
+});
+
+describe('valid_until of the committed estimator data', () => {
+  it('after it, POST refuses before any reservation or model call: "Estimate data needs a rebuild (valid until …)"', async () => {
+    const { data } = loadEstimator();
+    expect(data.validUntil).toBe('2026-11-09');
+    await expect(startEstimate(req, 'sess-1', '1.2.3.4', new Date('2026-11-10T12:00:00Z'))).rejects.toMatchObject({
+      status: 503,
+      message: 'Estimate data needs a rebuild (valid until 2026-11-09)',
+    });
+    expect(limits.reserveCall).not.toHaveBeenCalled();
   });
 });

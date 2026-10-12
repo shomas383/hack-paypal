@@ -112,3 +112,16 @@ describe('estimateLine — refusals', () => {
     expect(estimateLine(input('9504.40.0000', 'JP', 9500), d).kind).toBe('ESTIMATE');
   });
 });
+
+describe('estimateLine — data validity (valid_until)', () => {
+  it('on or before valid_until it estimates; after it, every line refuses: the data needs a rebuild', () => {
+    const dated = { ...data, validUntil: '2026-11-09' };
+    expect(estimateLine(input('9504.40.0000', 'JP', 9500, { entryDate: '2026-11-09' }), dated).kind).toBe('ESTIMATE');
+    expect(estimateLine(input('9504.40.0000', 'JP', 9500, { entryDate: '2026-11-10' }), dated)).toMatchObject({
+      kind: 'CANT_ESTIMATE',
+      reason: 'DATA_EXPIRED',
+      detail: 'Estimate data needs a rebuild (valid until 2026-11-09)',
+    });
+    expect(estimateLine(input('9504.40.0000', 'JP', 9500, { entryDate: '2030-01-01' }), { ...data, validUntil: null }).kind).toBe('ESTIMATE');
+  });
+});

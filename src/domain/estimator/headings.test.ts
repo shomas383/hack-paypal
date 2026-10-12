@@ -3,7 +3,7 @@ import { ieepaOverride } from '@/server/estimatorReview';
 import type { RateExportRow } from './baseRates';
 import { segmentNotes } from './ch99Notes';
 import type { StrippedText } from './ch99Text';
-import { buildHeadingTable, headingsInRange, headingTextSha, outOfForce, overrideQuoteHolds, overrideTies, type VerifiedOverride } from './headings';
+import { buildHeadingTable, headingsInRange, headingTextSha, outOfForce, overrideQuoteHolds, overrideTies, validUntil, type VerifiedOverride } from './headings';
 import { headingAppliesTo, originOf } from './origin';
 
 const QUOTE = 'IEEPA tariffs (9903.01.xx / 9903.02.xx) are still printed in Chapter 99 but terminated (CBP stopped collecting for entries on/after Feb 24, 2026) — never add them.';
@@ -121,6 +121,37 @@ describe('headingAppliesTo', () => {
     expect(headingAppliesTo(t['9903.01.24']!, cn)).toBe(true);
     expect(headingAppliesTo(table['9903.88.15']!, cn)).toBe(true);
     expect(headingAppliesTo(table['9903.41.05']!, cn)).toBe(false);
+  });
+});
+
+describe('headingAppliesTo — civil-aircraft headings name their country with "of …" (no "product of")', () => {
+  // real Rev 21 heading text
+  const t = buildHeadingTable([
+    row('9903.96.02', 0, 'Articles of civil aircraft (all aircraft other than military aircraft); their engines, parts, and components; their other parts, components, and subassemblies; and ground flight simulators and their parts and components of Japan, excluding unmanned aircraft, classified in the subheadings enumerated in subdivision (b) of U.S. note 35 to this subchapter.', 'The duty provided in the applicable subheading'),
+    row('9903.02.76', 0, 'Articles of civil aircraft (all aircraft other than military aircraft); their engines, parts, and components; their other parts, components, and subassemblies; and ground flight simulators and their parts and components of the European Union, excluding unmanned aircraft, provided for in subdivision (v)(xxii) of U.S. note 2 to this subchapter', 'The duty provided in the applicable subheading'),
+    row('9903.96.01', 0, 'Effective with respect to entries on or after June 30, 2025, articles of civil aircraft (all aircraft other than military aircraft); their engines, parts, and components; their other parts, components, and subassemblies; and ground flight simulators and their parts and components of the United Kingdom, classified in the subheadings enumerated in subdivision (a) of U.S. note 35 to this subchapter.', 'The duty provided in the applicable subheading'),
+  ]);
+  const [jp, de, cn] = ['JP', 'DE', 'CN'].map((o) => originOf(o)!);
+  it('applies only to the origin it names', () => {
+    expect([jp, de, cn].map((o) => headingAppliesTo(t['9903.96.02']!, o))).toEqual([true, false, false]);
+    expect([jp, de, cn].map((o) => headingAppliesTo(t['9903.02.76']!, o))).toEqual([false, true, false]);
+    expect([jp, de, cn].map((o) => headingAppliesTo(t['9903.96.01']!, o))).toEqual([false, false, false]);
+  });
+});
+
+describe('validUntil — the earliest future date in an in-force heading\'s or a note\'s own period text', () => {
+  const t = buildHeadingTable([
+    row('9903.88.50', 0, 'Effective with respect to entries on or after June 4, 2020, and through December 31, 2020, articles the product of China, as provided for in U.S. note 20(ccc) to this subchapter', 'The duty provided in the applicable subheading'),
+    row('9903.88.69', 0, 'Effective with respect to entries on or after June 15, 2024 and through November 9, 2026, articles the product of China, as provided for in U.S. note 20(vvv) to this subchapter', 'The duty provided in the applicable subheading'),
+    row('9903.91.12', 0, 'Effective with respect to entries, on or after November 10, 2026, of intermodal chassis …', 'The duty provided in subheadings 8716.39.00, 8716.90.30 or 8716.90.50 + 100%'),
+    row('9903.91.06', 0, 'Effective with respect to entries on or after January 1, 2026, articles the product of China, as provided for in subdivision (g) of U.S. note 31 to this subchapter', 'The duty provided in the applicable subheading + 25%'),
+  ]);
+  const notes = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '31. (a) synthetic: goods entered on or after December 1, 2026 are subject to (b)']));
+  it('"through D" → valid through D; "on or after D" → valid through the day before; past dates and out-of-force headings are ignored', () => {
+    const o = outOfForce(t, notes, '2026-10-12');
+    expect(validUntil(t, notes, o, '2026-10-12')).toEqual({ date: '2026-11-09', ref: 'heading 9903.88.69', quote: 'through November 9, 2026' });
+    expect(validUntil(t, notes, outOfForce(t, notes, '2026-11-10'), '2026-11-10')).toEqual({ date: '2026-11-30', ref: 'note III 31(a)', quote: 'on or after December 1, 2026' });
+    expect(validUntil(t, notes, outOfForce(t, notes, '2026-12-01'), '2026-12-01')).toBeNull();
   });
 });
 

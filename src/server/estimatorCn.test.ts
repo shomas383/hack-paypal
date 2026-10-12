@@ -43,8 +43,24 @@ const swap = (id: string, f: (r: Rule) => void) => CN_RULES.map((r) => (r.id ===
 
 describe('CN in the committed data version', () => {
   it('the data version carries the CN rules, accepted by the gate; CN is not blocked', () => {
-    expect(data.rules.filter((r) => r.origins.includes('CN')).map((r) => r.heading).sort()).toEqual(['9903.05.31', '9903.88.01', '9903.88.02', '9903.88.03', '9903.88.15', '9903.88.16']);
+    const cnHeadings = [...data.rules, ...data.blocked.rules.map((b) => b.rule)].filter((r) => r.origins.includes('CN')).map((r) => r.heading).sort();
+    expect(cnHeadings).toEqual([
+      '9903.05.31', '9903.05.86', '9903.05.87', '9903.05.88', '9903.05.89', '9903.05.90', '9903.05.91', '9903.05.92',
+      '9903.88.01', '9903.88.02', '9903.88.03', '9903.88.15', '9903.88.16',
+    ]);
     expect(data.blocked.origins.CN).toBeUndefined();
+  });
+
+  it('note 52 exemptions lift 9903.05.31 for CN, never a list duty: 52(b) → 9903.05.86 + the List 3 heading', () => {
+    const e = cn('0712.90.8550', 10000); // 8.3% General; on 52(b) and 20(f)
+    expect(heads(e)).toEqual(['9903.05.86', '9903.88.03']);
+    expect(e.kind === 'ESTIMATE' && e.result.totalDuty).toEqual(usd(830 + 2500));
+  });
+
+  it('9903.05.92 is asked for CN too: unanswered → the higher figure, and the figure if yes (8523.49.4000)', () => {
+    const e = cn('8523.49.4000', 10000);
+    expect(heads(e)).toEqual(['9903.05.31', '9903.88.03']);
+    expect(e.kind === 'ESTIMATE' && e.ifYes.map((y) => [y.question.heading, Number(y.result.totalDuty.amountMinor)])).toEqual([['9903.05.92', 2500]]);
   });
 
   it('G8: every CN verified case reproduces exactly (P05, P09, P13 — the watch $72.09 = MFN + 9903.05.31 + 9903.88.15)', () => {
