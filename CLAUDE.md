@@ -147,12 +147,12 @@ G8: Ch. 99 note extraction + mentions index, rules (reference + first live draft
 G0–G9 + GR, coverage (G7), reviewed IEEPA list (data/reviews/, 120 headings, EO 14389 §1 / CSMS # 67834313, sha-checked by
 G0), first committed data version `2026-rev21-e1` (pnpm estimator:build; JP 5,512 / DE 5,007 of 19,926 lines refused).
 Loader, verified-first, no-charge guards, estimates API (migration 0011) and /estimate page DONE (2026-10-11).
-CN DONE (2026-10-12, data `2026-rev21-e3`, valid until 2026-11-09): 9903.05.31 + note 20 lists 20(b)/(d)/(f)/(s)(i) additive,
+CN DONE (2026-10-12, data `2026-rev21-e4`, valid_until: none — scoped to modeled rules' boundaries): 9903.05.31 + note 20 lists 20(b)/(d)/(f)/(s)(i) additive,
 9903.88.16 not applied (suspended), CN note 52 exemptions; note 20 exclusions are disclosures (5 in effect / 58 expired /
 8 unclear → refuse); numbering fixes for the 9 official oddities; ended entry periods out of force; civil-aircraft headings
 name their origin. G8 green JP/DE/CN (P13 $72.09). Refused of 19,926: JP 4,532 / DE 5,004 / CN 3,739. Drafting: CN lists
-7 calls, exemptions 7 calls; 9903.05.87 blocked by GR for JP/EU and CN. e1, e2 kept as history. SPEC §4.7.
-Next: rebuild before 2026-11-09 (valid_until: 9903.88.69/.70 end; 9903.91.12–.16 start Nov 10), then merge/push.
+7 calls, exemptions 7 calls; 9903.05.87 blocked by GR for JP/EU and CN. e1–e3 kept as history. SPEC §4.7.
+Pushed to main 2026-10-12. After 2026-11-09 the 20(vvv)/(www) exclusion notices are stale (they state their end date): rebuild.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
 the official HTS export, add-on rules encoded per Chapter 99 program).
 
@@ -219,6 +219,7 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   20(www)(14), so it segments as 20(www)(21); today exclusionOf() keeps it out of the 20(www) exclusion (items naming other
   Ch. 99 headings), and a second "21." (infant formula, 9903.19.23) follows — a proper fix needs a duplicate-note-number
   scheme. Also: 9903.05.87 (52(c)) drafted as unconditional twice → blocked; CN refuses its 16 items.
-- Estimator: rebuild before valid_until (2026-11-09); EU members beyond DE; note 31 and 20(s)(ii) not modeled.
+- Estimator: rebuild after 2026-11-09 (exclusion notices end; note 31 headings 9903.91.12–.16 start Nov 10, lines already
+  refused); EU members beyond DE; note 31 and 20(s)(ii) not modeled.
 
 Feature freeze: **Wed Nov 4, 2026, end of day.**

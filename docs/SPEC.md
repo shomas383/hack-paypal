@@ -339,7 +339,8 @@ for base rates and Chapter 99 heading text; the release's Chapter 99 PDF
 (`https://hts.usitc.gov/reststop/file?release=<release>&filename=Chapter%2099`) through xpdf `pdftotext` 4.06 for the U.S.
 notes. `pnpm estimator:build` writes a data version `data/estimator/<release>-eN/` (manifest, report, rules, headings,
 notes, base rates) and moves `current.json` only when no origin is blocked and G0/G9 pass. Versions are never edited: e1
-(JP/EU), e2 (CN lists), e3 (current: CN note 52 exemptions, civil-aircraft origin naming, valid_until) are kept as history.
+(JP/EU), e2 (CN lists), e3 (CN note 52 exemptions, civil-aircraft origin naming, first valid_until) are kept as history; e4
+(current) = e3 with valid_until scoped to what the rules compute.
 
 **How a line is estimated.** Base rate parsed from the official General column (`rateText.ts`; unparseable shapes refuse).
 Chapter 99 layer from gate-accepted rules (data; kinds `combined_cap`, `additive`, `exempt`, `conditional_exempt`,
@@ -376,9 +377,13 @@ headings are not part of it (note 21's 9903.89 text is printed "(21) (a)" right 
 printed twice become 20(ll)(62bis) and 20(ttt)(iii)(180bis); six in-sentence enumerations stay text. A fix that no longer
 matches fails closed (its label stays out of sequence; a list containing one is blocked, G5).
 
-**valid_until.** Each data version records the last date it stays right: before the earliest future date in an in-force
-heading's or a note's own period text (e3: 2026-11-09, heading 9903.88.69 "through November 9, 2026"). After it the API
-refuses before any model call (503) and every line refuses: "Estimate data needs a rebuild (valid until <date>)".
+**valid_until.** Each data version records the last date it stays right: the day before the earliest future boundary that
+would change a computed amount or the set of refused lines — a start or end date in the own text of a heading a
+gate-accepted rule applies, or of a note subdivision such a rule quotes or lists. Boundaries on disclosure-only items (note 20
+exclusions: their notice states the end, "heading 9903.88.69, through November 9, 2026") or on headings whose lines already
+refuse (note 31: 9903.91.12–.16 from November 10, 2026) don't set it (decision 2026-10-12; e3's 2026-11-09 came from the
+exclusion). e4: no such boundary ahead → no end date. After a valid_until the API refuses before any model call (503) and
+every line refuses: "Estimate data needs a rebuild (valid until <date>)".
 
 **Gate** (`gate.ts`, every build): G0 reviewed overrides still quoted in docs; G1 schema/shape and stale source text; G2 every
 quote verbatim in its cited source; G3 every number read by code from the rule's own quote and equal to the official General
@@ -394,11 +399,11 @@ by G4/GR; re-drafted once after the prompt said what a list scope is; exemptions
 unconditional → blocked by GR, as for JP/EU, so its 16 note 52(c) items refuse).
 
 AC:
-- [x] G8 green for JP, DE and CN on the committed data (e3, 2026-10-12): P01–P04, P06, P08, P10, P12, P14 exact; P11 refused
+- [x] G8 green for JP, DE and CN on the committed data (e3 and e4, 2026-10-12): P01–P04, P06, P08, P10, P12, P14 exact; P11 refused
       on note 16; P07 refused; P05 $8.13, P09 $15.00, P13 $72.09 (MFN + 9903.05.31 + 9903.88.15) exact.
 - [x] Deliberately broken rules are blocked and only their lines stop (gate tests, CN tests on the committed data).
-- [x] Lines refused (e3, of 19,926): JP 4,532, DE 5,004, CN 3,739.
-- [x] After valid_until the API and page refuse with the rebuild message (tests before/after).
+- [x] Lines refused (e3 = e4, of 19,926): JP 4,532, DE 5,004, CN 3,739.
+- [x] After a valid_until the API and page refuse with the rebuild message; the November 9/10 boundaries don't (tests).
 - [x] Public API: strict body, owner-only GET, `estimate` rate limit (`ESTIMATE_LIMIT_PER_SESSION_PER_HOUR` 5, `_PER_IP_PER_HOUR`
       10, `ESTIMATE_DAILY_CEILING` 100), 24 h classification cache; migration 0011.
 
