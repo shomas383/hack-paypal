@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, factQuestion, isUncertain, NOT_INCLUDED, plainBasis, reasonText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, isUncertain, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
@@ -328,6 +328,20 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   );
 }
 
+/** The official sentences a question rests on, trimmed, each with where it is ("U.S. note 16(c) to subchapter III"). */
+function OfficialQuotes({ quotes }: { quotes: { ref: string; text: string }[] }) {
+  return (
+    <>
+      {quotes.map((q) => (
+        <figure key={q.ref} className={s.quoteFig}>
+          <blockquote className={s.official}>{q.text}</blockquote>
+          <figcaption className={s.muted}>{refText(q.ref)}</figcaption>
+        </figure>
+      ))}
+    </>
+  );
+}
+
 function YesNo({ name, value, disabled, onChange }: { name: string; value: boolean | undefined; disabled: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className={s.radios}>
@@ -345,8 +359,6 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
   const o = c.outcome;
   const chain = officialChain(c.chain);
   const setFact = (fact: string, v: boolean) => onAnswer({ ...answers, facts: { ...answers.facts, [fact]: v } });
-  // Facts answered for this line's verified-row questions (shown with the quote they led to, and changeable).
-  const answeredFacts = Object.entries(answers.facts).filter(([f]) => factQuestion(f) !== null);
   return (
     <li className={s.candidate} data-testid={`estimate-candidate-${c.code}`}>
       <div className={s.candidateHead}>
@@ -370,12 +382,16 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
       {chain ? <p className={s.chain}>{chain}</p> : null}
       {o.kind === 'ESTIMATE' ? (
         <>
-          {o.source === 'verified' && answeredFacts.length ? (
+          {o.answered?.length ? (
             <div className={s.answered} data-testid="estimate-answered">
-              <p className={s.muted}>
-                Your answers: {answeredFacts.map(([f, v]) => `${factQuestion(f)} ${v ? 'Yes' : 'No'}`).join(' · ')}
-              </p>
-              <Button variant="ghost" size="sm" disabled={answering} onClick={() => onAnswer({ ...answers, facts: Object.fromEntries(Object.entries(answers.facts).filter(([f]) => factQuestion(f) === null)) })}>
+              <ul className={s.answerList}>
+                {o.answered.map((a) => (
+                  <li key={a.fact}>
+                    {a.question} <strong>{a.answer ? 'Yes' : 'No'}</strong>
+                  </li>
+                ))}
+              </ul>
+              <Button variant="ghost" size="sm" disabled={answering} onClick={() => onAnswer({ ...answers, facts: Object.fromEntries(Object.entries(answers.facts).filter(([f]) => !o.answered!.some((a) => a.fact === f))) })}>
                 Change answers
               </Button>
             </div>
@@ -464,10 +480,9 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
           </p>
           {o.facts?.map((f) => (
             <fieldset key={f.fact} className={s.question} data-testid={`estimate-fact-${f.fact}`}>
-              <legend>{factQuestion(f.fact) ?? f.ref}</legend>
-              <p className={s.muted}>
-                Source: {f.ref}. The verified rate row covers the answer “{f.required ? 'Yes' : 'No'}”.
-              </p>
+              <legend>{f.question}</legend>
+              <OfficialQuotes quotes={f.quotes} />
+              <p className={s.muted}>The verified rate row covers the answer “{f.required ? 'Yes' : 'No'}”.</p>
               <YesNo name={`f-${c.code}-${f.fact}`} value={answers.facts[f.fact]} disabled={answering} onChange={(v) => setFact(f.fact, v)} />
             </fieldset>
           ))}

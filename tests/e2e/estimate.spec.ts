@@ -120,6 +120,14 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
   const knife = page.getByTestId('estimate-candidate-8211.92.9030');
   await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/2 questions to answer/);
   await expect(knife.getByTestId('estimate-cant-reason')).toHaveText('A verified rate row covers this line, but its duty depends on the answers below.');
+  const weight = knife.getByTestId('estimate-fact-steel_weight_share_ge_15pct');
+  await expect(weight.locator('legend')).toHaveText('Does the steel in it weigh at least 15 percent of the whole article’s weight?');
+  await expect(weight.locator('blockquote').first()).toHaveText('…only apply where the weight of the applicable metal is at least 15 percent of the weight of the imported article.');
+  await expect(weight.locator('figcaption').first()).toHaveText('U.S. note 16(c) to subchapter III');
+  await expect(knife.getByTestId('estimate-fact-steel_us_melted_poured_ge_85pct').locator('blockquote')).toHaveText(
+    '…at least 85 percent of the steel content of the article must be composed of steel that was melted and poured in the United States.',
+  );
+  await expect(knife).not.toContainText('steel_weight_share'); // never the sheet's fact name
   await expect(knife.getByTestId('estimate-if-answered')).toContainText(`the duty is ${checkoutDuty} (delivered ${checkoutTotal})`);
   await check(page, 'knife');
 
