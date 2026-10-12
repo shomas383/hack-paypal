@@ -131,7 +131,7 @@ describe('headingAppliesTo — civil-aircraft headings name their country with "
     row('9903.02.76', 0, 'Articles of civil aircraft (all aircraft other than military aircraft); their engines, parts, and components; their other parts, components, and subassemblies; and ground flight simulators and their parts and components of the European Union, excluding unmanned aircraft, provided for in subdivision (v)(xxii) of U.S. note 2 to this subchapter', 'The duty provided in the applicable subheading'),
     row('9903.96.01', 0, 'Effective with respect to entries on or after June 30, 2025, articles of civil aircraft (all aircraft other than military aircraft); their engines, parts, and components; their other parts, components, and subassemblies; and ground flight simulators and their parts and components of the United Kingdom, classified in the subheadings enumerated in subdivision (a) of U.S. note 35 to this subchapter.', 'The duty provided in the applicable subheading'),
   ]);
-  const [jp, de, cn] = ['JP', 'DE', 'CN'].map((o) => originOf(o)!);
+  const [jp, de, cn] = [originOf('JP')!, originOf('DE')!, originOf('CN')!];
   it('applies only to the origin it names', () => {
     expect([jp, de, cn].map((o) => headingAppliesTo(t['9903.96.02']!, o))).toEqual([true, false, false]);
     expect([jp, de, cn].map((o) => headingAppliesTo(t['9903.02.76']!, o))).toEqual([false, true, false]);

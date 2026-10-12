@@ -154,6 +154,31 @@ export function outOfForce(t: HeadingTable, notes: Ch99Notes, asOf: string, over
   return out;
 }
 
+const DATED = /\b(on or after|through|before) (?:12:01 a\.m\. [a-z ]*time on )?([A-Z][a-z]+) (\d{1,2}), (\d{4})/g;
+const dayBefore = (iso: string) => new Date(Date.parse(`${iso}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
+
+/**
+ * The last date the data stays right: before the earliest future date in an in-force heading's own text or in a note's text
+ * where something starts or ends ("through November 9, 2026" → 2026-11-09; "on or after November 10, 2026" or "before
+ * November 10, 2026" → 2026-11-09). Null when no such date is ahead. Out-of-force headings are left out (their text no longer
+ * applies); ties keep the first found (headings in order, then notes).
+ */
+export function validUntil(t: HeadingTable, notes: Ch99Notes, outOfForce: Record<string, OutOfForce>, asOf: string): { date: string; ref: string; quote: string } | null {
+  let best: { date: string; ref: string; quote: string } | null = null;
+  const scan = (text: string, ref: string) => {
+    for (const m of text.matchAll(DATED)) {
+      const d = isoDate(m[2]!, m[3]!, m[4]!);
+      if (d === null) continue;
+      const last = m[1] === 'through' ? d : dayBefore(d);
+      if (last < asOf || (m[1] !== 'through' && d <= asOf)) continue;
+      if (!best || last < best.date) best = { date: last, ref, quote: m[0] };
+    }
+  };
+  for (const h of Object.keys(t).sort()) if (!outOfForce[h]) scan(t[h]!.text, `heading ${h}`);
+  for (const s of notes.subdivisions) scan(s.text, `note ${s.section} ${s.path}`);
+  return best;
+}
+
 /** True when `quote` is in the docs text after removing Markdown emphasis and folding whitespace. */
 export function overrideQuoteHolds(docText: string, quote: string): boolean {
   return normaliseText(docText.replace(/\*\*|__/g, '')).includes(normaliseText(quote));

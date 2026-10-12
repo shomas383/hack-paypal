@@ -20,6 +20,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { buildEstimatorData } from '../src/domain/estimator/data';
 import { DRAFT_MODEL, draftRules } from '../src/domain/estimator/draft';
 import { runGate, type GoldenCase } from '../src/domain/estimator/gate';
+import { validUntil } from '../src/domain/estimator/headings';
 import { compareToReference, factNameDiff, RulesFileSchema, type Rule } from '../src/domain/estimator/rules';
 import { verifyExportMeta } from '../src/domain/hts/release';
 import { goldenFileName } from '../src/domain/rates/current';
@@ -35,7 +36,11 @@ const REFERENCE = [join(FIXTURES, 'rules-reference-jp-eu.json'), join(FIXTURES, 
  * Live drafting runs, kept as the model wrote them: JP/EU (2026-10-11, the rules of the first data version) and CN
  * (2026-10-12). A reference rule the previous version lacks takes its rule from here, by id.
  */
-const SEED_RULES = [join(FIXTURES, 'rules-drafted-2026-10-11.json'), join(FIXTURES, 'rules-drafted-cn-2026-10-12.json')];
+const SEED_RULES = [
+  join(FIXTURES, 'rules-drafted-2026-10-11.json'),
+  join(FIXTURES, 'rules-drafted-cn-2026-10-12.json'),
+  join(FIXTURES, 'rules-drafted-cn-exemptions-2026-10-12.json'),
+];
 const DATA_DIR = join('data', 'estimator');
 const ORIGINS = ['JP', 'DE', 'CN'];
 
@@ -126,10 +131,15 @@ async function main() {
   let drafted: Rule[] = [];
   if (draft) {
     if (!process.env.ANTHROPIC_API_KEY && existsSync('.env')) process.loadEnvFile('.env');
-    // --draft-headings 9903.05.87[,…]: re-draft only these; the other rules stay the reference rules
-    const only = arg('--draft-headings')?.split(',');
-    const tasks = reference.rules.filter((r) => !only || only.includes(r.heading)).map((r) => ({ id: r.id, heading: r.heading }));
-    assert(tasks.length > 0, `--draft-headings ${only?.join(',')}: no reference rule for those headings`);
+    // --draft-headings 9903.05.87[,…] or --draft-ids cn-exempt-9903-05-86[,…]: re-draft only these (each for its reference
+    // rule's origins); the other rules stay as they are
+    const byHeading = arg('--draft-headings')?.split(',');
+    const byId = arg('--draft-ids')?.split(',');
+    const only = byHeading ?? byId;
+    const tasks = reference.rules
+      .filter((r) => (byHeading ? byHeading.includes(r.heading) : byId ? byId.includes(r.id) : true))
+      .map((r) => ({ id: r.id, heading: r.heading, ...(only ? { origins: r.origins } : {}) }));
+    assert(tasks.length > 0, `${only?.join(',')}: no reference rule for those headings / ids`);
     console.log(`LIVE: drafting ${tasks.length} rule(s) with ${DRAFT_MODEL}, at most ${budget} calls (retries included)…`);
     const d = await draftRules(tasks, data, anthropic(DRAFT_MODEL), { budget, draftedBy: `${DRAFT_MODEL} (${asOf})` });
     const base = rules;
@@ -154,10 +164,13 @@ async function main() {
     ...(previousListCounts ? { previousListCounts: Object.fromEntries(Object.entries(previousListCounts).map(([k, v]) => [k, v.codes])) } : {}),
   });
 
+  const validity = validUntil(data.headings, data.notes, data.outOfForce, asOf);
   const manifest = {
     version: data.version,
     hts_revision: data.hts_revision,
     as_of: asOf,
+    valid_until: validity?.date ?? null,
+    valid_until_source: validity ? { ref: validity.ref, quote: validity.quote } : null,
     sources: {
       export: { url: meta.url, file: exportFile.replace(/\\/g, '/'), sha256: sha(exportBuf), release: release.name },
       ch99_pdf: { url: pdfUrl, file: pdfFile.replace(/\\/g, '/'), sha256: pdfSha, pdftotext: { version: pdftotext, args: PDFTOTEXT.args } },
@@ -191,6 +204,7 @@ async function main() {
   }
 
   console.log(`release ${release.label} · ${pdftotext} · as of ${asOf} · ${Object.keys(data.base.codes).length} lines · ${data.notes.subdivisions.length} note subdivisions`);
+  console.log(`valid until ${validity ? `${validity.date} (${validity.ref}: \"${validity.quote}\")` : 'no end date'}`);
   console.log(`version ${version}${previous ? ` (previous ${previous})` : ' (first)'} · rules: ${rules.length} (${rulesSource})`);
   if (drafting) {
     console.log(`drafting: ${drafting.calls} calls, ${drafting.usage.input} input + ${drafting.usage.output} output tokens; failed: ${drafting.failed.map((f) => `${f.heading} (${f.error})`).join('; ') || 'none'}`);

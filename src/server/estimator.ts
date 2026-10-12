@@ -19,6 +19,8 @@ export interface EstimatorManifest {
   version: string;
   hts_revision: string;
   as_of: string;
+  /** Absent in versions before 2026-rev21-e3 (no end recorded). */
+  valid_until?: string | null;
   rules: string;
 }
 
@@ -48,6 +50,7 @@ export function loadEstimator(): { data: EstimatorData; manifest: EstimatorManif
     version,
     hts_revision: manifest.hts_revision,
     asOf: manifest.as_of,
+    validUntil: manifest.valid_until ?? null,
     headings,
     outOfForce,
     notes,

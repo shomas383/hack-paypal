@@ -10,6 +10,7 @@ import { and, desc, eq, gte, isNotNull } from 'drizzle-orm';
 import { CLASSIFIER_MODEL } from '@/domain/classifier/classify';
 import { classifyListingGrounded } from '@/domain/classifier/classifyGrounded';
 import { progressView, type ProgressView } from '@/domain/classifier/progress';
+import { dataExpiredText } from '@/domain/estimator/estimate';
 import { originOf, SUPPORTED_ORIGINS } from '@/domain/estimator/origin';
 import { applyAnswers, CACHE_HOURS, descriptionKey, EstimateAnswers, EstimateRequest, toInputRecord } from '@/domain/estimator/request';
 import { estimateViewOf, type EstimateView } from '@/domain/estimator/view';
@@ -28,6 +29,8 @@ export async function startEstimate(raw: unknown, sessionId: string, ip: string,
   const parsed = EstimateRequest.safeParse(raw);
   if (!parsed.success) throw new CheckoutError(400, `invalid estimate request: ${issues(parsed.error)}`);
   const req = parsed.data;
+  const { data } = loadEstimator();
+  if (data.validUntil !== null && now.toISOString().slice(0, 10) > data.validUntil) throw new CheckoutError(503, dataExpiredText(data.validUntil));
   if (!originOf(req.origin)) throw new CheckoutError(422, `Estimates are available for goods made in ${SUPPORTED_ORIGINS.join(', ')} for now.`);
   const key = descriptionKey(req);
   const id = randomUUID();

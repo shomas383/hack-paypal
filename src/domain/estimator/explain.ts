@@ -92,6 +92,8 @@ export function cantText(reason: CantReason, detail: string, refs: string[], hea
     }
     case 'NEEDS_FACTS':
       return 'A verified rate row covers this line, but its duty depends on the answers below.';
+    case 'DATA_EXPIRED':
+      return `${detail}.`;
     case 'PARTIAL_LIST':
       return 'Only some statistical numbers under this line are listed in an exemption, so the 10-digit code decides the duty.';
   }

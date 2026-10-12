@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
  * POST { title, details?, origin, sellingPriceMinor, shippingMinor?, quantity? } (strict) →
  * - 202 { id, cached: false }: the grounded classifier runs after the response; poll GET /api/estimates/<id>;
  * - 200 { id, cached: true }: an identical description and origin was classified in the last 24 h (no model call).
- * 403 cross-site; 400 invalid body; 422 origin not supported yet; 429 over the estimate rate limit (before any model call).
+ * 403 cross-site; 400 invalid body; 422 origin not supported yet; 429 over the estimate rate limit; 503 the committed
+ * estimate data is past its valid_until (needs a rebuild) — all before any model call.
  * Estimates are never charged and never become quotes.
  */
 export async function POST(req: Request) {

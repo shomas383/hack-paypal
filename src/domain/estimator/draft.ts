@@ -37,6 +37,8 @@ const elide = (t: string) => t.replace(/(?:\b\d{4}\.\d{2}(?:\.\d{2,4})?;?\s*){6,
 export interface DraftContext {
   heading: string;
   sources: string[];
+  /** Draft the rule for these origins only (a CN rule for a heading that already has a JP/EU rule). */
+  origins?: string[];
 }
 
 /** A General column that adds a rate to column 1 ("The duty provided in the applicable subheading + 12.5%"). */
@@ -76,7 +78,8 @@ export function draftPrompt(ctx: DraftContext, data: GateInput['data']): string 
     const general = s.startsWith('heading ') ? `\n[General column: ${data.headings[s.slice(8)]?.general || '—'}]` : '';
     return `### ${s}${general}\n${elide(sourceText(s, data) ?? '')}`;
   });
-  return `Draft the rule for heading ${ctx.heading}.\n\n${blocks.join('\n\n')}`;
+  const only = ctx.origins ? ` Draft it for these origins only: ${JSON.stringify(ctx.origins)}.` : '';
+  return `Draft the rule for heading ${ctx.heading}.${only}\n\n${blocks.join('\n\n')}`;
 }
 
 export interface DraftResult {
@@ -87,14 +90,14 @@ export interface DraftResult {
 }
 
 export async function draftRules(
-  tasks: { id: string; heading: string }[],
+  tasks: { id: string; heading: string; origins?: string[] }[],
   data: GateInput['data'],
   model: LanguageModel,
   opts: { budget: number; draftedBy: string },
 ): Promise<DraftResult> {
   const out: DraftResult = { rules: [], failed: [], calls: 0, usage: { input: 0, output: 0 } };
   for (const t of tasks) {
-    const ctx = draftContext(t.heading, data);
+    const ctx = { ...draftContext(t.heading, data), ...(t.origins ? { origins: t.origins } : {}) };
     let last = '';
     for (let attempt = 0; attempt < 2 && out.calls < opts.budget; attempt++) {
       out.calls++;

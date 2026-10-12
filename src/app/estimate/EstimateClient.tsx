@@ -55,6 +55,8 @@ function splitDescription(text: string): { title: string; details?: string } {
 function errorText(status: number, message: string | undefined): string {
   if (status === 429) return message ? `${message.charAt(0).toUpperCase()}${message.slice(1)}.` : 'Too many estimates for now. Try again later.';
   if (status === 422 || status === 400) return message ?? 'Check the form and try again.';
+  // the committed estimate data is past its valid_until ("Estimate data needs a rebuild (valid until …)")
+  if (status === 503 && message) return `${message}.`;
   return 'Something went wrong on our side. Try again in a moment.';
 }
 

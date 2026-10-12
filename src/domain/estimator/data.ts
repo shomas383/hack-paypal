@@ -3,7 +3,7 @@ import { chainsOf, type HtsIndex } from '@/domain/hts/buildIndex';
 import { buildBaseRates, type BaseRates, type RateExportRow } from './baseRates';
 import { segmentNotes, type Ch99Notes, type SegmentOptions } from './ch99Notes';
 import { stripPageFurniture } from './ch99Text';
-import { buildHeadingTable, outOfForce, type HeadingTable, type OutOfForce, type VerifiedOverride } from './headings';
+import { buildHeadingTable, outOfForce, validUntil, type HeadingTable, type OutOfForce, type VerifiedOverride } from './headings';
 import { buildMentions, type MentionsIndex } from './mentions';
 import type { OriginGroup } from './origin';
 import type { Rule } from './rules';
@@ -14,6 +14,8 @@ export interface EstimatorData {
   hts_revision: string;
   /** Out-of-force decisions (entry windows) are made as of this date (YYYY-MM-DD). */
   asOf: string;
+  /** The last date the data stays right (headings.ts validUntil); after it, estimates refuse until a rebuild. Null: no end. */
+  validUntil: string | null;
   headings: HeadingTable;
   outOfForce: Record<string, OutOfForce>;
   notes: Ch99Notes;
@@ -46,12 +48,14 @@ export function buildEstimatorData(src: EstimatorSources): Omit<EstimatorData, '
   // with parent rows: "Sugars … provided for in subheading 1701.12.10 …" above 9903.17.01 is that heading's scope
   const ch99Text: Record<string, string> = Object.fromEntries(Object.entries(headings).filter(([h]) => h.startsWith('9903.')).map(([h, i]) => [h, i.chain]));
   const base = buildBaseRates(src.exportRows, { hts_revision: src.index.hts_revision, source: src.index.source, codes: src.index.codes.map((c) => c.c) });
+  const oof = outOfForce(headings, notes, src.asOf, src.overrides);
   return {
     version: src.version,
     hts_revision: src.index.hts_revision,
     asOf: src.asOf,
+    validUntil: validUntil(headings, notes, oof, src.asOf)?.date ?? null,
     headings,
-    outOfForce: outOfForce(headings, notes, src.asOf, src.overrides),
+    outOfForce: oof,
     notes,
     mentions: buildMentions(notes, ch99Text, Object.fromEntries(Object.entries(base.codes).map(([c, v]) => [c, v.fn]))),
     base,

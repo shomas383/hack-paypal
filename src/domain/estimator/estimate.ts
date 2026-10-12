@@ -40,7 +40,9 @@ export type CantReason =
   | 'UNMODELED_REGIME'
   | 'PARTIAL_LIST'
   /** A verified rate row covers the line but turns on facts the input doesn't have yet (asked as questions). */
-  | 'NEEDS_FACTS';
+  | 'NEEDS_FACTS'
+  /** The entry date is after the data version's valid_until: the data needs a rebuild. */
+  | 'DATA_EXPIRED';
 
 export interface CantEstimate {
   kind: 'CANT_ESTIMATE';
@@ -111,6 +113,10 @@ export const DISCLOSURE_TEXT: Record<Disclosure, string> = {
 
 const cant = (reason: CantReason, detail: string, refs: string[] = []): CantEstimate => ({ kind: 'CANT_ESTIMATE', reason, detail, refs });
 
+/** Shown when the committed data is past its valid_until (also by the API before any model call). */
+export const dataExpiredText = (validUntil: string) => `Estimate data needs a rebuild (valid until ${validUntil})`;
+const expired = (entryDate: string, data: Pick<EstimatorData, 'validUntil'>) => (data.validUntil !== null && entryDate > data.validUntil ? cant('DATA_EXPIRED', dataExpiredText(data.validUntil)) : null);
+
 /** The words a heading's own text lists after "including but not limited to" (9903.05.92). */
 export function headingWords(text: string): string[] {
   const m = /including but not limited to,? (.+)$/i.exec(text);
@@ -137,6 +143,8 @@ function questionFor(rule: Rule, item: string | undefined, data: EstimatorData):
 const cache = new WeakMap<EstimatorData, CoverageIndex>();
 
 export function estimateLine(input: EstimateInput, data: EstimatorData): Estimate | CantEstimate {
+  const stale = expired(input.entryDate, data);
+  if (stale) return stale;
   const code = input.code;
   if (/^9[89]/.test(code)) return cant('SPECIAL_PROVISION', `${code} is a chapter ${code.slice(0, 2)} special provision: can't estimate`);
   const origin = originOf(input.origin);
@@ -305,6 +313,8 @@ function lineExclusions(code: string, iso: string, data: EstimatorData): Estimat
  * doesn't give (e.g. P11's steel facts) — the automated estimator answers. Still an estimate: nothing here is charged.
  */
 export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData, verified: RateFile): Estimate | CantEstimate {
+  const stale = expired(input.entryDate, data);
+  if (stale) return stale;
   const row = verified.rows.find((r) => r.origin === input.origin && r.hts10 === input.code);
   const askable = (c: { fact: string; required_value: boolean }, lineRefs: string[]): VerifiedFact | null => {
     const s = factSource(c.fact, data.notes, { code: input.code, lineRefs });

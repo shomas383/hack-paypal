@@ -87,9 +87,10 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
   it('coverage and out-of-force counts (pinned)', () => {
     // line refusals (232 and other unmodeled regimes; the two flagged civil-aircraft exemption headings stay in force).
     // 2026-10-12: 19 headings whose own entry period has ended are out of force; for JP/DE that frees 9018.31.0080
-    // (9903.91.10, enteral syringes of China, before January 1, 2026). CN: no note 52 exemption rules for CN yet.
+    // (9903.91.10, enteral syringes of China, before January 1, 2026). Civil-aircraft headings ("… components of Japan") apply only
+    // to the origin they name (JP 5,446 → 4,467; DE 4,941 → 4,939); CN note 52 exemptions + that: CN 6,341 → 3,674.
     expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, CN: report.coverage.CN!.refused, lines: report.coverage.JP!.lines }).toEqual({
-      JP: 5446, DE: 4941, CN: 6341, lines: 19926,
+      JP: 4467, DE: 4939, CN: 3674, lines: 19926,
     });
     const why = Object.values(data.outOfForce).reduce<Record<string, number>>((m, o) => ((m[o.why] = (m[o.why] ?? 0) + 1), m), {});
     expect(why).toEqual({ compiler_note: 74, entry_window_closed: 22, note_compiler_note: 10, verified_override: 120 });
