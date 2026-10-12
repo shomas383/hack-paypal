@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { cantText, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from './explain';
+import { KNOWN_FACTS } from './draft';
+import { DISCLOSURE_TEXT, type CantReason } from './estimate';
+import { cantText, factQuestion, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
 
 describe('refText', () => {
   it('names notes, headings and footnotes the way the schedule does', () => {
@@ -10,11 +12,35 @@ describe('refText', () => {
   });
 });
 
+// Real Rev 21 heading texts.
+const H03 = { heading: '9903.82.03', text: 'Except for articles classifiable in chapters 72, 73, 74 or 76, articles where the weight of the applicable metal is less than 15 percent of the weight of the imported article, as provided for in subdivision (c) of U.S. note 16 to this subchapter' };
+const H06 = { heading: '9903.82.06', text: 'Except as provided for in headings 9903.82.15 and 9903.85.68, articles of copper and derivative aluminum and steel articles, as provided for in subdivisions (c)(ii), (iv), (vi)–(viii), (xi) and (e) of U.S. note 16 to this subchapter' };
+const H09 = { heading: '9903.82.09', text: 'Except as provided for in headings 9903.82.16, 9903.82.20–9903.82.26 and 9903.85.68, articles of copper and derivative aluminum and steel articles, as provided for in subdivisions (c)(vi)–(viii) and (xi) of U.S. note 16 to this subchapter' };
+const H4110 = { heading: '9903.41.10', text: 'Footwear with outer soles of leather and uppers wholly or in part of leather, and footwear with outer soles of rubber or plastics and uppers having an exterior surface area predominantly of leather, the foregoing provided for in chapter 64, except (a) slip-on footwear of a type not suitable for outdoor use' };
+
+describe('trimOfficial', () => {
+  it('drops the leading Except clause and the trailing note citation; stops a long text at a clause boundary', () => {
+    expect(trimOfficial(H09.text)).toBe('…articles of copper and derivative aluminum and steel articles');
+    expect(trimOfficial(H4110.text)).toBe('Footwear with outer soles of leather and uppers wholly or in part of leather…');
+    expect(trimOfficial('Short text')).toBe('Short text');
+  });
+});
+
 describe('cantText', () => {
   it('every reason has a plain sentence; refs and measures are spelled out', () => {
-    expect(cantText('UNMODELED_REGIME', '', ['note III 16(c)(vii)'])).toMatch(/^U\.S\. note 16\(c\)\(vii\) to subchapter III names this line, and the estimator doesn’t model it yet\. Often these are Section 232/);
-    // A heading the line's own footnote also cites is named once; the sentence starts with a capital.
-    expect(cantText('UNMODELED_REGIME', '', ['footnote 9903.41.10', 'heading 9903.41.10'])).toMatch(/^The line's own footnote to heading 9903\.41\.10 names this line,/);
+    // A note: cited with the headings it ties the line to (numbers only).
+    expect(cantText('UNMODELED_REGIME', '', ['note III 16(c)(vii)'], [H03, H06, H09])).toBe(
+      'U.S. note 16(c)(vii) to subchapter III names this line and ties it to headings 9903.82.03, 9903.82.06 and 9903.82.09, and the estimator doesn’t model them yet.',
+    );
+    // The line's own footnote / heading: named once, with the heading's own description, trimmed.
+    expect(cantText('UNMODELED_REGIME', '', ['footnote 9903.41.10', 'heading 9903.41.10'], [H4110])).toBe(
+      'The line’s own footnote cites heading 9903.41.10 (“Footwear with outer soles of leather and uppers wholly or in part of leather…”), and the estimator doesn’t model it yet.',
+    );
+    // A heading and a note: two sentences.
+    expect(cantText('UNMODELED_REGIME', '', ['heading 9903.82.03', 'note III 16(c)(vii)'], [H03, H06, H09])).toBe(
+      'Heading 9903.82.03 (“…articles where the weight of the applicable metal is less than 15 percent of the weight of the imported article”) names this line. U.S. note 16(c)(vii) to subchapter III also names this line and ties it to headings 9903.82.03, 9903.82.06 and 9903.82.09. The estimator doesn’t model them yet.',
+    );
+    expect(cantText('NEEDS_FACTS', '', [])).toBe('A verified rate row covers this line, but its duty depends on the answers below.');
     expect(cantText('NEEDS_MEASURES', '3823.11.00 General rate "2.1¢/kg + 3.8%" needs kg', [])).toBe('The official rate depends on weight (kilograms). Estimates by weight, volume or count aren’t supported yet.');
     expect(cantText('NEEDS_SPLIT', '', [])).toMatch(/watch case and on the strap, band or bracelet/);
     for (const r of ['SPECIAL_PROVISION', 'ORIGIN_UNSUPPORTED', 'BLOCKED_BY_GATE', 'UNKNOWN_CODE', 'NO_RATE', 'UNPARSEABLE', 'PARTIAL_LIST'] as const) expect(cantText(r, 'x', []).length).toBeGreaterThan(20);
@@ -67,12 +93,34 @@ describe('reasonText', () => {
 });
 
 describe('sameDutyText', () => {
-  it('the facts that pick the line, when the duty is the same either way', () => {
-    expect(sameDutyText([{ name: 'unit value excluding case', value_from_listing: null }, { name: 'electric pickup', value_from_listing: null }], null)).toBe(
-      'The exact line depends on unit value excluding case and electric pickup, but the estimate is the same either way.',
-    );
-    expect(sameDutyText([], ['Of cotton', 'Of synthetic fibers'])).toBe('The exact line depends on whether it is “Of cotton” or “Of synthetic fibers”, but the estimate is the same either way.');
-    expect(sameDutyText([{ name: 'Fiber content', value_from_listing: null }, { name: 'UV filter', value_from_listing: null }], null)).toBe('The exact line depends on fiber content and UV filter, but the estimate is the same either way.');
-    expect(sameDutyText([], null)).toBeNull();
+  const sep = [{ name: 'unit value excluding case', value_from_listing: null }, { name: 'electric pickup', value_from_listing: null }];
+  it('one sentence: what picks the line, and that the estimate is the same either way', () => {
+    expect(sameDutyText(sep, null, '$50.00', true)).toBe('Not certain which line applies — it depends on unit value excluding case and electric pickup — but the estimate is $50.00 either way.');
+    expect(sameDutyText(sep, null, '$50.00', false)).toBe('The exact line depends on unit value excluding case and electric pickup, but the estimate is $50.00 either way.');
+    expect(sameDutyText([], ['Of cotton', 'Of synthetic fibers'], '$9.00', true)).toBe('Not certain which line applies — it depends on whether it is “Of cotton” or “Of synthetic fibers” — but the estimate is $9.00 either way.');
+    expect(sameDutyText([{ name: 'Fiber content', value_from_listing: null }, { name: 'UV filter', value_from_listing: null }], null, '$1.00', false)).toBe('The exact line depends on fiber content and UV filter, but the estimate is $1.00 either way.');
+    expect(sameDutyText([], null, '$1.00', true)).toBe('Not certain which line applies, but the estimate is $1.00 either way.');
+    expect(sameDutyText([], null, '$1.00', false)).toBeNull();
+  });
+});
+
+describe('factQuestion', () => {
+  it('the verified sheet’s facts as plain questions, the threshold read from the fact name', () => {
+    expect(factQuestion('steel_weight_share_ge_15pct')).toBe('Is steel at least 15% of the product’s weight?');
+    expect(factQuestion('steel_us_melted_poured_ge_85pct')).toBe('Was at least 85% of the steel melted and poured in the United States?');
+    expect(factQuestion('something_else')).toBeNull();
+  });
+});
+
+describe('house style: estimate text cites note and heading numbers only', () => {
+  it('no generated estimate text names a program (Section 232, 301, IEEPA)', () => {
+    const texts: string[] = [NOT_INCLUDED, ...Object.values(DISCLOSURE_TEXT)];
+    const reasons: CantReason[] = ['SPECIAL_PROVISION', 'ORIGIN_UNSUPPORTED', 'BLOCKED_BY_GATE', 'UNKNOWN_CODE', 'NO_RATE', 'UNPARSEABLE', 'NEEDS_MEASURES', 'NEEDS_SPLIT', 'UNMODELED_REGIME', 'PARTIAL_LIST', 'NEEDS_FACTS'];
+    const refSets = [[], ['note III 16(c)(vii)'], ['heading 9903.82.03', 'note III 16(c)(vii)'], ['footnote 9903.41.10', 'heading 9903.41.10']];
+    for (const r of reasons) for (const refs of refSets) texts.push(cantText(r, 'x needs kg', refs, [H03, H06, H09, H4110]));
+    for (const b of ['8.7% of customs value', 'Free', 'combined cap 12.5% (base or AVE below cap)', 'base ≥ 12.5% cap — no add-on', '+25% of full customs value', 'exempt — no add-on'])
+      for (const o of ['JP', 'DE']) texts.push(plainBasis({ label: 'x', chapter99: '9903.82.09', basis: b }, o), plainBasis({ label: 'General rate', basis: b }, o));
+    texts.push(reasonText(['LOW_CONFIDENCE'], [])!, sameDutyText([], null, '$1.00', true)!, ...KNOWN_FACTS.map((f) => factQuestion(f) ?? ''));
+    for (const s of texts) expect(s, s).not.toMatch(/Section 232|\b301\b|IEEPA/i);
   });
 });

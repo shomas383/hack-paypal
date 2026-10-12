@@ -26,8 +26,31 @@ const MEASURE: Record<string, string> = {
   apparatus: 'the apparatus value',
 };
 
-/** Why a line can't be estimated, in one or two plain sentences. */
-export function cantText(reason: CantReason, detail: string, refs: string[]): string {
+/**
+ * A heading's own official text, trimmed for a sentence: the leading "Except …," clause and the trailing "as provided for in
+ * … note" citation are dropped (the note is cited separately), and a long text stops at its first clause boundary.
+ * The words that remain are the official ones, in order; "…" marks every cut.
+ */
+export function trimOfficial(text: string): string {
+  let s = text.trim();
+  const lead = /^Except\b.*?, (?=[a-z])/.exec(s);
+  if (lead) s = `…${s.slice(lead[0].length)}`;
+  s = s.replace(/,? as provided (?:for )?in (?:subdivisions? .*?of )?U\.S\. note \d+.*$/, '');
+  const MAX = 120;
+  if (s.length > MAX) {
+    const boundary = /, (?:and|except|the foregoing|other than)\b|; /g;
+    let cut = -1;
+    for (const m of s.matchAll(boundary)) if (m.index! >= 30 && m.index! <= MAX) cut = cut === -1 ? m.index! : cut;
+    if (cut === -1) cut = s.lastIndexOf(' ', MAX);
+    s = `${s.slice(0, cut).replace(/[,;:]$/, '')}…`;
+  }
+  return s;
+}
+
+const described = (h: string, texts: Map<string, string>) => (texts.has(h) ? `heading ${h} (“${trimOfficial(texts.get(h)!)}”)` : `heading ${h}`);
+
+/** Why a line can't be estimated, in one or two plain sentences. Cites note and heading numbers, never program names. */
+export function cantText(reason: CantReason, detail: string, refs: string[], headings: { heading: string; text: string }[] = []): string {
   switch (reason) {
     case 'SPECIAL_PROVISION':
       return 'This is a Chapter 98 or 99 special provision. Its duty depends on how the goods are entered, so it can’t be estimated.';
@@ -48,12 +71,27 @@ export function cantText(reason: CantReason, detail: string, refs: string[]): st
     case 'NEEDS_SPLIT':
       return 'The official rate is charged separately on the watch case and on the strap, band or bracelet. Enter both values to estimate it.';
     case 'UNMODELED_REGIME': {
-      // A heading also cited by the line's own footnote is named once (as the footnote).
-      const noted = new Set(refs.flatMap((r) => (/^footnote (.+)$/.exec(r)?.[1] ? [r.slice('footnote '.length)] : [])));
-      const named = [...new Set(refs.filter((r) => !noted.has(r.replace(/^heading /, '')) || r.startsWith('footnote ')).map(refText))].join(', ');
-      const who = named ? `${named.charAt(0).toUpperCase()}${named.slice(1)}` : 'Another Chapter 99 provision';
-      return `${who} names this line, and the estimator doesn’t model it yet. Often these are Section 232 duties on steel, aluminum or copper goods, or measures for particular products or countries.`;
+      const texts = new Map(headings.map((h) => [h.heading, h.text]));
+      const footnoted = refs.filter((r) => r.startsWith('footnote ')).map((r) => r.slice('footnote '.length));
+      const own = refs.filter((r) => r.startsWith('heading ')).map((r) => r.slice('heading '.length)).filter((h) => !footnoted.includes(h));
+      const notes = refs.filter((r) => r.startsWith('note ')).map(refText);
+      const sentences: string[] = [];
+      if (footnoted.length) sentences.push(`The line’s own footnote cites ${andList(footnoted.map((h) => described(h, texts)))}`);
+      if (own.length) sentences.push(`${cap(andList(own.map((h) => described(h, texts))))} name${own.length === 1 ? 's' : ''} this line`);
+      if (notes.length) {
+        const tied = headings.map((h) => h.heading);
+        const also = sentences.length ? ' also' : '';
+        const verb = notes.length === 1 ? ['names', 'ties'] : ['name', 'tie'];
+        sentences.push(`${cap(andList(notes))}${also} ${verb[0]} this line${tied.length ? ` and ${verb[1]} it to heading${tied.length === 1 ? '' : 's'} ${andList(tied)}` : ''}`);
+      }
+      if (!sentences.length) sentences.push('A Chapter 99 provision names this line');
+      const many = new Set([...footnoted, ...own, ...headings.map((h) => h.heading)]).size > 1;
+      return sentences.length === 1
+        ? `${sentences[0]}, and the estimator doesn’t model ${many ? 'them' : 'it'} yet.`
+        : `${sentences.join('. ')}. The estimator doesn’t model ${many ? 'them' : 'it'} yet.`;
     }
+    case 'NEEDS_FACTS':
+      return 'A verified rate row covers this line, but its duty depends on the answers below.';
     case 'PARTIAL_LIST':
       return 'Only some statistical numbers under this line are listed in an exemption, so the 10-digit code decides the duty.';
   }
@@ -75,7 +113,7 @@ export function separatingLevels(chains: string[][]): string[] | null {
 
 /** The disclosures every estimate carries beyond the estimator's own (what it never includes). */
 export const NOT_INCLUDED =
-  'Not included: Section 232 and other Chapter 99 duties the estimator doesn’t model (lines they name are refused, not estimated), antidumping and countervailing duties, the merchandise and harbor maintenance fees, and carrier brokerage or other fees.';
+  'Not included: Chapter 99 duties the estimator doesn’t model (lines they name are refused, not estimated), antidumping and countervailing duties, the merchandise and harbor maintenance fees, and carrier brokerage or other fees.';
 
 /** Whose combined rate a note 52 cap is, by origin (DE is covered as an EU member, note 52(k)). */
 const RATE_OF: Record<string, string> = { JP: 'Japan’s', DE: 'the EU’s' };
@@ -122,9 +160,31 @@ export function reasonText(reasons: string[], separating: { name: string; value_
     : 'Not certain which line applies — compare the official descriptions below with the product.';
 }
 
-/** When every candidate line comes to the same duty: what would pick the line, and that it doesn't change the estimate. */
-export function sameDutyText(separating: { name: string; value_from_listing: string | null }[], levels: string[] | null): string | null {
-  if (separating.length) return `The exact line depends on ${andList(separating.map((s) => fact(s.name)))}, but the estimate is the same either way.`;
-  if (levels) return `The exact line depends on whether it is ${orList(levels.map((l) => `“${l}”`))}, but the estimate is the same either way.`;
-  return null;
+/** Whether the classifier's routing reasons mean it isn't certain which line applies. */
+export const isUncertain = (reasons: string[]) => reasons.some((r) => UNCERTAIN.has(r));
+
+/**
+ * When every candidate line comes to the same duty, one sentence: what would pick the line (the separating facts, else
+ * where the official lines part) and that the estimate is the same either way. `amount` is the formatted duty.
+ */
+export function sameDutyText(separating: { name: string; value_from_listing: string | null }[], levels: string[] | null, amount: string, uncertain: boolean): string | null {
+  const on = separating.length ? andList(separating.map((s) => fact(s.name))) : levels ? `whether it is ${orList(levels.map((l) => `“${l}”`))}` : null;
+  if (uncertain) return on ? `Not certain which line applies — it depends on ${on} — but the estimate is ${amount} either way.` : `Not certain which line applies, but the estimate is ${amount} either way.`;
+  return on ? `The exact line depends on ${on}, but the estimate is ${amount} either way.` : null;
+}
+
+/**
+ * Plain questions for the facts a verified rate row's conditions turn on (the fact names come from the verified sheet; the
+ * threshold is read from the name: steel_weight_share_ge_15pct → 15%). Null for a fact without one: it isn't asked.
+ */
+export function factQuestion(fact: string): string | null {
+  const pct = /_ge_(\d+)pct$/.exec(fact)?.[1];
+  switch (fact.replace(/_ge_\d+pct$/, '')) {
+    case 'steel_weight_share':
+      return pct ? `Is steel at least ${pct}% of the product’s weight?` : null;
+    case 'steel_us_melted_poured':
+      return pct ? `Was at least ${pct}% of the steel melted and poured in the United States?` : null;
+    default:
+      return null;
+  }
 }
