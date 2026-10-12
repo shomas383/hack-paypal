@@ -24,7 +24,7 @@ const cnRule = (id: string): Rule => structuredClone(CN_RULES.find((r) => r.id =
 const cn = (code: string, priceMinor: number) => estimateLine({ code, origin: 'CN', entryDate: data.asOf, customsValue: usd(priceMinor) }, data);
 const heads = (e: ReturnType<typeof cn>) => (e.kind === 'ESTIMATE' ? e.result.lines.map((l) => l.chapter99).filter(Boolean) : e.reason);
 
-function gate(rules: unknown[], over: Partial<GateInput> = {}) {
+function gate(rules: unknown[], over: Partial<GateInput> = {}, reference: Rule[] | null = [...JP_EU_RULES, ...CN_RULES]) {
   return runGate({
     data,
     rules,
@@ -35,7 +35,7 @@ function gate(rules: unknown[], over: Partial<GateInput> = {}) {
     docs: { 'docs/SPEC.md': readFileSync(join(process.cwd(), 'docs', 'SPEC.md'), 'utf8') },
     origins: ['CN'],
     overrides: [ieepaOverride()],
-    reference: [...JP_EU_RULES, ...CN_RULES],
+    ...(reference ? { reference } : {}),
     ...over,
   });
 }
@@ -153,7 +153,7 @@ describe('gate — CN reference rules and deliberately broken ones (committed da
       { ...cnRule('cn-add-9903-88-15'), id: 'misquote', quotes: [{ source: 'note III 20(r)', text: 'shall be subject to an additional 10 percent ad valorem rate of duty' }, ...cnRule('cn-add-9903-88-15').quotes.slice(1)] },
       { ...cnRule('cn-not-9903-88-16'), id: 'list-4b', kind: 'additive', rate_ppm: 150000, numbers: { rate_ppm: 0 }, quotes: [{ source: 'general 9903.88.16', text: 'The duty provided in the applicable subheading + 15%' }], drafted_from_sha256: { 'general 9903.88.16': cnRule('cn-add-9903-88-15').drafted_from_sha256['general 9903.88.15']! } },
       { ...cnRule('cn-add-9903-88-15'), id: 'described', scope: { list: 'note III 20(s)(ii)' } },
-    ], { reference: undefined }).report;
+    ], {}, null).report;
     const why = (id: string) => r.blockedRules.find((b) => b.id === id)?.reasons.join(' ') ?? '';
     expect(why('cn-add-9903-88-03')).toMatch(/G3/);
     expect(why('misquote')).toMatch(/G2/);
@@ -168,6 +168,16 @@ describe('gate — CN reference rules and deliberately broken ones (committed da
     const r = gate(CN_RULES, { data: odd });
     expect(r.report.blockedRules.find((b) => b.id === 'cn-add-9903-88-01')?.reasons.join(' ')).toMatch(/G5: an out-of-sequence label inside note III 20\(b\)/);
     expect(estimateLine({ code: '2845.40.0000', origin: 'CN', entryDate: data.asOf, customsValue: usd(10000) }, r.data)).toMatchObject({ reason: 'BLOCKED_BY_GATE' });
+  });
+
+  it('the first live drafting run (2026-10-12): five rules match; its 9903.88.15 on all of 20(s) (with the described products) is blocked by G4 and GR', () => {
+    const run1 = (JSON.parse(readFileSync(join(FIX, 'rules-drafted-cn-2026-10-12-run1.json'), 'utf8')) as RulesFile).rules;
+    const r = gate(run1).report;
+    expect(r.blockedRules.map((b) => b.id)).toEqual(['cn-add-9903-88-15']);
+    expect(r.blockedRules[0]!.reasons.join(' ')).toMatch(/G4: note III 20\(s\) must be a list of 8-digit subheadings.*GR: scope: drafted \{"list":"note III 20\(s\)"\}/);
+    expect(Object.keys(r.blockedOrigins)).toEqual(['CN']); // P13 (on 20(s)(i)) then refuses → G8
+    const final = (JSON.parse(readFileSync(join(FIX, 'rules-drafted-cn-2026-10-12.json'), 'utf8')) as RulesFile).rules;
+    expect(gate(final).report.blockedRules).toEqual([]);
   });
 
   it('GR: a drafted CN rule that differs from the reference (List 2 scope on 20(f)) is blocked', () => {

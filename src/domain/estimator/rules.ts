@@ -9,11 +9,18 @@
 // - not_for_sale: the heading covers only goods that are not sold (9903.05.91 donations); an estimate is for a sale.
 // - via_coverage: the heading exempts goods of other Chapter 99 regimes (9903.05.90 → 232 etc.); a line named by those
 //   regimes is refused by the coverage check, so the rule adds nothing by itself.
+// - additive: the heading adds rate_ppm of the customs value on top of column 1 and of the other add-ons (cumulative):
+//   scope all (9903.05.31, China 12.5%) or a note subdivision's list of 8-digit subheadings (9903.88.01/.02/.03 on note
+//   20(b)/(d)/(f), 9903.88.15 on 20(s)(i)). The note 52 exemptions lift only the scope-all layer, never a list duty.
+// - not_applied: the heading is suspended by a compiler's note (9903.88.16); the rule records that, and adds nothing.
 import { z } from 'zod';
 
 const Ch99 = z.string().regex(/^99\d{2}\.\d{2}\.\d{2}$/);
-/** "heading 9903.05.49" (its official text) or "note III 52(k)" (a note subdivision's text). */
-const Source = z.string().regex(/^(heading 99\d{2}\.\d{2}\.\d{2}|note [IVXL]+ \d+(\([a-zA-Z0-9]+\))*)$/);
+/**
+ * "heading 9903.05.49" (its official text with parent rows), "general 9903.05.31" (its General column as published), or
+ * "note III 52(k)" (a note subdivision's text).
+ */
+const Source = z.string().regex(/^((heading|general) 99\d{2}\.\d{2}\.\d{2}|note [IVXL]+ \d+(\([a-zA-Z0-9]+\))*)$/);
 const NoteRef = z.string().regex(/^note [IVXL]+ \d+(\([a-zA-Z0-9]+\))+$/);
 const Fact = z.string().regex(/^[a-z][a-z0-9_]*$/);
 
@@ -21,10 +28,10 @@ export const QuoteSchema = z.strictObject({ source: Source, text: z.string().min
 
 export const RuleSchema = z.strictObject({
   id: z.string().regex(/^[a-z0-9-]+$/),
-  origins: z.array(z.enum(['JP', 'EU'])).min(1),
+  origins: z.array(z.enum(['JP', 'EU', 'CN'])).min(1),
   heading: Ch99,
-  kind: z.enum(['combined_cap', 'exempt', 'conditional_exempt', 'not_for_sale', 'via_coverage']),
-  /** combined_cap only. */
+  kind: z.enum(['combined_cap', 'additive', 'exempt', 'conditional_exempt', 'not_for_sale', 'via_coverage', 'not_applied']),
+  /** combined_cap and additive only. */
   rate_ppm: z.number().int().positive().optional(),
   /** combined_cap only. */
   cap_heading_at_or_above: Ch99.optional(),
@@ -51,6 +58,9 @@ export const RulesFileSchema = z.strictObject({
 
 export type Rule = z.infer<typeof RuleSchema>;
 export type RulesFile = z.infer<typeof RulesFileSchema>;
+
+/** The rule adds a list duty (a note subdivision's list of subheadings), apart from the origin's scope-all layer. */
+export const isListAdditive = (r: Rule): r is Rule & { scope: { list: string } } => r.kind === 'additive' && 'list' in r.scope;
 
 /**
  * Where a drafted rule differs from the reference rule for the same heading: origins, kind, numbers, scope, and whether it

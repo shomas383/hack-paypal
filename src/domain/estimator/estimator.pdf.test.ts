@@ -10,7 +10,10 @@ import { ieepaOverride } from '@/server/estimatorReview';
 import { currentHtsIndex } from '@/server/hts';
 import { buildEstimatorData } from './data';
 import { runGate } from './gate';
+import type { RulesFile } from './rules';
 import { REFERENCE_RULES } from './__fixtures__/sample';
+
+const CN_RULES = (JSON.parse(readFileSync(join(__dirname, '__fixtures__', 'rules-reference-cn.json'), 'utf8')) as RulesFile).rules;
 
 const SRC = join(process.cwd(), 'data', 'source', 'hts');
 const PDF = join(SRC, 'ch99-2026-rev21.pdf');
@@ -21,16 +24,16 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
   const ch99Text = spawnSync('pdftotext', ['-enc', 'UTF-8', '-layout', PDF, '-'], { encoding: 'utf8', maxBuffer: 1 << 26 }).stdout;
   const index = currentHtsIndex().index;
   const overrides = [ieepaOverride()];
-  const data = buildEstimatorData({ version: 'test-e1', asOf: '2026-10-11', exportRows: JSON.parse(readFileSync(EXPORT, 'utf8')), ch99Text, index, rules: [], overrides });
+  const data = buildEstimatorData({ version: 'test-e1', asOf: '2026-10-12', exportRows: JSON.parse(readFileSync(EXPORT, 'utf8')), ch99Text, index, rules: [], overrides });
   const { report } = runGate({
     data,
-    rules: REFERENCE_RULES.rules,
+    rules: [...REFERENCE_RULES.rules, ...CN_RULES],
     rulesRevision: REFERENCE_RULES.hts_revision,
     knownCodes: index.codes.map((c) => c.c),
     golden: loadGolden().cases,
     verified: loadVerifiedRates(),
     docs: { 'docs/SPEC.md': readFileSync(join(process.cwd(), 'docs', 'SPEC.md'), 'utf8') },
-    origins: ['JP', 'DE'],
+    origins: ['JP', 'DE', 'CN'],
     overrides,
   });
 
@@ -63,12 +66,16 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
     }
   });
 
-  it('G8: every JP / DE verified case reproduced exactly, P11 refused on its 232 note, P07 refused as a chapter 98 provision', () => {
+  it('G8: every JP / DE / CN verified case reproduced exactly, P11 refused on its 232 note, P07 refused as a chapter 98 provision', () => {
     const g8 = Object.fromEntries(report.checks.filter((c) => c.id === 'G8').map((c) => [c.subject, c.detail]));
     expect(Object.keys(g8)).toEqual([
-      'P01 JP 9504.40.0000', 'P02 JP 9504.40.0000', 'P03 JP 9102.21.70', 'P04 JP 9006.53.0205', 'P06 JP 9507.30.6000', 'P07 JP 9801.00.1098',
-      'P08 JP 6203.42.4511', 'P10 JP 9506.31.0000', 'P11 JP 8211.92.9030', 'P12 JP 8523.49.4000', 'P14 DE 9102.21.70',
+      'P01 JP 9504.40.0000', 'P02 JP 9504.40.0000', 'P03 JP 9102.21.70', 'P04 JP 9006.53.0205', 'P05 CN 9503.00.0090', 'P06 JP 9507.30.6000',
+      'P07 JP 9801.00.1098', 'P08 JP 6203.42.4511', 'P09 CN 9504.50.0000', 'P10 JP 9506.31.0000', 'P11 JP 8211.92.9030', 'P12 JP 8523.49.4000',
+      'P13 CN 9102.21.70', 'P14 DE 9102.21.70',
     ]);
+    expect(g8['P05 CN 9503.00.0090']).toBe('estimate 813 (9903.05.31) vs verified 813 (9903.05.31)');
+    expect(g8['P09 CN 9504.50.0000']).toBe('estimate 1500 (9903.05.31) vs verified 1500 (9903.05.31)');
+    expect(g8['P13 CN 9102.21.70']).toBe('estimate 7209 (9903.05.31 + 9903.88.15) vs verified 7209 (9903.05.31 + 9903.88.15)');
     expect(g8['P01 JP 9504.40.0000']).toBe('estimate 1188 (9903.05.49) vs verified 1188 (9903.05.49)');
     expect(g8['P08 JP 6203.42.4511']).toBe('estimate 3320 (9903.05.48) vs verified 3320 (9903.05.48)');
     expect(g8['P12 JP 8523.49.4000']).toBe('estimate 0 (9903.05.92) vs verified 0 (9903.05.92)');
@@ -78,10 +85,15 @@ describe.skipIf(!local)('estimator gate — full Rev 21 sources, reference rules
   });
 
   it('coverage and out-of-force counts (pinned)', () => {
-    // line refusals (232 and other unmodeled regimes; the two flagged civil-aircraft exemption headings stay in force)
-    expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, lines: report.coverage.JP!.lines }).toEqual({ JP: 5447, DE: 4942, lines: 19926 });
+    // line refusals (232 and other unmodeled regimes; the two flagged civil-aircraft exemption headings stay in force).
+    // 2026-10-12: 19 headings whose own entry period has ended are out of force; for JP/DE that frees 9018.31.0080
+    // (9903.91.10, enteral syringes of China, before January 1, 2026). CN: no note 52 exemption rules for CN yet.
+    expect({ JP: report.coverage.JP!.refused, DE: report.coverage.DE!.refused, CN: report.coverage.CN!.refused, lines: report.coverage.JP!.lines }).toEqual({
+      JP: 5446, DE: 4941, CN: 6341, lines: 19926,
+    });
     const why = Object.values(data.outOfForce).reduce<Record<string, number>>((m, o) => ((m[o.why] = (m[o.why] ?? 0) + 1), m), {});
-    expect(why).toEqual({ compiler_note: 74, entry_window_closed: 3, note_compiler_note: 10, verified_override: 120 });
+    expect(why).toEqual({ compiler_note: 74, entry_window_closed: 22, note_compiler_note: 10, verified_override: 120 });
+    expect(report.exclusions.counts).toEqual({ in_effect: 5, expired: 58, unclear: 8 });
     expect(report.listCounts['note III 52(d)']).toMatchObject({ codes: 541, ch98: 6, unknown: [] });
   });
 });

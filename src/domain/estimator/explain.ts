@@ -55,7 +55,7 @@ export function cantText(reason: CantReason, detail: string, refs: string[], hea
     case 'SPECIAL_PROVISION':
       return 'This is a Chapter 98 or 99 special provision. Its duty depends on how the goods are entered, so it can’t be estimated.';
     case 'ORIGIN_UNSUPPORTED':
-      return 'Estimates are available for goods made in Japan or Germany for now.';
+      return 'Estimates are available for goods made in Japan, Germany or China for now.';
     case 'BLOCKED_BY_GATE':
       return 'The part of the estimator that covers this line failed its checks against the official text, so it is switched off until it is fixed.';
     case 'UNKNOWN_CODE':
@@ -109,6 +109,18 @@ export function separatingLevels(chains: string[][]): string[] | null {
     if (new Set(at).size > 1) return at;
   }
   return null;
+}
+
+/**
+ * Note 20 exclusions in effect that name a line, in one sentence (subdivision and heading numbers only): "An exclusion in
+ * effect under U.S. note 20(vvv)(iii)(1) to subchapter III (heading 9903.88.69) covers particular products under this line;
+ * it isn't applied here and can only lower the duty."
+ */
+export function exclusionText(exclusions: { ref: string; heading: string }[]): string | null {
+  if (!exclusions.length) return null;
+  const hs = [...new Set(exclusions.map((x) => x.heading))];
+  const many = exclusions.length > 1;
+  return `${many ? 'Exclusions' : 'An exclusion'} in effect under ${andList(exclusions.map((x) => refText(x.ref)))} (heading${hs.length > 1 ? 's' : ''} ${andList(hs)}) cover${many ? '' : 's'} particular products under this line; ${many ? 'they aren’t' : 'it isn’t'} applied here and can only lower the duty.`;
 }
 
 /** The disclosures every estimate carries beyond the estimator's own (what it never includes). */

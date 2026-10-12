@@ -49,6 +49,11 @@ export interface Ch99Notes {
   subdivisions: Subdivision[];
   /** Line-start markers read as text (neither a continuation nor a new list). */
   ignoredMarkers: IgnoredMarker[];
+  /** Numbering fixes applied, and those that did not hold (their oddity stays out of sequence: fails closed). */
+  numbering: {
+    applied: { section: string; note: number; line: string; kind: NumberingFix['fix']['kind']; path: string }[];
+    unmatched: { section: string; note: number; line: string; reason: string }[];
+  };
 }
 
 export interface IgnoredMarker {
@@ -59,16 +64,78 @@ export interface IgnoredMarker {
   page: string;
   text: string;
   /**
-   * reference: a wrapped cross-reference ("(o) of this note"); not_a_label: an acronym such as "(ABS)"; out_of_sequence:
-   * a real-looking label that neither continues nor opens a list (an oddity of the official numbering — its text, and the
-   * codes in it, stay in the previous subdivision).
+   * reference: a wrapped cross-reference ("(o) of this note"); not_a_label: an acronym such as "(ABS)"; inline_text: an
+   * enumeration inside a sentence that wrapped to a line start, kept as text by a numbering fix; out_of_sequence: a
+   * real-looking label that neither continues nor opens a list and no fix resolves (an oddity of the official numbering —
+   * its text, and the codes in it, stay in the previous subdivision; lists and exclusions containing one fail closed).
    */
-  why: 'reference' | 'not_a_label' | 'out_of_sequence';
+  why: 'reference' | 'not_a_label' | 'inline_text' | 'out_of_sequence';
 }
+
+/**
+ * An oddity of the official numbering, resolved by hand from the text around it. Applied only to the one line of the note
+ * that starts with `line`, and only when that line is met inside the subdivision `within`; otherwise it is reported as
+ * unmatched and the marker stays out of sequence. Fixes for a note the input doesn't contain are not evaluated.
+ * - relabel: the printed label is a misprint of `label` ("(II)" for "(ll)");
+ * - duplicate: an item number printed twice; the second is its own sibling, labelled `label` ("62bis");
+ * - inline_text: an enumeration inside a sentence wrapped to a line start; it stays text of `within`.
+ */
+export interface NumberingFix {
+  section: string;
+  note: number;
+  /** The start of the line (trimmed). */
+  line: string;
+  /** The subdivision open when the line is met (before the fix). */
+  within: string;
+  fix: { kind: 'relabel'; label: string } | { kind: 'duplicate'; label: string } | { kind: 'inline_text' };
+  why: string;
+}
+
+/** The nine out-of-sequence labels of the Rev 20 / Rev 21 Chapter 99 notes (pinned 2026-10-11), each resolved. */
+export const NUMBERING_FIXES: NumberingFix[] = [
+  {
+    section: 'III', note: 17, line: '(cc) a flat wrap spring clutch.', within: '17(c)(2)(B)(iii)', fix: { kind: 'inline_text' },
+    why: 'the third of "(aa) a permanent split capacitor motor, (bb) a belt drive and (cc) a flat wrap spring clutch", one sentence of (iii)',
+  },
+  {
+    section: 'III', note: 20, line: '(11) heading 9903.88.58 and U.S. note 20(kkk)', within: '20(a)', fix: { kind: 'inline_text' },
+    why: 'item (11) of the "(1) heading 9903.88.05 and U.S. note 20(h) …" enumeration of exclusions inside a sentence of 20(a)',
+  },
+  {
+    section: 'III', note: 20, line: '(14) heading 9903.88.66 and U.S. note 20(sss)(i)', within: '20(a)', fix: { kind: 'inline_text' },
+    why: 'item (14) of the same in-sentence enumeration of exclusions in 20(a)',
+  },
+  {
+    section: 'III', note: 20, line: '(4) heading 9903.88.47 and U.S. note 20(zz)', within: '20(r)', fix: { kind: 'inline_text' },
+    why: 'item (4) of the in-sentence enumeration of exclusions in 20(r) ("except as provided in (1) heading 9903.88.39 …")',
+  },
+  {
+    section: 'III', note: 20, line: '(www) are now in effect.]', within: '20(r)', fix: { kind: 'inline_text' },
+    why: 'the wrapped end of 20(r)\'s compiler\'s note "[Compiler\'s note: only subdivisions (vvv) and (www) are now in effect.]"',
+  },
+  {
+    section: 'III', note: 20, line: '(II) The U.S. Trade Representative determined', within: '20(gg)', fix: { kind: 'relabel', label: 'll' },
+    why: 'printed "(II)" for (ll): it follows (gg) and precedes (mm); headings 9903.88.29–9903.88.32 do not exist (so no (hh)–(kk)); heading 9903.88.33 cites U.S. note 20(ll) and 20(e) lists "(3) heading 9903.88.33 and U.S. note 20(ll)"',
+  },
+  {
+    section: 'III', note: 20, line: '(62) Insulated electric conductors, for a voltage', within: '20(ll)(62)', fix: { kind: 'duplicate', label: '62bis' },
+    why: 'item number 62 printed twice in 20(ll) ((60), (62), (62), (63); no (61)): the second is a separate product (statistical reporting number 8544.42.9090)',
+  },
+  {
+    section: 'III', note: 20, line: '(180) Foldable tables with frames', within: '20(ttt)(iii)(180)', fix: { kind: 'duplicate', label: '180bis' },
+    why: 'item number 180 printed twice in 20(ttt)(iii) ((180), (180), (182); no (181)): the second is a separate product (statistical reporting number 9403.20.0090)',
+  },
+  {
+    section: 'III', note: 40, line: '(2) are “pharmaceutical articles” but are neither', within: '40(i)', fix: { kind: 'inline_text' },
+    why: 'the second of "either: (1) not “pharmaceutical articles” …, or (2) are “pharmaceutical articles” but …", one sentence of 40(i)',
+  },
+];
 
 export interface SegmentOptions {
   /** For an excerpt that starts inside a section's notes: the section and the note open at its first line. */
   startIn?: { section: string; note: number };
+  /** Numbering fixes (default NUMBERING_FIXES). */
+  fixes?: NumberingFix[];
 }
 
 // ---------------------------------------------------------------------------------------------------------------- tokens
@@ -408,8 +475,20 @@ export function segmentNotes(s: StrippedText, opts: SegmentOptions = {}): Ch99No
   const { sections, notes, subchapterTitles } = splitNotes(s, opts);
   const subdivisions: Subdivision[] = [];
   const ignoredMarkers: Ch99Notes['ignoredMarkers'] = [];
+  const numbering: Ch99Notes['numbering'] = { applied: [], unmatched: [] };
+  const fixes = opts.fixes ?? NUMBERING_FIXES;
 
   for (const n of notes) {
+    // each fix of this note must name exactly one line
+    const fixAt = new Map<number, NumberingFix>();
+    for (const f of fixes.filter((x) => x.section === n.section && x.note === n.note)) {
+      const hits = n.lines.flatMap((l, i) => (l.text.trim().startsWith(f.line) ? [i] : []));
+      if (hits.length === 1) fixAt.set(hits[0]!, f);
+      else numbering.unmatched.push({ section: f.section, note: f.note, line: f.line, reason: `${hits.length} lines match (must be exactly 1)` });
+    }
+    const unmatched = (f: NumberingFix, reason: string) => numbering.unmatched.push({ section: f.section, note: f.note, line: f.line, reason });
+    const applied = (f: NumberingFix, path: string) => numbering.applied.push({ section: f.section, note: f.note, line: f.line, kind: f.fix.kind, path });
+
     const lead = n.lines.map((l) => leadingMarkers(l.text));
     const firstLabels = lead.map((x) => (x.reference ? undefined : x.markers[0]?.label));
     const stack: Level[] = [];
@@ -421,7 +500,23 @@ export function segmentNotes(s: StrippedText, opts: SegmentOptions = {}): Ch99No
     const pathOf = () => `${n.note}${stack.map((l) => `(${l.label})`).join('')}`;
 
     for (const [i, line] of n.lines.entries()) {
-      const { markers: found, reference } = lead[i]!;
+      let { markers: found, reference } = lead[i]!;
+      const fx = fixAt.get(i);
+      const here = open?.path ?? pathOf();
+      if (fx && here !== fx.within) unmatched(fx, `met inside ${here}, expected ${fx.within}`);
+      const fix = fx && here === fx.within ? fx : undefined;
+      if (fix?.fix.kind === 'duplicate') {
+        const top = stack.at(-1);
+        if (top && found[0]?.label === top.label) {
+          close();
+          stack[stack.length - 1] = { ...top, label: fix.fix.label };
+          open = { path: pathOf(), page: line.page, raw: [found[0].rest], always: true };
+          applied(fix, open.path);
+          continue;
+        }
+        unmatched(fix, `its label is not the open item's (${top?.label ?? 'none'})`);
+      }
+      if (fix?.fix.kind === 'relabel') ({ markers: found, reference } = leadingMarkers(line.text.replace(/^(\s*)\([^()]*\)/, `$1(${fix.fix.label})`)));
       const markers = reference ? [] : found;
       let rest = line.text;
       let accepted = 0;
@@ -440,15 +535,25 @@ export function segmentNotes(s: StrippedText, opts: SegmentOptions = {}): Ch99No
         accepted++;
       }
       if (!open) open = { path: pathOf(), page: line.page, raw: [], always: false };
-      if (accepted === 0 && found.length > 0) {
-        const why = reference ? 'reference' : readings(found[0]!.label).length === 0 ? 'not_a_label' : 'out_of_sequence';
-        ignoredMarkers.push({ section: n.section, note: n.note, path: open.path, page: line.page, text: line.text.trim(), why });
+      if (fix?.fix.kind === 'relabel') {
+        if (accepted > 0) applied(fix, open.path);
+        else unmatched(fix, `the relabelled marker (${fix.fix.label}) is not accepted either`);
       }
+      if (accepted === 0 && found.length > 0) {
+        let why: IgnoredMarker['why'] = reference ? 'reference' : readings(found[0]!.label).length === 0 ? 'not_a_label' : 'out_of_sequence';
+        if (fix?.fix.kind === 'inline_text') {
+          if (why === 'out_of_sequence') {
+            why = 'inline_text';
+            applied(fix, open.path);
+          } else unmatched(fix, `the line is read as ${why}, not out of sequence`);
+        }
+        ignoredMarkers.push({ section: n.section, note: n.note, path: open.path, page: line.page, text: line.text.trim(), why });
+      } else if (fix?.fix.kind === 'inline_text') unmatched(fix, 'its marker was read as a subdivision');
       open.raw.push(rest);
     }
     close();
   }
-  return { revision: s.revision, sections, subchapterTitles, subdivisions, ignoredMarkers };
+  return { revision: s.revision, sections, subchapterTitles, subdivisions, ignoredMarkers, numbering };
 }
 
 // ------------------------------------------------------------------------------------------------------------- note 52

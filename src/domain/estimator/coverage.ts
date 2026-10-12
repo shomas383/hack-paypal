@@ -9,19 +9,27 @@
 // Ch. 99 heading named anywhere in the note plus every heading whose text cites the note ("U.S. note 16 …").
 // Origin-level gaps: an in-force heading that can apply to the origin, has no rule and governs no line-specific mention
 // can't be placed on any line — it blocks the whole origin.
+// Note 20 exclusions (exclusions.ts) are decided first: in effect → exclusion (estimated with the list duty, disclosed);
+// expired → out_of_force; unclear → unmodeled. A heading modeled only by list rules (additive on a note subdivision's list,
+// 9903.88.15 on 20(s)(i)) covers a mention only inside its lists, or for a line on them: 20(s)(ii)'s described products
+// are not on 20(s)(i), so a line named only there stays open.
 import { codeTokens, type Ch99Notes, type Subdivision } from './ch99Notes';
+import { classifyExclusions, exclusionOf } from './exclusions';
 import { headingsInRange, type HeadingTable, type OutOfForce } from './headings';
+import { listMembership } from './lists';
 import { mentionsOf, type MentionsIndex } from './mentions';
 import { headingAppliesTo, type Origin, type OriginGroup } from './origin';
-import type { Rule } from './rules';
+import { isListAdditive, type Rule } from './rules';
 
-export type Verdict = 'special_program' | 'modeled' | 'out_of_force' | 'not_for_origin' | 'unmodeled';
+export type Verdict = 'special_program' | 'modeled' | 'exclusion' | 'out_of_force' | 'not_for_origin' | 'unmodeled';
 
 export interface RefVerdict {
   ref: string;
   verdict: Verdict;
   /** Governing headings that are in force, can apply and have no rule (unmodeled only). */
   open: string[];
+  /** exclusion: the heading that grants it (9903.88.69). */
+  heading?: string;
 }
 
 export interface CoverageContext {
@@ -135,7 +143,8 @@ export function coverageIndex(ctx: CoverageContext) {
     }
     return out;
   };
-  return { governingOf, missingOf, scopedBy, citedLists, bySectionPath };
+  const exclusions = classifyExclusions(ctx.notes, ctx.headings, ctx.outOfForce);
+  return { governingOf, missingOf, scopedBy, citedLists, bySectionPath, exclusions };
 }
 
 export type CoverageIndex = ReturnType<typeof coverageIndex>;
@@ -143,25 +152,45 @@ export type CoverageIndex = ReturnType<typeof coverageIndex>;
 function modeledFor(rules: Rule[], group: OriginGroup) {
   const refs = new Set<string>();
   const headings = new Set<string>();
-  for (const r of rules.filter((x) => x.origins.includes(group))) {
+  /** Headings modeled only by list rules → their lists. */
+  const listOnly = new Map<string, string[]>();
+  const all = new Set<string>();
+  // a not_applied rule records a suspension; its heading is out of force, and that decides (never "modeled")
+  for (const r of rules.filter((x) => x.origins.includes(group) && x.kind !== 'not_applied')) {
     headings.add(r.heading);
     if (r.cap_heading_at_or_above) headings.add(r.cap_heading_at_or_above);
     if ('list' in r.scope) refs.add(r.scope.list);
     for (const q of r.quotes) if (q.source.startsWith('note ')) refs.add(q.source);
+    if (isListAdditive(r)) listOnly.set(r.heading, [...(listOnly.get(r.heading) ?? []), r.scope.list]);
+    else all.add(r.heading);
   }
-  return { refs, headings };
+  for (const h of all) listOnly.delete(h);
+  return { refs, headings, listOnly };
 }
 
 const within = (ref: string, outer: string) => ref === outer || ref.startsWith(`${outer}(`);
 
-export function refVerdict(ref: string, origin: Origin, ctx: CoverageContext, idx: CoverageIndex): RefVerdict {
+/** `code`: the line the mention is for; a heading modeled only by list rules covers the mention when the line is on a list. */
+export function refVerdict(ref: string, origin: Origin, ctx: CoverageContext, idx: CoverageIndex, code?: string): RefVerdict {
   if (ref.startsWith('note ')) {
     const section = ref.split(' ')[1]!;
     if (isSpecialProgramSection(ctx.notes, section)) return { ref, verdict: 'special_program', open: [] };
   }
+  const ex = exclusionOf(ref, idx.exclusions);
+  if (ex) {
+    // whose exclusion: its heading, or (none found) the headings governing the ref
+    const whose = ex.heading ? [ex.heading] : idx.governingOf(ref);
+    if (whose.length && whose.every((h) => ctx.headings[h] && !headingAppliesTo(ctx.headings[h]!, origin))) return { ref, verdict: 'not_for_origin', open: [] };
+    if (ex.status === 'in_effect') return { ref, verdict: 'exclusion', open: [], heading: ex.heading! };
+    if (ex.status === 'expired') return { ref, verdict: 'out_of_force', open: [] };
+    return { ref, verdict: 'unmodeled', open: ex.heading ? [ex.heading] : [] };
+  }
   const m = modeledFor(ctx.rules, origin.group);
-  if ([...m.refs].some((r) => within(ref, r))) return { ref, verdict: 'modeled', open: [] };
+  // quoted note sources count as modeled, except where a list rule's heading governs and the line is on none of its lists
+  const onLists = (h: string) => !!code && (m.listOnly.get(h) ?? []).some((l) => listMembership(code, l, ctx).kind === 'all');
   const hs = idx.governingOf(ref);
+  const listGaps = hs.filter((h) => m.listOnly.has(h) && ![...m.listOnly.get(h)!].some((l) => within(ref, l)) && !onLists(h));
+  if (listGaps.length === 0 && [...m.refs].some((r) => within(ref, r))) return { ref, verdict: 'modeled', open: [] };
   // every heading it names has left the schedule (note 19(k) → 9903.85.08, terminated as of April 6, 2026)
   if (hs.length === 0) return { ref, verdict: idx.missingOf(ref).length ? 'out_of_force' : 'unmodeled', open: [] };
   const open: string[] = [];
@@ -170,7 +199,11 @@ export function refVerdict(ref: string, origin: Origin, ctx: CoverageContext, id
   let special = false;
   let other = false;
   for (const h of hs) {
-    if (m.headings.has(h)) modeled = true;
+    if (listGaps.includes(h)) {
+      if (ctx.outOfForce[h]) out = true;
+      else if (headingAppliesTo(ctx.headings[h]!, origin)) open.push(h);
+      else other = true;
+    } else if (m.headings.has(h)) modeled = true;
     else if (ctx.outOfForce[h]) out = true;
     else if (isSpecialProgramSection(ctx.notes, subchapterOf(h))) special = true;
     else if (headingAppliesTo(ctx.headings[h]!, origin)) open.push(h);
@@ -184,7 +217,7 @@ export function refVerdict(ref: string, origin: Origin, ctx: CoverageContext, id
 
 /** Verdicts for every line-specific mention of a code (broad "chapters 1 to 97" ranges left out). */
 export function lineVerdicts(code: string, origin: Origin, ctx: CoverageContext, idx: CoverageIndex): RefVerdict[] {
-  return mentionsOf(code, ctx.mentions, { lineOnly: true }).map((ref) => refVerdict(ref, origin, ctx, idx));
+  return mentionsOf(code, ctx.mentions, { lineOnly: true }).map((ref) => refVerdict(ref, origin, ctx, idx, code));
 }
 
 /** In-force headings that can apply to the origin, have no rule, and govern no line-specific mention. */

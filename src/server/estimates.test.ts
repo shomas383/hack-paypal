@@ -104,7 +104,7 @@ describe('getEstimate / answerEstimate', () => {
     expect(v.candidates).toHaveLength(1);
     expect(v.candidates[0]!.outcome).toMatchObject({ kind: 'ESTIMATE', source: 'verified', dutyMinor: 1188, ddpTotalMinor: 9500 + 1188 });
     expect(v.notice).toBe('Estimate — not a customs ruling.');
-    expect(db.state.updates[0]).toMatchObject({ estimatorVersion: '2026-rev21-e1' });
+    expect(db.state.updates[0]).toMatchObject({ estimatorVersion: '2026-rev21-e2' });
     expect(classifier.classifyListingGrounded).not.toHaveBeenCalled();
   });
 

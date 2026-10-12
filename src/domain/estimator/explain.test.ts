@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DISCLOSURE_TEXT, type CantReason } from './estimate';
-import { cantText, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
+import { cantText, exclusionText, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
 
 describe('refText', () => {
   it('names notes, headings and footnotes the way the schedule does', () => {
@@ -113,5 +113,17 @@ describe('house style: estimate text cites note and heading numbers only', () =>
       for (const o of ['JP', 'DE']) texts.push(plainBasis({ label: 'x', chapter99: '9903.82.09', basis: b }, o), plainBasis({ label: 'General rate', basis: b }, o));
     texts.push(reasonText(['LOW_CONFIDENCE'], [])!, sameDutyText([], null, '$1.00', true)!);
     for (const s of texts) expect(s, s).not.toMatch(/Section 232|\b301\b|IEEPA/i);
+  });
+});
+
+describe('exclusionText', () => {
+  it('names the subdivisions and headings, says it is not applied and can only lower the duty; no program names', () => {
+    expect(exclusionText([])).toBeNull();
+    expect(exclusionText([{ ref: 'note III 20(vvv)(iii)(1)', heading: '9903.88.69' }])).toBe(
+      'An exclusion in effect under U.S. note 20(vvv)(iii)(1) to subchapter III (heading 9903.88.69) covers particular products under this line; it isn’t applied here and can only lower the duty.',
+    );
+    const two = exclusionText([{ ref: 'note III 20(vvv)(ii)(1)', heading: '9903.88.69' }, { ref: 'note III 20(www)(3)', heading: '9903.88.70' }])!;
+    expect(two).toMatch(/^Exclusions in effect under U\.S\. note 20\(vvv\)\(ii\)\(1\) to subchapter III and U\.S\. note 20\(www\)\(3\) to subchapter III \(headings 9903\.88\.69 and 9903\.88\.70\) cover .* they aren’t applied/);
+    expect(`${two} ${DISCLOSURE_TEXT.EXCLUSION_MAY_APPLY}`).not.toMatch(/Section 301|\b301\b|List \d|USTR/i);
   });
 });

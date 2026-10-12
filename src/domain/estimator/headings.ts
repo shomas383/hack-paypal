@@ -5,7 +5,8 @@
 // - note_compiler_note: a compiler's note inside a U.S. note says so for the heading, e.g. note 2(aa): "Subdivisions … and
 //   headings 9903.03.01–9903.03.11 expired at the close of July 23, 2026.";
 // - entry_window_closed: the heading covers only goods "(2) … entered for consumption, or withdrawn from warehouse for
-//   consumption, before 12:01 a.m. … on <date>" and that date is on or before the as-of date (9903.05.85);
+//   consumption, before 12:01 a.m. … on <date>" and that date is on or before the as-of date (9903.05.85); or its own text
+//   gives an entry period "on or after <date>, and through|before <date>" that has ended (9903.88.50, 9903.88.66);
 // - verified_override: a reviewed list (data/reviews/) of headings a primary source ends although the HTS still prints them
 //   (IEEPA: EO 14389 §1, CBP CSMS # 67834313), each held to the sha256 of its reviewed text (see VerifiedOverride).
 import { createHash } from 'node:crypto';
@@ -107,6 +108,8 @@ const STATUS_VERB = /\b(?:are|is|were|was|have been|has been)\s+(terminated|susp
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WINDOW =
   /that \(1\) were loaded onto a vessel.*?\(2\) are entered for consumption, or withdrawn from warehouse for consumption, before 12:01 a\.m\. [a-z ]*time on ([A-Z][a-z]+) (\d{1,2}), (\d{4})/;
+/** "on or after June 4, 2020, and through December 31, 2020" / "… and before June 1, 2023": an entry period with an end. */
+const PERIOD = /\bon or after [A-Z][a-z]+ \d{1,2}, \d{4},? and (through|before) ([A-Z][a-z]+) (\d{1,2}), (\d{4})/;
 
 /** "July 28, 2026" parts → "2026-07-28", or null. */
 const isoDate = (month: string, day: string, year: string) => {
@@ -126,6 +129,12 @@ export function outOfForce(t: HeadingTable, notes: Ch99Notes, asOf: string, over
     if (w) {
       const d = isoDate(w[1]!, w[2]!, w[3]!);
       if (d !== null && d <= asOf) set(h, { why: 'entry_window_closed', ref: `heading ${h}`, quote: w[0] });
+    }
+    // "through D" covers D itself; "before D" ends on D. A period that hasn't begun yet stays in force (fails closed).
+    const p = PERIOD.exec(info.text);
+    if (p) {
+      const d = isoDate(p[2]!, p[3]!, p[4]!);
+      if (d !== null && (p[1] === 'through' ? d < asOf : d <= asOf)) set(h, { why: 'entry_window_closed', ref: `heading ${h}`, quote: p[0] });
     }
   }
   for (const s of notes.subdivisions) {

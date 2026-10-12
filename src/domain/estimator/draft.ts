@@ -14,20 +14,22 @@ export const KNOWN_FACTS = ['informational_material', 'steel_weight_share_ge_15p
 
 const DraftSchema = RuleSchema.omit({ id: true, drafted_from_sha256: true, drafted_by: true });
 
-const SYSTEM = `You turn official U.S. tariff text (HTSUS Chapter 99, headings and U.S. note 52 to subchapter III) into one machine-readable rule for one heading.
+const SYSTEM = `You turn official U.S. tariff text (HTSUS Chapter 99: headings, their General column, and U.S. notes 20 and 52 to subchapter III) into one machine-readable rule for one heading.
 Rules:
 - Use only the texts given. Every quote must be copied verbatim (exact words and punctuation) from the cited source.
 - Never compute amounts. A number in the rule must appear in one of your quotes; numbers.rate_ppm is the index of the quote that states the rate.
 - rate_ppm is parts per million of value (12.5 percent = 125000).
-- origins: "JP" for goods of Japan, "EU" for goods of a member state of the European Union; list the ones the heading can apply to among these two.
+- origins: "JP" for goods of Japan, "EU" for goods of a member state of the European Union, "CN" for goods of China; list the ones the heading can apply to among these three.
 - kind:
   combined_cap — the heading tops column 1 duty (or its ad valorem equivalent) up to a combined rate; give rate_ppm and cap_heading_at_or_above (the heading used when column 1 is at or above that rate); scope {"all": true}.
+  additive — the heading adds a rate of the value on top of column 1 duty; give rate_ppm; scope {"all": true} when it covers all goods of the origin, or {"list": "note III 20(x)"} when it covers the goods classified in the subheadings a note subdivision lists. A list scope names the subdivision whose own text lists the subheadings as codes (its children count with it); goods a subdivision describes in words, with exceptions, are not a list and stay outside the scope.
   exempt — goods in a list of a note subdivision pay none of the additional duties; scope {"list": "note III 52(x)"}.
   conditional_exempt — exempt only when a fact about the goods holds; give condition.fact and the scope: the subdivision list, or {"heading_words": "<this heading>"} when the heading itself describes the goods by a list of words.
   not_for_sale — the heading covers only goods that are not sold (e.g. donations); scope {"all": true}.
   via_coverage — the heading exempts goods that other Chapter 99 regimes cover (it lists those regimes, not goods); scope {"all": true}.
+  not_applied — a compiler's note says the heading is suspended; quote that note; scope {"all": true}; no rate.
 - condition.fact: snake_case. If the condition is one of these existing facts, use its name: ${KNOWN_FACTS.join(', ')}.
-- Sources are written "heading 9903.05.49" or "note III 52(k)" exactly as given.`;
+- Sources are written "heading 9903.05.49", "general 9903.05.31" (that heading's General column) or "note III 52(k)" exactly as given.`;
 
 /** Long runs of codes in a list subdivision are elided for the prompt; the gate checks lists by code, not the model. */
 const elide = (t: string) => t.replace(/(?:\b\d{4}\.\d{2}(?:\.\d{2,4})?;?\s*){6,}/g, (m) => `[${(m.match(/\d{4}\.\d{2}/g) ?? []).length} HTSUS provisions listed] `);
@@ -37,22 +39,35 @@ export interface DraftContext {
   sources: string[];
 }
 
+/** A General column that adds a rate to column 1 ("The duty provided in the applicable subheading + 12.5%"). */
+const ADDS_RATE = /^The duty provided in the applicable subheading (?:\+|plus) \d/;
+
 /**
- * The texts a heading's rule is drafted from: the heading and its neighbours, the note 52 subdivision that defines it with
- * its items, 52(a) and 52(k).
+ * The texts a heading's rule is drafted from: the heading and its neighbours; its General column when that adds a rate; the
+ * note 52 subdivision that defines it with its items, then 52(a) and 52(k) (9903.05.xx); or the note 20 subdivisions that
+ * define it ("For the purposes of heading …", "Heading … applies to") with their items (9903.88.xx).
  */
 export function draftContext(heading: string, data: GateInput['data']): DraftContext {
   const all = Object.keys(data.headings).sort();
   const i = all.indexOf(heading);
   const near = [all[i - 1], heading, all[i + 1]].filter((h): h is string => !!h && h.startsWith(heading.slice(0, 7)));
+  const withItems = (s: { path: string }) => [
+    `note III ${s.path}`,
+    // its items ("(1) Etrogs (classifiable in subheading 0805.90.01);" …)
+    ...data.notes.subdivisions.filter((c) => c.section === 'III' && c.path.startsWith(`${s.path}(`)).map((c) => `note III ${c.path}`),
+  ];
+  const general = ADDS_RATE.test(data.headings[heading]?.general ?? '') ? [`general ${heading}`] : [];
+  const note52 = heading.startsWith('9903.05.');
   const defining = data.notes.subdivisions
-    .filter((s) => s.section === 'III' && s.note === 52 && s.asProvidedIn.headings.includes(heading) && s.shallNotApply)
-    .flatMap((s) => [
-      `note III ${s.path}`,
-      // its items ("(1) Etrogs (classifiable in subheading 0805.90.01);" …)
-      ...data.notes.subdivisions.filter((c) => c.section === 'III' && c.path.startsWith(`${s.path}(`)).map((c) => `note III ${c.path}`),
-    ]);
-  const sources = [...near.map((h) => `heading ${h}`), ...defining, 'note III 52(a)', 'note III 52(k)'];
+    .filter((s) =>
+      s.section !== 'III'
+        ? false
+        : note52
+          ? s.note === 52 && s.asProvidedIn.headings.includes(heading) && s.shallNotApply
+          : s.note === 20 && (s.text.startsWith(`For the purposes of heading ${heading},`) || s.text.startsWith(`Heading ${heading} applies to`)),
+    )
+    .flatMap(withItems);
+  const sources = [...near.map((h) => `heading ${h}`), ...general, ...defining, ...(note52 ? ['note III 52(a)', 'note III 52(k)'] : [])];
   return { heading, sources: [...new Set(sources)] };
 }
 

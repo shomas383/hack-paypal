@@ -3,9 +3,12 @@
 // G1 rule schema and shape (kind ↔ fields; quoted sources ↔ drafted_from_sha256; revision); stale source text  → rule blocked
 // G2 every quote is verbatim in its cited source (heading text with parents, or note subdivision text)        → rule blocked
 // G3 every number is read by code from the rule's own quote and agrees with the official heading text/rate column → rule blocked
-// G4 cited headings exist and are in force; a list belongs to the rule's heading ("As provided in heading …")  → rule blocked
+// G4 cited headings exist and are in force (a not_applied rule's heading is out of force by a "suspended" compiler's note);
+//    a list belongs to the rule's heading: an exemption's opens "As provided in heading …"; an additive one is a list of
+//    8-digit subheadings under "Heading … applies to" that the heading's own text cites                     → rule blocked
 // G5 list scope: subdivision exists, has codes, codes are real lines (ch. 98 counted apart, ≤ 0.5% unknown), count
-//    within ±20% of the previous version                                                                      → rule blocked
+//    within ±20% of the previous version, no unresolved numbering oddity inside it                           → rule blocked
+//    (numbering fixes that did not hold are reported as a failed G5 check; their oddities stay out of sequence)
 // G6 footnotes that name a modeled heading only name lines in its list                                         → rule blocked
 // G7 coverage: no in-force heading that can apply to the origin is left without a rule or a line             → origin blocked
 // G8 golden: automated-only estimates reproduce every verified case of the origin exactly (total and Ch. 99 headings),
@@ -20,6 +23,7 @@ import { normaliseText } from './ch99Text';
 import { coverageIndex, lineVerdicts, originGaps, type CoverageContext } from './coverage';
 import type { EstimatorData } from './data';
 import { estimateLine } from './estimate';
+import type { Exclusions } from './exclusions';
 import { overrideQuoteHolds, overrideTies, type VerifiedOverride } from './headings';
 import { originOf, type OriginGroup } from './origin';
 import { toEngineMfn } from './rateText';
@@ -72,6 +76,10 @@ export interface GateReport {
   coverage: Record<string, { lines: number; refused: number; byRef: Record<string, number> }>;
   /** Per override list: tied (terminated), changed / missing (re-review, kept in force), unlisted (kept in force). */
   overrideTies: { file: string; tied: Record<string, { order: string; group: string }>; changed: string[]; missing: string[]; unlisted: string[] }[];
+  /** Note 20 exclusions: counts and every unit with its status and reason. */
+  exclusions: Pick<Exclusions, 'counts' | 'inEffect' | 'foreign'> & { units: Exclusions['units'][string][] };
+  /** Numbering fixes applied / not holding, and labels still out of sequence. */
+  numbering: { applied: number; unmatched: string[]; outOfSequence: string[] };
 }
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -83,10 +91,16 @@ export function percentToPpm(s: string): number {
 }
 const PERCENTS = /(\d+(?:\.\d+)?)\s*(?:percent\b|%)/g;
 const NO_ADD_ON = 'The duty provided in the applicable subheading';
+/** An additive heading's General column: "The duty provided in the applicable subheading + 12.5%" (or "plus 25%"). */
+const ADDS = /^The duty provided in the applicable subheading (?:\+|plus) (\d+(?:\.\d+)?)%$/;
+const SUSPENDED = /\bsuspended\b/i;
+/** "… as provided for in the subheadings enumerated in U.S. note 20(s)": the list a heading's own text cites. */
+const CITES_LIST = /\bsubheadings enumerated in U\.S\. notes? (\d+(?:\([a-z0-9]+\))+)/g;
 
 /** Official text a quote may cite. */
 export function sourceText(source: string, data: GateInput['data']): string | undefined {
   if (source.startsWith('heading ')) return data.headings[source.slice(8)]?.chain;
+  if (source.startsWith('general ')) return data.headings[source.slice(8)]?.general;
   const m = /^note (\S+) (.+)$/.exec(source);
   return m ? data.notes.subdivisions.find((s) => s.section === m[1] && s.path === m[2])?.text : undefined;
 }
@@ -95,6 +109,8 @@ export const sourceSha = (source: string, data: GateInput['data']) => {
   const t = sourceText(source, data);
   return t === undefined ? undefined : sha(t);
 };
+
+const within = (ref: string, outer: string) => ref === outer || ref.startsWith(`${outer}(`);
 
 function listCodes(list: string, data: GateInput['data']) {
   const [, section, path] = /^note (\S+) (.+)$/.exec(list)!;
@@ -132,6 +148,11 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
     check('G0', `${o.listFile} not listed`, true, `${ties.unlisted.length} heading(s) under ${o.prefixes.join(', ')} not in the list and not out of force by their own text, kept in force: ${ties.unlisted.join(', ') || 'none'}`);
   }
 
+  // numbering fixes that didn't hold: their oddity stays out of sequence (lists and exclusions containing it fail closed)
+  const numbering = data.notes.numbering ?? { applied: [], unmatched: [] };
+  const outOfSequence = data.notes.ignoredMarkers.filter((m) => m.why === 'out_of_sequence').map((m) => `note ${m.section} ${m.path}: ${m.text.slice(0, 50)}`);
+  check('G5', 'numbering fixes', numbering.unmatched.length === 0, `${numbering.applied.length} applied; not holding: ${numbering.unmatched.map((u) => `note ${u.section} ${u.note} "${u.line}" (${u.reason})`).join('; ') || 'none'}; still out of sequence: ${outOfSequence.length}`);
+
   // G1–G6 per rule
   const known = new Set(input.knownCodes);
   const known8 = new Set(input.knownCodes.map((c) => c.slice(0, 10)));
@@ -154,9 +175,13 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
     const r = parsed.data;
     // G1 shape
     const cap = r.kind === 'combined_cap';
+    const add = r.kind === 'additive';
     fail('G1', r.id, input.rulesRevision === data.hts_revision, `rules are for ${input.rulesRevision}, data is ${data.hts_revision}`);
-    fail('G1', r.id, cap === (r.rate_ppm !== undefined && r.cap_heading_at_or_above !== undefined && r.numbers.rate_ppm !== undefined), 'rate_ppm, cap_heading_at_or_above and numbers.rate_ppm are for combined_cap and required there');
+    fail('G1', r.id, (cap || add) === (r.rate_ppm !== undefined && r.numbers.rate_ppm !== undefined), 'rate_ppm and numbers.rate_ppm are for combined_cap and additive, and required there');
+    fail('G1', r.id, cap === (r.cap_heading_at_or_above !== undefined), 'cap_heading_at_or_above is for combined_cap and required there');
     fail('G1', r.id, !cap || 'all' in r.scope, 'combined_cap applies to all lines');
+    fail('G1', r.id, !add || !('heading_words' in r.scope), 'additive applies to all lines or to a list');
+    fail('G1', r.id, r.kind !== 'not_applied' || 'all' in r.scope, 'not_applied has scope all (its heading decides, being out of force)');
     fail('G1', r.id, (r.kind === 'conditional_exempt') === (r.condition !== undefined), 'condition is for conditional_exempt and required there');
     fail('G1', r.id, !(r.kind === 'exempt' || r.kind === 'conditional_exempt') || !('all' in r.scope), 'an exemption needs a list or heading_words scope');
     const sources = [...new Set(r.quotes.map((q) => q.source))].sort();
@@ -181,6 +206,15 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
       fail('G3', r.id, h.chain.includes(`less than ${pct(r.rate_ppm!)} percent`), `${r.heading} text must say "less than ${pct(r.rate_ppm!)} percent"`);
       const above = data.headings[r.cap_heading_at_or_above!];
       fail('G3', r.id, !!above && above.chain.includes(`equal to or greater than ${pct(r.rate_ppm!)} percent`) && above.general === NO_ADD_ON, `${r.cap_heading_at_or_above} must say "equal to or greater than ${pct(r.rate_ppm!)} percent" and add nothing`);
+    } else if (add && h) {
+      const q = r.quotes[r.numbers.rate_ppm!];
+      const nums = q ? [...q.text.matchAll(PERCENTS)].map((m) => percentToPpm(m[1]!)) : [];
+      fail('G3', r.id, nums.length > 0 && nums.every((n) => n === r.rate_ppm), `rate ${pct(r.rate_ppm!)}% must be every percentage in quote ${r.numbers.rate_ppm} (found ${nums.map(pct).join(', ') || 'none'})`);
+      fail('G3', r.id, !!q && (q.text.includes(r.heading) || q.source === `general ${r.heading}` || q.source === `heading ${r.heading}`), `the rate quote must name ${r.heading} or be its General column`);
+      const g = ADDS.exec(h.general);
+      fail('G3', r.id, !!g && percentToPpm(g[1]!) === r.rate_ppm, `${r.heading} General column is "${h.general}", expected "${NO_ADD_ON} + ${pct(r.rate_ppm!)}%"`);
+    } else if (r.kind === 'not_applied' && h) {
+      fail('G3', r.id, r.numbers.rate_ppm === undefined && r.rate_ppm === undefined, 'this kind carries no number');
     } else if (h) {
       fail('G3', r.id, r.numbers.rate_ppm === undefined && r.rate_ppm === undefined, 'this kind carries no number');
       fail('G3', r.id, h.general === NO_ADD_ON, `${r.heading} General column must add nothing ("${NO_ADD_ON}"), is "${h.general}"`);
@@ -188,11 +222,22 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
     // G4
     for (const x of [r.heading, ...(r.cap_heading_at_or_above ? [r.cap_heading_at_or_above] : [])]) {
       fail('G4', r.id, !!data.headings[x], `${x} is not a heading of ${data.hts_revision}`);
-      fail('G4', r.id, !data.outOfForce[x], `${x} is out of force (${data.outOfForce[x]?.why}: ${data.outOfForce[x]?.ref})`);
+      const o = data.outOfForce[x];
+      if (r.kind === 'not_applied') {
+        const byNote = !!o && (o.why === 'compiler_note' || o.why === 'note_compiler_note') && SUSPENDED.test(o.quote);
+        fail('G4', r.id, byNote && r.quotes.some((q) => SUSPENDED.test(q.text)), `${x} must be suspended by a compiler's note, and a quote must say so (it is ${o ? `${o.why}: ${o.quote}` : 'in force'})`);
+      } else fail('G4', r.id, !o, `${x} is out of force (${o?.why}: ${o?.ref})`);
     }
     if ('list' in r.scope) {
-      const own = data.notes.subdivisions.find((s) => `note ${s.section} ${s.path}` === (r.scope as { list: string }).list);
-      fail('G4', r.id, !!own && own.asProvidedIn.headings.includes(r.heading) && own.shallNotApply, `${r.scope.list} must open "As provided in heading ${r.heading}" and say "shall not apply"`);
+      const list = r.scope.list;
+      const own = data.notes.subdivisions.find((s) => `note ${s.section} ${s.path}` === list);
+      if (add) {
+        // own or an ancestor opens "Heading 9903.88.15 applies to"; own lists 8-digit subheadings; the heading's text cites it
+        const levels = own ? data.notes.subdivisions.filter((s) => s.section === own.section && (own.path === s.path || own.path.startsWith(`${s.path}(`))) : [];
+        const opens = levels.some((s) => s.text.startsWith(`Heading ${r.heading} applies to`));
+        const cited = [...(data.headings[r.heading]?.chain.matchAll(CITES_LIST) ?? [])].some((m) => !!own && (own.path === m[1] || own.path.startsWith(`${m[1]}(`)));
+        fail('G4', r.id, !!own && !own.shallNotApply && /\bclassified in the following 8-digit subheadings\b/.test(own.text) && opens && cited, `${list} must be a list of 8-digit subheadings under "Heading ${r.heading} applies to", cited by the heading's own text`);
+      } else fail('G4', r.id, !!own && own.asProvidedIn.headings.includes(r.heading) && own.shallNotApply, `${list} must open "As provided in heading ${r.heading}" and say "shall not apply"`);
     }
     if ('heading_words' in r.scope) fail('G4', r.id, r.scope.heading_words === r.heading, 'heading_words must be the rule heading');
     // G5
@@ -206,6 +251,9 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
       fail('G5', r.id, unknown.length <= Math.floor(real.length * 0.005), `${unknown.length} listed codes are not ${data.hts_revision} lines: ${unknown.slice(0, 10).join(', ')}`);
       const prev = input.previousListCounts?.[r.scope.list];
       if (prev !== undefined) fail('G5', r.id, Math.abs(codes.length - prev) <= prev * 0.2, `${r.scope.list}: ${codes.length} codes vs ${prev} in the previous version (> ±20%)`);
+      const list = r.scope.list;
+      const odd = data.notes.ignoredMarkers.filter((m) => m.why === 'out_of_sequence' && within(`note ${m.section} ${m.path}`, list));
+      fail('G5', r.id, odd.length === 0, `an out-of-sequence label inside ${list} (${odd.map((m) => m.path).join(', ')}): its codes are in doubt`);
     }
     // G6
     if ('list' in r.scope) {
@@ -219,7 +267,7 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
     }
     // GR
     if (input.reference) {
-      const diffs = compareToReference(r, input.reference.find((x) => x.heading === r.heading));
+      const diffs = compareToReference(r, input.reference.find((x) => x.id === r.id) ?? input.reference.find((x) => x.heading === r.heading));
       fail('GR', r.id, diffs.length === 0, diffs.join('; ') || 'matches the reference rule');
     }
     if (reasons.length) blockedRules.push({ rule: r, id: r.id, reasons });
@@ -315,8 +363,19 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
   }
 
   result.blocked.origins = blockedOrigins;
+  const ex = idx.exclusions;
   return {
     data: result,
-    report: { checks, blockedRules: blockedRules.map((b) => ({ id: b.id, reasons: b.reasons })), blockedOrigins, alerts, listCounts, coverage, overrideTies: overrideTieReport },
+    report: {
+      checks,
+      blockedRules: blockedRules.map((b) => ({ id: b.id, reasons: b.reasons })),
+      blockedOrigins,
+      alerts,
+      listCounts,
+      coverage,
+      overrideTies: overrideTieReport,
+      exclusions: { counts: ex.counts, inEffect: ex.inEffect, foreign: ex.foreign, units: Object.values(ex.units) },
+      numbering: { applied: numbering.applied.length, unmatched: numbering.unmatched.map((u) => `note ${u.section} ${u.note} "${u.line}": ${u.reason}`), outOfSequence },
+    },
   };
 }

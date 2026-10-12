@@ -7,9 +7,12 @@ import type { Money } from '@/domain/money/money';
 import { citesSubdivision, coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
 import { factSource } from './factSources';
 import type { EstimatorData } from './data';
-import { headingAppliesTo, originOf } from './origin';
+import { listMembership } from './lists';
+import { headingAppliesTo, originOf, SUPPORTED_ORIGINS } from './origin';
 import { toEngineMfn } from './rateText';
-import type { Rule } from './rules';
+import { isListAdditive, type Rule } from './rules';
+
+export { listMembership };
 
 export interface EstimateInput {
   /** Index form: "6203.42.4511", or "9102.21.70" for a component-reporting line. */
@@ -86,39 +89,27 @@ export interface Estimate {
   /** One figure per unanswered question: the result if the answer is yes. */
   ifYes: { question: Question; result: EstimateOk }[];
   disclosures: Disclosure[];
+  /** Note 20 exclusions in effect that name this line: not applied (they can only lower the duty), named here. */
+  exclusions: { ref: string; heading: string }[];
   /** A verified row that turned on facts: the questions and the answers given. */
   answered?: (VerifiedFact & { answer: boolean })[];
 }
 
-/** Always shown; never computed. */
-export type Disclosure = 'SPECIAL_PROGRAMS' | 'NOT_A_RULING';
+/** Always shown (EXCLUSION_MAY_APPLY: when `exclusions` names any); never computed. */
+export type Disclosure = 'SPECIAL_PROGRAMS' | 'EXCLUSION_MAY_APPLY' | 'NOT_A_RULING';
 
 /**
  * SPECIAL_PROGRAMS covers Special-column rates (e.g. "JP", US–Japan Trade Agreement), trade-agreement subchapters and 9902
- * temporary reductions: none is applied, and each can only lower the duty (decision 2026-10-11).
+ * temporary reductions: none is applied, and each can only lower the duty (decision 2026-10-11). EXCLUSION_MAY_APPLY: an
+ * exclusion in effect names some products under this line; it is not applied and can only lower the duty (2026-10-12).
  */
 export const DISCLOSURE_TEXT: Record<Disclosure, string> = {
   SPECIAL_PROGRAMS: 'Lower special-program rates may apply; this estimate uses the General rate',
+  EXCLUSION_MAY_APPLY: 'An exclusion in effect covers some products under this line; it is not applied here and can only lower the duty',
   NOT_A_RULING: 'Estimate — not a customs ruling.',
 };
 
 const cant = (reason: CantReason, detail: string, refs: string[] = []): CantEstimate => ({ kind: 'CANT_ESTIMATE', reason, detail, refs });
-const digits = (c: string) => c.replace(/\./g, '');
-
-/** Membership of a line in a note subdivision's code list (the subdivision and its children). */
-export function listMembership(code: string, listRef: string, data: Pick<EstimatorData, 'notes'>): { kind: 'all' | 'partial' | 'none'; item?: string } {
-  const [, section, path] = /^note (\S+) (.+)$/.exec(listRef)!;
-  const d = digits(code);
-  let partial: string | undefined;
-  for (const s of data.notes.subdivisions) {
-    if (s.section !== section || !(s.path === path || s.path.startsWith(`${path}(`))) continue;
-    for (const t of [...s.codes10, ...s.codes8, ...s.codes6, ...s.headings4].map(digits)) {
-      if (d.startsWith(t)) return { kind: 'all', item: `note ${s.section} ${s.path}` };
-      if (t.startsWith(d)) partial ??= `note ${s.section} ${s.path}`;
-    }
-  }
-  return partial ? { kind: 'partial', item: partial } : { kind: 'none' };
-}
 
 /** The words a heading's own text lists after "including but not limited to" (9903.05.92). */
 export function headingWords(text: string): string[] {
@@ -149,7 +140,7 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
   const code = input.code;
   if (/^9[89]/.test(code)) return cant('SPECIAL_PROVISION', `${code} is a chapter ${code.slice(0, 2)} special provision: can't estimate`);
   const origin = originOf(input.origin);
-  if (!origin) return cant('ORIGIN_UNSUPPORTED', `origin ${input.origin} is not supported yet (JP and DE only)`);
+  if (!origin) return cant('ORIGIN_UNSUPPORTED', `origin ${input.origin} is not supported yet (${SUPPORTED_ORIGINS.join(', ')} only)`);
   const blockedOrigin = data.blocked.origins[origin.group];
   if (blockedOrigin) return cant('BLOCKED_BY_GATE', `${origin.group} estimates are blocked by the gate: ${blockedOrigin.join('; ')}`);
 
@@ -219,22 +210,37 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
     else if (answer === undefined) unanswered.push({ rule: r, question: questionFor(r, item, data) });
   }
 
-  const cap = rules.find((r) => r.kind === 'combined_cap');
+  // The origin's scope-all layer (a combined cap, or an additive rate: 9903.05.31), which note 52's exemptions lift; then the
+  // list duties of every list the line is on (cumulative, per note 52(a) and the notes defining them), never exempted here.
+  const layer = rules.find((r) => r.kind === 'combined_cap' || (r.kind === 'additive' && 'all' in r.scope));
+  const listDuties: Rule[] = [];
+  for (const r of rules.filter(isListAdditive)) {
+    const m = listMembership(code, r.scope.list, data);
+    if (m.kind === 'partial') return cant('PARTIAL_LIST', `only some statistical numbers under ${code} are listed in ${m.item} (${r.heading}); choose the 10-digit number`, [m.item!]);
+    if (m.kind === 'all') listDuties.push(r);
+  }
+  listDuties.sort((a, b) => a.heading.localeCompare(b.heading));
+  /** Where an additive rate is stated: the note that imposes it, else the heading. */
+  const additiveRef = (r: Rule) => r.quotes.find((q) => q.source.startsWith('note '))?.source ?? `heading ${r.heading}`;
+  const additive = (r: Rule): Additional => ({ program: r.id, chapter99: r.heading, rule: 'additive', rate_ppm: r.rate_ppm!, basis: 'full_value', conditions: [], ref: additiveRef(r) });
   const additional = (exempt?: Rule): Additional[] => {
-    if (exempt) return [{ program: exempt.id, chapter99: exempt.heading, rule: 'exempt', rate_ppm: 0, basis: 'full_value', conditions: [], ref: exempt.quotes[0]!.source }];
-    if (!cap) return [];
+    const lists = listDuties.map(additive);
+    if (exempt) return [{ program: exempt.id, chapter99: exempt.heading, rule: 'exempt', rate_ppm: 0, basis: 'full_value', conditions: [], ref: exempt.quotes[0]!.source }, ...lists];
+    if (!layer) return lists;
+    if (layer.kind === 'additive') return [additive(layer), ...lists];
     return [
       {
-        program: cap.id,
-        chapter99: cap.heading,
-        ...(cap.cap_heading_at_or_above ? { chapter99_at_or_above_cap: cap.cap_heading_at_or_above } : {}),
+        program: layer.id,
+        chapter99: layer.heading,
+        ...(layer.cap_heading_at_or_above ? { chapter99_at_or_above_cap: layer.cap_heading_at_or_above } : {}),
         rule: 'combined_cap',
-        rate_ppm: cap.rate_ppm!,
+        rate_ppm: layer.rate_ppm!,
         basis: 'full_value',
         compare: 'ave',
         conditions: [],
-        ref: cap.quotes[cap.numbers.rate_ppm ?? 0]!.source,
+        ref: layer.quotes[layer.numbers.rate_ppm ?? 0]!.source,
       },
+      ...lists,
     ];
   };
   const row = (exempt?: Rule): Pick<RateRow, 'id' | 'hts10' | 'mfn' | 'additional' | 'source_refs'> => ({
@@ -267,6 +273,7 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
       ifYes.push({ question: u.question, result: r });
     }
   }
+  const exclusions = exclusionsOf(verdicts);
   return {
     kind: 'ESTIMATE',
     code,
@@ -275,8 +282,21 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
     estimatorVersion: data.version,
     result,
     ifYes,
-    disclosures: ['SPECIAL_PROGRAMS', 'NOT_A_RULING'],
+    disclosures: disclosuresFor(exclusions),
+    exclusions,
   };
+}
+
+const exclusionsOf = (verdicts: ReturnType<typeof lineVerdicts>) => verdicts.filter((v) => v.verdict === 'exclusion').map((v) => ({ ref: v.ref, heading: v.heading! }));
+const disclosuresFor = (exclusions: Estimate['exclusions']): Disclosure[] => ['SPECIAL_PROGRAMS', ...(exclusions.length ? (['EXCLUSION_MAY_APPLY'] as const) : []), 'NOT_A_RULING'];
+
+/** Note 20 exclusions in effect that name the line, for an origin (none when it is unsupported). */
+function lineExclusions(code: string, iso: string, data: EstimatorData): Estimate['exclusions'] {
+  const origin = originOf(iso);
+  if (!origin) return [];
+  let idx = cache.get(data);
+  if (!idx) cache.set(data, (idx = coverageIndex({ ...data })));
+  return exclusionsOf(lineVerdicts(code, origin, { ...data }, idx));
 }
 
 /**
@@ -329,6 +349,7 @@ export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData,
         const a = askable(c, refs);
         return a ? [{ ...a, answer: input.facts![c.fact]! }] : [];
       });
+      const exclusions = lineExclusions(input.code, input.origin, data);
       return {
         kind: 'ESTIMATE',
         code: input.code,
@@ -337,7 +358,8 @@ export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData,
         estimatorVersion: data.version,
         result: q,
         ifYes: [],
-        disclosures: ['SPECIAL_PROGRAMS', 'NOT_A_RULING'],
+        disclosures: disclosuresFor(exclusions),
+        exclusions,
         ...(answered.length ? { answered } : {}),
       };
     }

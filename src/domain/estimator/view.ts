@@ -37,6 +37,8 @@ export type OutcomeView =
       /** Unanswered conditional exemptions: the duty if the answer is yes. */
       ifYes: { fact: string; question: string; heading: string; dutyMinor: number; ddpTotalMinor: number }[];
       disclosures: string[];
+      /** Note 20 exclusions in effect that name the line (not applied; they can only lower the duty). */
+      exclusions: { ref: string; heading: string }[];
       /** A verified row that turned on facts: the questions (official text) and the answers given. */
       answered?: (VerifiedFact & { answer: boolean })[];
     }
@@ -87,6 +89,7 @@ function outcome(e: ReturnType<typeof estimateVerifiedFirst>, priceAndShipping: 
     }),
     ifYes: est.ifYes.map((y) => ({ fact: y.question.fact, question: y.question.text, heading: y.question.heading, dutyMinor: cents(y.result.totalDuty), ddpTotalMinor: priceAndShipping + cents(y.result.totalDuty) })),
     disclosures: est.disclosures.map((d) => DISCLOSURE_TEXT[d]),
+    exclusions: est.exclusions,
     ...(est.answered ? { answered: est.answered } : {}),
   };
 }

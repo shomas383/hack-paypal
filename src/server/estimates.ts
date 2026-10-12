@@ -28,7 +28,7 @@ export async function startEstimate(raw: unknown, sessionId: string, ip: string,
   const parsed = EstimateRequest.safeParse(raw);
   if (!parsed.success) throw new CheckoutError(400, `invalid estimate request: ${issues(parsed.error)}`);
   const req = parsed.data;
-  if (!originOf(req.origin)) throw new CheckoutError(422, `Estimates are available for goods made in ${SUPPORTED_ORIGINS.join(' or ')} for now.`);
+  if (!originOf(req.origin)) throw new CheckoutError(422, `Estimates are available for goods made in ${SUPPORTED_ORIGINS.join(', ')} for now.`);
   const key = descriptionKey(req);
   const id = randomUUID();
   const input = toInputRecord(req, now);

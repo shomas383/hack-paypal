@@ -92,6 +92,25 @@ describe('classifyExclusions — note 20 subdivisions that say a list duty "shal
     expect(classifyExclusions(notes, none, {}).units['note III 20(z)']).toMatchObject({ status: 'unclear', heading: null, why: 'no heading cites U.S. note 20(z)' });
   });
 
+  it('an item under a unit that names other Chapter 99 headings is not part of the exclusion (note 21, printed "(21) (a)" after 20(www)(14))', () => {
+    const n = segmentNotes(doc([
+      ...LINES,
+      ...Array.from({ length: 12 }, (_, i) => `(${i + 2}) synthetic`),
+      '(14) Machines designed for lifting, handling, loading, or unloading of solar wafers (described in statistical reporting number 8486.40.0030)',
+      '(21) (a)  Except as provided in notes 21(u), 21(v), 21(w) and 21(x) of this subdivision, for the purposes of subheadings 9903.89.05',
+      ...fill(2, 15),
+      '(p) Subheading 9903.89.49 and superior text thereto shall apply to all products of the United Kingdom that are either—',
+      '(1) single-malt Irish or Scotch Whiskies (provided for in subheading 2208.30.30), or',
+      '(2) provided for in the subheadings enumerated below: 6110.11.00 6203.11.60',
+    ]), { fixes: [] });
+    expect(n.subdivisions.map((s) => s.path)).toContain('20(www)(21)(p)(2)');
+    const c = classifyExclusions(n, headings, outOfForce(headings, n, '2026-10-12'));
+    expect(exclusionOf('note III 20(www)(14)', c)?.ref).toBe('note III 20(www)');
+    expect(exclusionOf('note III 20(www)(21)(a)', c)).toBeNull();
+    expect(exclusionOf('note III 20(www)(21)(p)(2)', c)).toBeNull();
+    expect(c.foreign).toEqual(['20(www)(21)(a)', '20(www)(21)(p)']);
+  });
+
   it('counts', () => {
     expect(classify('2026-10-12').counts).toEqual({ in_effect: 2, expired: 3, unclear: 1 });
   });

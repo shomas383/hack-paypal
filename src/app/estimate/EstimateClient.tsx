@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, isUncertain, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, exclusionText, isUncertain, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
@@ -29,6 +29,7 @@ type Answers = { facts: Record<string, boolean>; valueSplit?: { caseMinor: numbe
 const ORIGINS = [
   { value: 'JP', label: 'Japan' },
   { value: 'DE', label: 'Germany' },
+  { value: 'CN', label: 'China' },
   { value: 'OTHER', label: 'Another country (not supported yet)' },
 ];
 const EMPTY: FormValues = { description: '', origin: 'JP', price: '', shipping: '' };
@@ -176,7 +177,7 @@ export function EstimateClient({ fixture, initial }: { fixture: string | null; i
         </Field>
         {unsupportedOrigin ? (
           <p className={s.inlineNote} data-testid="estimate-origin-unsupported">
-            <StatusBadge tone="warning">Not supported yet</StatusBadge> Estimates cover goods made in Japan or Germany for now.
+            <StatusBadge tone="warning">Not supported yet</StatusBadge> Estimates cover goods made in Japan, Germany or China for now.
           </p>
         ) : null}
         <div className={s.money}>
@@ -445,6 +446,11 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
               </tr>
             </tfoot>
           </table>
+          {o.exclusions.length ? (
+            <p className={s.inlineNote} data-testid="estimate-exclusions">
+              <StatusBadge tone="info">Exclusion may apply</StatusBadge> {exclusionText(o.exclusions)}
+            </p>
+          ) : null}
           <Disclosure summary="Official text and exact basis" data-testid="estimate-official">
             <dl className={s.officialList}>
               {o.lines.map((l, i) => (

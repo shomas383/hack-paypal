@@ -59,13 +59,13 @@ test('range: two candidates (verified row vs automated estimate), the separating
   await expect(cotton.getByTestId('estimate-duty')).toHaveText('33.20');
   await expect(cotton.getByTestId('estimate-ddp')).toHaveText('258.20');
   const synthetic = page.getByTestId('estimate-candidate-6203.43.9011');
-  await expect(synthetic.getByTestId('estimate-source')).toHaveText(/Automated estimate \(2026-rev21-e1\)/);
+  await expect(synthetic.getByTestId('estimate-source')).toHaveText(/Automated estimate \(2026-rev21-e2\)/);
   await expect(synthetic.getByTestId('estimate-duty')).toHaveText('55.80');
   await expect(page.getByTestId('estimate-notice')).toContainText('Estimate — not a customs ruling.');
   await page.getByText('What this estimate includes and leaves out').click();
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Lower special-program rates may apply');
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Chapter 99 duties the estimator doesn’t model');
-  await expect(page.getByTestId('estimate-versions')).toContainText('2026-rev21-e1');
+  await expect(page.getByTestId('estimate-versions')).toContainText('2026-rev21-e2');
   await expect(page.getByTestId('estimate-same-duty')).toHaveCount(0);
   await expect(page.getByTestId('estimate-other-lines')).toHaveCount(0);
   await expect(cotton.getByTestId('estimate-basis')).toHaveText(['General rate: 16.6% of the price', 'The General rate is already at least Japan’s 12.5% combined rate, so heading 9903.05.48 adds nothing']);

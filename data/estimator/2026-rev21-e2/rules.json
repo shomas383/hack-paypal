@@ -1,0 +1,513 @@
+{
+ "hts_revision": "2026 Rev. 21",
+ "rules": [
+  {
+   "id": "jp-cap-9903-05-49",
+   "origins": [
+    "JP"
+   ],
+   "heading": "9903.05.49",
+   "kind": "combined_cap",
+   "rate_ppm": 125000,
+   "cap_heading_at_or_above": "9903.05.48",
+   "scope": {
+    "all": true
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.49",
+     "text": "articles the product of Japan, with an ad valorem (or ad valorem equivalent) rate of duty under column 1 less than 12.5 percent"
+    },
+    {
+     "source": "note III 52(k)",
+     "text": "For headings 9903.05.49, 9903.05.71 and 9903.05.74, articles for which the applicable column 1 duty rate is less than 12.5 percent, the sum of the column 1 duty rate and the additional ad valorem rate of duty is 12.5 percent ad valorem."
+    },
+    {
+     "source": "heading 9903.05.48",
+     "text": "articles the product of Japan, with an ad valorem (or ad valorem equivalent) rate of duty under column 1 equal to or greater than 12.5 percent"
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 1
+   },
+   "drafted_from_sha256": {
+    "heading 9903.05.48": "da5b404c703419e4b30f6c0d68afb68fc656fcf6a9c10d0555ac4e5ef0474b79",
+    "heading 9903.05.49": "8a6542c162e29147f905340390e6738c4c1ebd74a6cab3e1d1d8a921ebfdfc4b",
+    "note III 52(k)": "b3c24f08c3a47f76b28770c4cf32856b0ad76fc959cd155f1894002fd7caf626"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "eu-cap-9903-05-39",
+   "origins": [
+    "EU"
+   ],
+   "heading": "9903.05.39",
+   "kind": "combined_cap",
+   "rate_ppm": 100000,
+   "cap_heading_at_or_above": "9903.05.38",
+   "scope": {
+    "all": true
+   },
+   "quotes": [
+    {
+     "source": "note III 52(k)",
+     "text": "For headings 9903.05.39 and 9903.05.76, articles for which the applicable column 1 duty rate is less than 10 percent, the sum of the column 1 duty rate and the additional ad valorem rate of duty is 10 percent ad valorem."
+    },
+    {
+     "source": "heading 9903.05.39",
+     "text": "articles the product of a member state of the European Union, with an ad valorem (or ad valorem equivalent) rate of duty under column 1 less than 10 percent"
+    },
+    {
+     "source": "heading 9903.05.38",
+     "text": "articles the product of a member state of the European Union, with an ad valorem (or ad valorem equivalent) rate of duty under column 1 equal to or greater than 10 percent"
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 0
+   },
+   "drafted_from_sha256": {
+    "heading 9903.05.38": "69c50d3968b9406c3dd3cbafae0c6e4669fd1624e3aab70608bf1021456650b6",
+    "heading 9903.05.39": "29d1136f2b4cecd1f173b583a39675c4e577a7593f646d0b925d196891a9923d",
+    "note III 52(k)": "b3c24f08c3a47f76b28770c4cf32856b0ad76fc959cd155f1894002fd7caf626"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "exempt-9903-05-86",
+   "origins": [
+    "JP",
+    "EU"
+   ],
+   "heading": "9903.05.86",
+   "kind": "exempt",
+   "scope": {
+    "list": "note III 52(b)"
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.86",
+     "text": "Articles provided for in subdivision (b) of U.S. note 52 to this subchapter"
+    },
+    {
+     "source": "note III 52(b)",
+     "text": "As provided in heading 9903.05.86, the duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles that are classifiable in the following provisions of the HTSUS:"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.86": "678b49fd6ebc3c04f3cfff2a17415e8382f4a0ac6f4e4b9ae7797249c01eefa6",
+    "note III 52(b)": "7d41c1f5d161964eb93566af180554cbd129aa24237265b73d8cb9f7cc04fe62"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "cond-9903-05-88",
+   "origins": [
+    "JP",
+    "EU"
+   ],
+   "heading": "9903.05.88",
+   "kind": "conditional_exempt",
+   "scope": {
+    "list": "note III 52(d)"
+   },
+   "condition": {
+    "fact": "meets_general_note_6_civil_aircraft_criteria"
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.88",
+     "text": "Articles of civil aircraft (all aircraft other than military aircraft); their engines, parts and components; their other parts, components and subassemblies; and ground flight simulators and their parts and components, as provided for in subdivision (d) of U.S. note 52 to this subchapter"
+    },
+    {
+     "source": "note III 52(d)",
+     "text": "the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles that are civil aircraft (all aircraft other than military aircraft); their engines, parts and components; their other parts, components and subassemblies; and ground flight simulators and their parts and components, that otherwise meet the criteria of general note 6 of the HTSUS and are classifiable in the following provisions of the HTSUS"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.88": "22b9efaa534ce3ad1974df9babf286fded2fda5f3d5acec3d488fef729f0d4f5",
+    "note III 52(d)": "a3d26b72eee99562469a75b246823a19ea460e5955b5f703cc19bcbfefb7c57d"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "cond-9903-05-89",
+   "origins": [
+    "JP",
+    "EU"
+   ],
+   "heading": "9903.05.89",
+   "kind": "conditional_exempt",
+   "scope": {
+    "list": "note III 52(e)"
+   },
+   "condition": {
+    "fact": "for_use_in_pharmaceutical_applications"
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.89",
+     "text": "Articles for use in pharmaceutical applications, as provided for in subdivision (e) of U.S. note 52 to this subchapter"
+    },
+    {
+     "source": "note III 52(e)",
+     "text": "As provided in heading 9903.05.89, the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply to articles that are for use in pharmaceutical applications and that are classifiable in the following provisions of the HTSUS"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.89": "ba8c84a15a59fe3c71991994d7ab58a8c5828a88376ef1fb70e018f97d7a36d2",
+    "note III 52(e)": "9e51f9e24cd0b510da5de26aa8887b9da9a65716c32d9b0fdda1208c3865baf5"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "via-9903-05-90",
+   "origins": [
+    "JP",
+    "EU"
+   ],
+   "heading": "9903.05.90",
+   "kind": "via_coverage",
+   "scope": {
+    "all": true
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.90",
+     "text": "Articles of aluminum, of steel or of copper or derivative aluminum or steel articles; passenger vehicles (sedans, sport utility vehicles, crossover utility vehicles, minivans and cargo vans) and light trucks; parts of passenger vehicles (sedans, sport utility vehicles, crossover utility vehicles, minivans and cargo vans) and light trucks; medium- and heavy-duty vehicles; parts of medium- and heavy-duty vehicles; wood products; patented pharmaceutical articles; and semiconductor articles, as provided in subdivision (f) of U.S. note 52 to this subchapter"
+    },
+    {
+     "source": "note III 52(f)",
+     "text": "As provided in heading 9903.05.90, the additional duties imposed by headings 9903.05.20–9903.05.84 shall not apply to:"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.90": "a8042089d000c2100ff8d703f736d5ce27760998316c7e93d87322ad0f722e28",
+    "note III 52(f)": "7bfceabfde45a4585a431c2bd18496d5222f5efba7a52e1f4566674d33ab784e"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "sale-9903-05-91",
+   "origins": [
+    "JP",
+    "EU"
+   ],
+   "heading": "9903.05.91",
+   "kind": "not_for_sale",
+   "scope": {
+    "all": true
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.91",
+     "text": "Articles that are donations by persons subject to the jurisdiction of the United States, such as food, clothing and medicine, intended to be used to relieve human suffering"
+    },
+    {
+     "source": "note III 52(a)",
+     "text": "Except as provided in headings 9903.05.85–9903.06.21 and in subdivisions (b) through (k) of this note, and other than products for personal use included in accompanied baggage of persons arriving in the United States, headings 9903.05.20–9903.05.84 impose additional ad valorem rates of duty on imports of all products of the countries provided for in these headings."
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.91": "db8f9b8654101c87f288800a597e7ac4e351886d0985a002b42c2231dab95e6c",
+    "note III 52(a)": "efa5775f456c21ddd6b826d662e12cd791af3ce09bad56d1caf5a176d6028a3c"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "cond-9903-05-92",
+   "origins": [
+    "JP",
+    "EU"
+   ],
+   "heading": "9903.05.92",
+   "kind": "conditional_exempt",
+   "scope": {
+    "heading_words": "9903.05.92"
+   },
+   "condition": {
+    "fact": "informational_material"
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.92",
+     "text": "Articles that are informational materials, including but not limited to publications, films, posters, phonograph records, photographs, microfilms, microfiche, tapes, compact disks, CD ROMs, artworks and news wire feeds"
+    },
+    {
+     "source": "note III 52(a)",
+     "text": "Except as provided in headings 9903.05.85–9903.06.21 and in subdivisions (b) through (k) of this note"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.92": "f00892273c4b3378e8bef6b9cfaa948d83b5c1f69ac0e91d05839c3177a3394f",
+    "note III 52(a)": "efa5775f456c21ddd6b826d662e12cd791af3ce09bad56d1caf5a176d6028a3c"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "exempt-9903-05-97",
+   "origins": [
+    "EU"
+   ],
+   "heading": "9903.05.97",
+   "kind": "exempt",
+   "scope": {
+    "list": "note III 52(j)(2)"
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.97",
+     "text": "Articles the product of a member state of the European Union, as provided for in subdivision (j)(2) of U.S. note 52 to this subchapter"
+    },
+    {
+     "source": "note III 52(j)(2)",
+     "text": "As provided in heading 9903.05.97, the duties imposed by headings 9903.05.38–9903.05.39 shall not apply to articles the product of a member state of the European Union that are classifiable in the following provisions of the HTSUS:"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.05.97": "581e095de994651fb3e5b5e125e28e0a9d22235edb8a73a7618bb218d85857ec",
+    "note III 52(j)(2)": "5a53c49036b08a15c31155311772bd687a77d8624d0ece52aa186e51ad0c1d7a"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-11)"
+  },
+  {
+   "id": "cn-add-9903-05-31",
+   "origins": [
+    "CN"
+   ],
+   "heading": "9903.05.31",
+   "kind": "additive",
+   "rate_ppm": 125000,
+   "scope": {
+    "all": true
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.05.31",
+     "text": "Except for products described in headings 9903.05.85–9903.05.92, articles the product of China, as provided for in U.S. note 52 to this subchapter"
+    },
+    {
+     "source": "general 9903.05.31",
+     "text": "The duty provided in the applicable subheading + 12.5%"
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 1
+   },
+   "drafted_from_sha256": {
+    "general 9903.05.31": "4cc3ceb9a0a72600c480abcea4bbd7ccf5b3bb418a08bddfdf4ee142ed7710c6",
+    "heading 9903.05.31": "ab5d5f969bb13763898f62ecfdd79ba964f1597db1ec550371d523dcbc0e95f9"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-12)"
+  },
+  {
+   "id": "cn-add-9903-88-01",
+   "origins": [
+    "CN"
+   ],
+   "heading": "9903.88.01",
+   "kind": "additive",
+   "rate_ppm": 250000,
+   "scope": {
+    "list": "note III 20(b)"
+   },
+   "quotes": [
+    {
+     "source": "general 9903.88.01",
+     "text": "The duty provided in the applicable subheading plus 25%"
+    },
+    {
+     "source": "note III 20(b)",
+     "text": "Heading 9903.88.01 applies to all products of China that are classified in the following 8-digit subheadings"
+    },
+    {
+     "source": "note III 20(a)",
+     "text": "For the purposes of heading 9903.88.01, products of China, as provided for in this note, shall be subject to an additional 25 percent ad valorem rate of duty."
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 0
+   },
+   "drafted_from_sha256": {
+    "general 9903.88.01": "6c33e2bbd27bdd98d2c4755dfcab15b084a2abaf2b8dfaeea8511b702716a0ea",
+    "note III 20(a)": "7e94214b3c9e12ab62cefcfb256350db2d7665e18abd3a0a84c833f2da27955f",
+    "note III 20(b)": "4c9e109fc50c5236b8a2546129905498030690d5c11aca61ddddba8f260d51a5"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-12)"
+  },
+  {
+   "id": "cn-add-9903-88-02",
+   "origins": [
+    "CN"
+   ],
+   "heading": "9903.88.02",
+   "kind": "additive",
+   "rate_ppm": 250000,
+   "scope": {
+    "list": "note III 20(d)"
+   },
+   "quotes": [
+    {
+     "source": "general 9903.88.02",
+     "text": "The duty provided in the applicable subheading + 25%"
+    },
+    {
+     "source": "note III 20(c)",
+     "text": "For the purposes of heading 9903.88.02, products of China, as provided for in this note, shall be subject to an additional 25 percent ad valorem rate of duty."
+    },
+    {
+     "source": "note III 20(d)",
+     "text": "Heading 9903.88.02 applies to all products of China that are classified in the following 8-digit subheadings"
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 1
+   },
+   "drafted_from_sha256": {
+    "general 9903.88.02": "7aa08d4f10b828579ac5aa3ab5e8458fd0230ad5a9fb8106bb03868582c358d6",
+    "note III 20(c)": "f568953a98ccae0d6ddc293b11d0b1b32d14341d4c2450472a5604d0d988ac06",
+    "note III 20(d)": "6138c83ceac3070b0e63425448ada528de82e8fc9fef4906149146858f04991e"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-12)"
+  },
+  {
+   "id": "cn-add-9903-88-03",
+   "origins": [
+    "CN"
+   ],
+   "heading": "9903.88.03",
+   "kind": "additive",
+   "rate_ppm": 250000,
+   "scope": {
+    "list": "note III 20(f)"
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.88.03",
+     "text": "articles the product of China, as provided for in U.S. note 20(e) to this subchapter and as provided for in the subheadings enumerated in U.S. note 20(f)"
+    },
+    {
+     "source": "note III 20(e)",
+     "text": "For the purposes of heading 9903.88.03, products of China, as provided for in this note, shall be subject to an additional 25 percent ad valorem rate of duty."
+    },
+    {
+     "source": "note III 20(f)",
+     "text": "Heading 9903.88.03 applies to all products of China that are classified in the following 8-digit subheadings"
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 1
+   },
+   "drafted_from_sha256": {
+    "heading 9903.88.03": "475d764d9d76f51fcf7c5a4c5776a70cb807585deb26c60359b87838bb83cdad",
+    "note III 20(e)": "d36b7055ab8cb218d439a2e97cb51038ed098f03b70b6d8269ddd8137c4685f9",
+    "note III 20(f)": "667fdd4eb5bbbdfbd02b52f065c7df0e12cf9be5a2e3c5a4015669612a0cf8fb"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-12)"
+  },
+  {
+   "id": "cn-add-9903-88-15",
+   "origins": [
+    "CN"
+   ],
+   "heading": "9903.88.15",
+   "kind": "additive",
+   "rate_ppm": 75000,
+   "scope": {
+    "list": "note III 20(s)(i)"
+   },
+   "quotes": [
+    {
+     "source": "general 9903.88.15",
+     "text": "The duty provided in the applicable subheading + 7.5%"
+    },
+    {
+     "source": "note III 20(r)",
+     "text": "For the purposes of heading 9903.88.15, products of China, as provided for in this note, shall be subject to an additional 7.5 percent ad valorem rate of duty."
+    },
+    {
+     "source": "note III 20(s)(i)",
+     "text": "all products of China that are classified in the following 8-digit subheadings:"
+    }
+   ],
+   "numbers": {
+    "rate_ppm": 0
+   },
+   "drafted_from_sha256": {
+    "general 9903.88.15": "adf3883af077753595d15378c6d47aacd52788db6158ea92eaadb7fb0f7809ea",
+    "note III 20(r)": "41e5ea9d700f55277f64196420bc1ace5d2dfa409ffa95a51942db1f490a03aa",
+    "note III 20(s)(i)": "9a6b6f877fce5b4b6626ed01d3759dedb84d5c992d42444cdacacceb1b01ca52"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-12)"
+  },
+  {
+   "id": "cn-not-9903-88-16",
+   "origins": [
+    "CN"
+   ],
+   "heading": "9903.88.16",
+   "kind": "not_applied",
+   "scope": {
+    "all": true
+   },
+   "quotes": [
+    {
+     "source": "heading 9903.88.16",
+     "text": "Articles the product of China, as provided for in U.S. note 20(t) to this subchapter and as provided for in the subheadings enumerated in U.S. note 20(u) [Compiler's note: provision suspended.]"
+    },
+    {
+     "source": "note III 20(t)",
+     "text": "[Compiler's note:Subdivisions (t) and (u) of this note and heading 9903.88.16 suspended.]"
+    }
+   ],
+   "numbers": {},
+   "drafted_from_sha256": {
+    "heading 9903.88.16": "cc191bce941e53b31738a1df390b25f7dd38e680c7272678714b7172d149c008",
+    "note III 20(t)": "77fc67d4bc8481522daec6e2bc48666077f4ce4edbb8cebb2ff80f7bf5240335"
+   },
+   "drafted_by": "claude-opus-5-5 (2026-10-12)"
+  }
+ ],
+ "blocked": [
+  {
+   "rule": {
+    "id": "cond-9903-05-87",
+    "origins": [
+     "JP",
+     "EU"
+    ],
+    "heading": "9903.05.87",
+    "kind": "exempt",
+    "scope": {
+     "list": "note III 52(c)"
+    },
+    "quotes": [
+     {
+      "source": "heading 9903.05.87",
+      "text": "Articles provided for in subdivision (c) of U.S. note 52 to this subchapter"
+     },
+     {
+      "source": "note III 52(c)",
+      "text": "As provided in heading 9903.05.87, the duties imposed by headings 9903.05.20–9903.05.84 shall not apply to the following particular articles:"
+     }
+    ],
+    "numbers": {},
+    "drafted_from_sha256": {
+     "heading 9903.05.87": "586ed9d0a442f241f2080f709f0da8c2af5de221a89f774e21fbc9820e1343c1",
+     "note III 52(c)": "84b4beb6b74a446c0bdfd6c7268c2826fb0941aa18d48c86ac67b2bd53574372"
+    },
+    "drafted_by": "claude-opus-5-5 (2026-10-11)"
+   },
+   "reasons": [
+    "GR: kind: drafted \"exempt\" ≠ reference \"conditional_exempt\"; condition: drafted false ≠ reference true"
+   ]
+  }
+ ]
+}

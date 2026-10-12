@@ -7,9 +7,9 @@
 // - write (no --out; the only command the hook lets touch the estimator data folder is exactly `pnpm estimator:build`):
 //   writes the next version folder data/estimator/<release>-eN/ (manifest, report, rules, headings, notes, base-rates) and
 //   stages it; data/estimator/current.json moves to it only when no origin is blocked and G0/G9 pass. Rules: the previous
-//   version's (unchanged source text → reused with no model call; changed → G1 blocks them as stale), or for the first
-//   version the recorded drafting run (__fixtures__/rules-drafted-2026-10-11.json); always gated against the reference
-//   rules (GR).
+//   version's (unchanged source text → reused with no model call; changed → G1 blocks them as stale), plus, for a reference
+//   rule the previous version doesn't have (the first version; CN in e2), its rule from the recorded drafting runs
+//   (__fixtures__/rules-drafted-*.json, as the model wrote them); always gated against the reference rules (GR).
 // - report only (--out <dir>, outside data/): manifest/report/rules to <dir>; rules = the reference rules unless --draft.
 // --draft: LIVE — Claude (claude-opus-5-5) drafts the rules within --max-calls, retries included.
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -29,11 +29,15 @@ import { currentRateTable } from '../src/server/rates';
 
 const PDFTOTEXT = { vendor: 'xpdf', version: '4.06', args: ['-enc', 'UTF-8', '-layout'] } as const;
 const SOURCE_DIR = join('data', 'source', 'hts');
-const REFERENCE = join('src', 'domain', 'estimator', '__fixtures__', 'rules-reference-jp-eu.json');
-/** The first live drafting run (2026-10-11), kept as the model wrote it: the rules of the first data version. */
-const SEED_RULES = join('src', 'domain', 'estimator', '__fixtures__', 'rules-drafted-2026-10-11.json');
+const FIXTURES = join('src', 'domain', 'estimator', '__fixtures__');
+const REFERENCE = [join(FIXTURES, 'rules-reference-jp-eu.json'), join(FIXTURES, 'rules-reference-cn.json')];
+/**
+ * Live drafting runs, kept as the model wrote them: JP/EU (2026-10-11, the rules of the first data version) and CN
+ * (2026-10-12). A reference rule the previous version lacks takes its rule from here, by id.
+ */
+const SEED_RULES = [join(FIXTURES, 'rules-drafted-2026-10-11.json'), join(FIXTURES, 'rules-drafted-cn-2026-10-12.json')];
 const DATA_DIR = join('data', 'estimator');
-const ORIGINS = ['JP', 'DE'];
+const ORIGINS = ['JP', 'DE', 'CN'];
 
 const sha = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
 function arg(name: string): string | undefined {
@@ -92,23 +96,34 @@ async function main() {
   const version = `${release.slug}-e${n}`;
   const overrides = [ieepaOverride()];
   const data = buildEstimatorData({ version, asOf, exportRows: JSON.parse(exportBuf.toString('utf8')), ch99Text, index, rules: [], overrides });
-  const reference = RulesFileSchema.parse(JSON.parse(readFileSync(REFERENCE, 'utf8')));
+  const refFiles = REFERENCE.map((f) => RulesFileSchema.parse(JSON.parse(readFileSync(f, 'utf8'))));
+  assert(new Set(refFiles.map((f) => f.hts_revision)).size === 1, 'the reference rule files are for different revisions');
+  const reference = { hts_revision: refFiles[0]!.hts_revision, rules: refFiles.flatMap((f) => f.rules) };
 
-  // write mode: the previous version's rules (accepted + blocked), else the recorded drafting run
+  // write mode: the previous version's rules (accepted + blocked), plus recorded drafting runs for reference rules it lacks
   let rulesSource = 'reference (hand-written)';
   let rules: Rule[] = reference.rules;
   if (write) {
+    const sources: string[] = [];
+    rules = [];
     if (previous) {
       const prev = JSON.parse(readFileSync(join(DATA_DIR, previous, 'rules.json'), 'utf8')) as { rules: Rule[]; blocked: { rule: Rule | null }[] };
       rules = [...prev.rules, ...prev.blocked.flatMap((b) => (b.rule ? [b.rule] : []))];
-      rulesSource = `previous version ${previous}`;
-    } else {
-      rules = RulesFileSchema.parse(JSON.parse(readFileSync(SEED_RULES, 'utf8'))).rules;
-      rulesSource = `recorded drafting run ${SEED_RULES.replace(/\\/g, '/')}`;
+      sources.push(`previous version ${previous}`);
     }
+    for (const f of SEED_RULES) {
+      if (!existsSync(f)) continue;
+      const seeded = RulesFileSchema.parse(JSON.parse(readFileSync(f, 'utf8'))).rules.filter((r) => reference.rules.some((x) => x.id === r.id) && !rules.some((x) => x.id === r.id));
+      if (seeded.length) sources.push(`recorded drafting run ${f.replace(/\\/g, '/')} (${seeded.length})`);
+      rules.push(...seeded);
+    }
+    const missing = reference.rules.filter((r) => !rules.some((x) => x.id === r.id)).map((r) => r.id);
+    if (missing.length) console.log(`no drafted rule for reference rule(s) ${missing.join(', ')}: their headings stay unmodeled (fail closed)`);
+    rulesSource = sources.join(' + ');
   }
   const previousListCounts = previous ? (JSON.parse(readFileSync(join(DATA_DIR, previous, 'report.json'), 'utf8')) as { listCounts: Record<string, { codes: number }> }).listCounts : undefined;
   let drafting: { calls: number; usage: { input: number; output: number }; failed: { heading: string; error: string }[] } | undefined;
+  let drafted: Rule[] = [];
   if (draft) {
     if (!process.env.ANTHROPIC_API_KEY && existsSync('.env')) process.loadEnvFile('.env');
     // --draft-headings 9903.05.87[,…]: re-draft only these; the other rules stay the reference rules
@@ -118,8 +133,9 @@ async function main() {
     console.log(`LIVE: drafting ${tasks.length} rule(s) with ${DRAFT_MODEL}, at most ${budget} calls (retries included)…`);
     const d = await draftRules(tasks, data, anthropic(DRAFT_MODEL), { budget, draftedBy: `${DRAFT_MODEL} (${asOf})` });
     const base = rules;
-    rules = only ? base.map((r) => d.rules.find((x) => x.heading === r.heading) ?? r) : d.rules;
+    rules = only ? [...base.map((r) => d.rules.find((x) => x.id === r.id) ?? r), ...d.rules.filter((x) => !base.some((r) => r.id === x.id))] : d.rules;
     drafting = { calls: d.calls, usage: d.usage, failed: d.failed };
+    drafted = d.rules;
     rulesSource = `drafted by ${DRAFT_MODEL}${only ? ` (${only.join(', ')}; others: ${rulesSource})` : ''}`;
   }
 
@@ -159,6 +175,8 @@ async function main() {
     'report.json': report,
     'rules.json': { hts_revision: reference.hts_revision, rules: gated.rules, blocked: gated.blocked.rules },
   };
+  // the drafting run as the model wrote it (gated or not), to record as __fixtures__/rules-drafted-*.json
+  if (drafted.length && !write) files['drafted.json'] = { hts_revision: reference.hts_revision, rules: drafted };
   if (write) {
     // what the runtime loader needs (mentions and description chains are rebuilt from these and the committed HTS index)
     files['headings.json'] = { hts_revision: data.hts_revision, headings: data.headings, outOfForce: data.outOfForce };
@@ -176,15 +194,20 @@ async function main() {
   console.log(`version ${version}${previous ? ` (previous ${previous})` : ' (first)'} · rules: ${rules.length} (${rulesSource})`);
   if (drafting) {
     console.log(`drafting: ${drafting.calls} calls, ${drafting.usage.input} input + ${drafting.usage.output} output tokens; failed: ${drafting.failed.map((f) => `${f.heading} (${f.error})`).join('; ') || 'none'}`);
-    for (const r of rules) {
-      const ref = reference.rules.find((x) => x.heading === r.heading);
+    for (const r of drafted) {
+      const ref = reference.rules.find((x) => x.id === r.id);
       const diffs = compareToReference(r, ref);
       const fact = factNameDiff(r, ref);
-      console.log(`  ${r.heading} ${r.kind}: ${diffs.length ? `DIFFERS — ${diffs.join('; ')}` : 'matches the reference'}${fact ? ` · ${fact}` : ''}`);
+      const blocked = report.blockedRules.find((b) => b.id === r.id);
+      console.log(`  ${r.heading} ${r.kind}: ${diffs.length ? `DIFFERS — ${diffs.join('; ')}` : 'matches the reference'}${fact ? ` · ${fact}` : ''}${blocked ? ` · BLOCKED: ${blocked.reasons.join(' | ')}` : ' · accepted'}`);
     }
   }
+  for (const [l, c] of Object.entries(report.listCounts)) console.log(`  list ${l}: ${c.codes} codes (${c.ch98} chapter 98), ${c.unknown.length} unknown${c.unknown.length ? `: ${c.unknown.join(' ')}` : ''}`);
+  const ex = report.exclusions;
+  console.log(`  note 20 exclusions: ${ex.counts.in_effect} in effect, ${ex.counts.expired} expired, ${ex.counts.unclear} unclear (in effect: ${ex.units.filter((u) => u.status === 'in_effect').map((u) => u.ref.slice(8)).join(', ')}; unclear: ${ex.units.filter((u) => u.status === 'unclear').map((u) => u.ref.slice(8)).join(', ')})`);
+  console.log(`  numbering fixes: ${report.numbering.applied} applied, ${report.numbering.unmatched.length} not holding, ${report.numbering.outOfSequence.length} still out of sequence`);
   for (const c of report.checks.filter((x) => x.id === 'G8')) console.log(`  ${c.pass ? 'ok  ' : 'FAIL'} G8 ${c.subject}: ${c.detail}`);
-  for (const [o, c] of Object.entries(report.coverage)) console.log(`  coverage ${o}: ${c.refused} of ${c.lines} lines refused`);
+  for (const [o, c] of Object.entries(report.coverage)) console.log(`  coverage ${o}: ${c.refused} of ${c.lines} lines refused — ${Object.entries(c.byRef).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k}: ${v}`).join(', ')}`);
   const failed = report.checks.filter((c) => !c.pass);
   console.log(`gate: ${report.checks.length} checks, ${failed.length} failed; blocked rules: ${report.blockedRules.map((b) => b.id).join(', ') || 'none'}; blocked origins: ${Object.keys(report.blockedOrigins).join(', ') || 'none'}`);
   for (const a of report.alerts) console.log(`ALERT ${a}`);

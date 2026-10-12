@@ -59,7 +59,7 @@ describe('estimateVerifiedFirst', () => {
   it('a line without one is the automated estimate', () => {
     const e = estimateVerifiedFirst(input({ origin: 'JP', hts10: '0712.90.8550', price_minor: 10000 }), data, verified);
     if (e.kind !== 'ESTIMATE') throw new Error(e.detail);
-    expect(sourceLabel(e.source)).toBe('Automated estimate (2026-rev21-e1)');
+    expect(sourceLabel(e.source)).toBe('Automated estimate (2026-rev21-e2)');
     expect(e.result.lines.map((l) => l.chapter99).filter(Boolean)).toEqual(['9903.05.86']);
   });
   it('a verified row that needs facts the input lacks asks them (P11), with the verified figure for the answers it covers', () => {
