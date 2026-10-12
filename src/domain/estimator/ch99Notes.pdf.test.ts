@@ -34,23 +34,46 @@ describe.skipIf(!local)('Chapter 99 notes — the real Rev 20 / Rev 21 PDFs (loc
     expect(rev20.revision).toBe('Revision 20 (2026)');
   });
 
-  // Tracked for the CN step (plan: "Note 20 numbering oddities"): before CN rules may use note 20 lists, each of these is
-  // either resolved to its correct subdivision or makes the affected codes fail closed. Pinned so a silent change shows.
-  it('out-of-sequence labels in the official numbering are pinned (none in note 52)', () => {
-    const odd = rev21.ignoredMarkers.filter((m) => m.why === 'out_of_sequence').map((m) => [m.note, m.path, m.page, m.text.slice(0, 40)]);
-    expect(odd).toEqual([
-      [17, '17(c)(2)(B)(iii)', '99 - III - 72', '(cc) a flat wrap spring clutch.'],
-      [20, '20(a)', '99 - III - 87', '(11) heading 9903.88.58 and U.S. note 20'],
-      [20, '20(a)', '99 - III - 87', '(14) heading 9903.88.66 and U.S. note 20'],
-      [20, '20(r)', '99 - III - 156', '(4) heading 9903.88.47 and U.S. note 20('],
-      [20, '20(r)', '99 - III - 156', '(www) are now in effect.]'],
-      [20, '20(gg)', '99 - III - 193', '(II) The U.S. Trade Representative deter'],
-      [20, '20(gg)(62)', '99 - III - 196', '(62) Insulated electric conductors, for '],
-      [20, '20(ttt)(iii)(180)', '99 - III - 309', '(180) Foldable tables with frames of ste'],
-      [40, '40(i)', '99 - III - 368', '(2) are “pharmaceutical articles” but ar'],
+  // The nine out-of-sequence labels of the official numbering (pinned 2026-10-11), each resolved by NUMBERING_FIXES: six
+  // are inline enumerations or wrapped text that stay in their subdivision; "(II)" is 20(ll); two item numbers are printed
+  // twice. Nothing is left out of sequence, so no list code is in doubt.
+  it('every numbering oddity is resolved explicitly; none is left out of sequence (Rev 20 and Rev 21)', () => {
+    for (const n of [rev20, rev21]) {
+      expect(n.ignoredMarkers.filter((m) => m.why === 'out_of_sequence')).toEqual([]);
+      expect(n.numbering.unmatched).toEqual([]);
+    }
+    expect(rev21.numbering.applied.map((a) => [a.note, a.kind, a.path])).toEqual([
+      [17, 'inline_text', '17(c)(2)(B)(iii)'],
+      [20, 'inline_text', '20(a)'],
+      [20, 'inline_text', '20(a)'],
+      [20, 'inline_text', '20(r)'],
+      [20, 'inline_text', '20(r)'],
+      [20, 'relabel', '20(ll)'],
+      [20, 'duplicate', '20(ll)(62bis)'],
+      [20, 'duplicate', '20(ttt)(iii)(180bis)'],
+      [40, 'inline_text', '40(i)'],
     ]);
+    expect(rev21.ignoredMarkers.filter((m) => m.why === 'inline_text')).toHaveLength(6);
     expect(rev21.ignoredMarkers.filter((m) => m.why === 'reference')).toHaveLength(13);
     expect(rev21.ignoredMarkers.filter((m) => m.why === 'not_a_label')).toHaveLength(16);
+    // (ll) is its own subdivision again: (gg) keeps only its derived-rate text; heading 9903.88.33 cites 20(ll)
+    const gg = rev21.subdivisions.find((s) => s.section === 'III' && s.path === '20(gg)')!;
+    expect(gg.text).toMatch(/^For purposes of heading 9903\.88\.28,.*heading 9903\.88\.15\.$/);
+    expect(rev21.subdivisions.find((s) => s.section === 'III' && s.path === '20(ll)')!.text).toMatch(/^The U\.S\. Trade Representative.*\[Compiler's note: expired\.\]$/);
+    expect(rev21.subdivisions.find((s) => s.section === 'III' && s.path === '20(ll)(62bis)')!.codes10).toEqual(['8544.42.9090']);
+    expect(rev21.subdivisions.find((s) => s.section === 'III' && s.path === '20(ttt)(iii)(180bis)')!.codes10).toEqual(['9403.20.0090']);
+  });
+
+  it('note 20 list sizes (deduplicated; every code a Rev 21 line, chapter 98 apart)', () => {
+    const codes = (path: string) => {
+      const subs = rev21.subdivisions.filter((s) => s.section === 'III' && (s.path === path || s.path.startsWith(`${path}(`)));
+      return { codes8: new Set(subs.flatMap((s) => s.codes8)).size, codes10: new Set(subs.flatMap((s) => s.codes10)).size };
+    };
+    expect(codes('20(b)')).toEqual({ codes8: 856, codes10: 0 });
+    expect(codes('20(d)')).toEqual({ codes8: 283, codes10: 0 });
+    expect(codes('20(f)')).toEqual({ codes8: 5906, codes10: 0 });
+    expect(codes('20(s)(i)')).toEqual({ codes8: 2958, codes10: 0 });
+    expect(codes('20(u)')).toEqual({ codes8: 546, codes10: 36 });
   });
 
   it('Rev 20 → Rev 21: same subdivisions; the only changed text is in note 20(vvv)(i)', () => {

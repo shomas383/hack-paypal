@@ -93,8 +93,8 @@ describe('estimateLine — refusals', () => {
   it('chapter 98 / 99 lines are special provisions', () => {
     expect(estimateLine(input('9801.00.1098', 'JP', 1000), data)).toMatchObject({ reason: 'SPECIAL_PROVISION' });
   });
-  it('origins other than JP and DE are not supported yet (EU = DE only until the member list is verified)', () => {
-    expect(estimateLine(input('9504.40.0000', 'CN', 1000), data)).toMatchObject({ reason: 'ORIGIN_UNSUPPORTED' });
+  it('origins other than JP, DE and CN are not supported yet (EU = DE only until the member list is verified)', () => {
+    expect(estimateLine(input('9504.40.0000', 'KR', 1000), data)).toMatchObject({ reason: 'ORIGIN_UNSUPPORTED' });
     expect(estimateLine(input('9504.40.0000', 'FR', 1000), data)).toMatchObject({ reason: 'ORIGIN_UNSUPPORTED' });
   });
   it('a code that is not a line of the revision', () => {

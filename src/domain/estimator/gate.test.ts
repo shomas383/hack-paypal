@@ -63,15 +63,15 @@ describe('gate — deliberately broken rules are blocked, and only what they tou
     expect(estimateLine({ code: '7102.10.0000', origin: 'JP', entryDate: ASOF, customsValue: usd(10000) }, data).kind).toBe('ESTIMATE');
   });
 
-  it('List 4B applied: a rule on 9903.88.16 ("[Compiler\'s note: provision suspended.]") is blocked (G4 out of force; an additive kind does not even parse, G1)', () => {
+  it('List 4B applied: a rule on 9903.88.16 ("[Compiler\'s note: provision suspended.]") is blocked (G4 out of force), additive or not', () => {
     const base = ruleById('exempt-9903-05-86');
     const quote = { source: 'heading 9903.88.16', text: 'as provided for in the subheadings enumerated in U.S. note 20(u)' };
     const onSuspended = { ...base, id: 'list-4b', heading: '9903.88.16', scope: { all: true as const }, kind: 'via_coverage' as const, quotes: [quote] };
     const { report, data } = sampleGate([...REFERENCE_RULES.rules, { ...onSuspended, drafted_from_sha256: {} }]);
     expect(data.outOfForce['9903.88.16']).toMatchObject({ why: 'compiler_note' });
     expect(report.blockedRules.find((b) => b.id === 'list-4b')?.reasons.join(' ')).toMatch(/G4: 9903\.88\.16 is out of force/);
-    const additive = { ...onSuspended, id: 'list-4b-additive', kind: 'additive', rate_ppm: 150000 };
-    expect(sampleGate([...REFERENCE_RULES.rules, additive]).report.blockedRules.find((b) => b.id === 'list-4b-additive')?.reasons.join(' ')).toMatch(/G1: schema/);
+    const additive = { ...onSuspended, id: 'list-4b-additive', origins: ['CN'], kind: 'additive', rate_ppm: 150000, numbers: { rate_ppm: 0 } };
+    expect(sampleGate([...REFERENCE_RULES.rules, additive]).report.blockedRules.find((b) => b.id === 'list-4b-additive')?.reasons.join(' ')).toMatch(/G4: 9903\.88\.16 is out of force/);
     // and nothing else moves
     expect(report.blockedOrigins).toEqual({});
   });

@@ -21,9 +21,9 @@ const input = (c: { origin: string; hts10?: string | null; price_minor?: number;
 
 describe('loadEstimator — the committed data version', () => {
   it('is the version current.json names, for the committed HTS revision; rules and blocks as the gate left them', () => {
-    expect(data.version).toBe('2026-rev21-e1');
+    expect(data.version).toBe('2026-rev21-e2');
     expect(manifest.hts_revision).toBe('2026 Rev. 21');
-    expect(data.rules.map((r) => r.heading).sort()).toEqual(['9903.05.39', '9903.05.49', '9903.05.86', '9903.05.88', '9903.05.89', '9903.05.90', '9903.05.91', '9903.05.92', '9903.05.97']);
+    expect(data.rules.filter((r) => !r.origins.includes('CN')).map((r) => r.heading).sort()).toEqual(['9903.05.39', '9903.05.49', '9903.05.86', '9903.05.88', '9903.05.89', '9903.05.90', '9903.05.91', '9903.05.92', '9903.05.97']);
     expect(data.blocked.rules.map((b) => b.rule.id)).toEqual(['cond-9903-05-87']);
     expect(data.blocked.origins).toEqual({});
     expect(Object.values(data.outOfForce).filter((o) => o.why === 'verified_override')).toHaveLength(120);

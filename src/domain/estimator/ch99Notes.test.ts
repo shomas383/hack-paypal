@@ -2,13 +2,16 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { codeTokens, extractNote52, segmentNotes, type Ch99Notes, type Subdivision } from './ch99Notes';
+import { codeTokens, extractNote52, NUMBERING_FIXES, segmentNotes, type Ch99Notes, type NumberingFix, type Subdivision } from './ch99Notes';
 import { stripPageFurniture, type StrippedText } from './ch99Text';
 
 // Text is real Rev 21 Chapter 99 text (pdftotext -layout, indentation kept where it matters) unless marked synthetic.
 const doc = (lines: string[]): StrippedText => ({ revision: 'Revision 21 (2026)', pages: ['p1'], lines: lines.map((text) => ({ page: 'p1', text })) });
 // synthetic "(a) synthetic" … lines: a list only opens at its first label
 const upTo = (last: string) => 'abcdefghijk'.slice(0, 'abcdefghijk'.indexOf(last) + 1).split('').map((c) => `(${c}) synthetic`);
+/** Lower-case labels by ordinal, as note 20 runs them: 1 → a, 26 → z, 27 → aa, 53 → aaa. */
+const lowerLabels = (from: number, to: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => String.fromCharCode(97 + ((from + i - 1) % 26)).repeat(Math.floor((from + i - 1) / 26) + 1));
 const paths = (n: Ch99Notes) => n.subdivisions.map((s) => `${s.section} ${s.path}`);
 const sub = (n: Ch99Notes, path: string, section = 'III'): Subdivision => {
   const s = n.subdivisions.find((x) => x.section === section && x.path === path);
@@ -173,6 +176,65 @@ describe('segmentNotes', () => {
     }]);
     const odd = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '20. (a) x', '(1) one', '(2) two', '(5) synthetic: a skip whose skipped (3) comes later', '(ABS) plastics', '(3) three']));
     expect(odd.ignoredMarkers.map((m) => [m.path, m.why])).toEqual([['20(a)(2)', 'out_of_sequence'], ['20(a)(2)', 'not_a_label']]);
+  });
+
+  it('numbering fixes: each official oddity is resolved explicitly — a relabel, a duplicate item number, inline text', () => {
+    // real Rev 21 lines (cut); (c)…(ff) and the item numbers of (ll) are synthetic
+    const fixes: NumberingFix[] = [
+      { section: 'III', note: 20, line: '(11) heading 9903.88.58 and U.S. note 20(kkk)', within: '20(a)', fix: { kind: 'inline_text' }, why: 'test' },
+      { section: 'III', note: 20, line: '(II) The U.S. Trade Representative determined', within: '20(gg)', fix: { kind: 'relabel', label: 'll' }, why: 'test' },
+      { section: 'III', note: 20, line: '(2) Insulated electric conductors, for', within: '20(ll)(2)', fix: { kind: 'duplicate', label: '2bis' }, why: 'test' },
+    ];
+    const lines = [
+      'SUBCHAPTER III', 'U.S. Notes',
+      '20. (a)  For the purposes of heading 9903.88.01, products of China, as provided for in this note, shall be subject to an additional',
+      '         (11) heading 9903.88.58 and U.S. note 20(kkk) to subchapter III of chapter 99; (12) heading 9903.88.60 and U.S. note',
+      ...lowerLabels(2, 33).map((l) => `(${l}) synthetic`),
+      '(II) The U.S. Trade Representative determined to establish a process by which particular products classified in heading',
+      '(1) Erythritol (CAS No. 149-32-6) (described in statistical reporting number 2905.49.4000)',
+      '(2) Insulated electric conductors for a voltage not exceeding 1,000 V (described in statistical reporting number 8544.42.2000)',
+      '(2) Insulated electric conductors, for a voltage not exceeding 1,000 V (described in statistical reporting number 8544.42.9090)',
+      '(3) Safety seat belts (described in statistical reporting number 8708.21.0000)',
+    ];
+    const n = segmentNotes(doc(lines), { fixes });
+    expect(paths(n).slice(-6)).toEqual(['III 20(gg)', 'III 20(ll)', 'III 20(ll)(1)', 'III 20(ll)(2)', 'III 20(ll)(2bis)', 'III 20(ll)(3)']);
+    expect(sub(n, '20(ll)(2)').codes10).toEqual(['8544.42.2000']);
+    expect(sub(n, '20(ll)(2bis)').codes10).toEqual(['8544.42.9090']);
+    expect(sub(n, '20(gg)').text).toBe('synthetic');
+    expect(n.ignoredMarkers.map((m) => [m.path, m.why])).toEqual([['20(a)', 'inline_text']]);
+    expect(n.numbering).toEqual({
+      applied: [
+        { section: 'III', note: 20, line: fixes[0]!.line, kind: 'inline_text', path: '20(a)' },
+        { section: 'III', note: 20, line: fixes[1]!.line, kind: 'relabel', path: '20(ll)' },
+        { section: 'III', note: 20, line: fixes[2]!.line, kind: 'duplicate', path: '20(ll)(2bis)' },
+      ],
+      unmatched: [],
+    });
+
+    // fails closed: no fixes → the oddities stay out of sequence (their text and codes stay in the previous subdivision)
+    const raw = segmentNotes(doc(lines), { fixes: [] });
+    expect(raw.ignoredMarkers.map((m) => [m.path, m.why])).toEqual([['20(a)', 'out_of_sequence'], ['20(gg)', 'out_of_sequence'], ['20(gg)(2)', 'out_of_sequence']]);
+    expect(raw.numbering).toEqual({ applied: [], unmatched: [] });
+  });
+
+  it('numbering fixes fail closed: a fix met in another subdivision, or whose line is not exactly once in the note, is not applied', () => {
+    const lines = ['SUBCHAPTER III', 'U.S. Notes', '20. (a) x', ...lowerLabels(2, 33).map((l) => `(${l}) synthetic`), '(II) The U.S. Trade Representative determined', '(1) item'];
+    const wrongPlace: NumberingFix = { section: 'III', note: 20, line: '(II) The U.S. Trade Representative', within: '20(ff)', fix: { kind: 'relabel', label: 'll' }, why: 'test' };
+    const n = segmentNotes(doc(lines), { fixes: [wrongPlace] });
+    expect(paths(n)).not.toContain('III 20(ll)');
+    expect(n.ignoredMarkers.map((m) => [m.path, m.why])).toEqual([['20(gg)', 'out_of_sequence']]);
+    expect(n.numbering.unmatched).toEqual([{ section: 'III', note: 20, line: wrongPlace.line, reason: 'met inside 20(gg), expected 20(ff)' }]);
+    const twice = segmentNotes(doc([...lines, '(II) The U.S. Trade Representative determined']), { fixes: [{ ...wrongPlace, within: '20(gg)' }] });
+    expect(twice.numbering.unmatched).toEqual([{ section: 'III', note: 20, line: wrongPlace.line, reason: '2 lines match (must be exactly 1)' }]);
+    expect(segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '20. (a) x']), { fixes: [wrongPlace] }).numbering.unmatched).toEqual([
+      { section: 'III', note: 20, line: wrongPlace.line, reason: '0 lines match (must be exactly 1)' },
+    ]);
+  });
+
+  it('the official fixes: nine, each with its reason', () => {
+    expect(NUMBERING_FIXES).toHaveLength(9);
+    expect(NUMBERING_FIXES.filter((f) => f.fix.kind === 'inline_text')).toHaveLength(6);
+    for (const f of NUMBERING_FIXES) expect(f.why.length).toBeGreaterThan(20);
   });
 
   it('text is whitespace-folded without its marker; sha256 is of that text; "As provided in" headings and ranges', () => {

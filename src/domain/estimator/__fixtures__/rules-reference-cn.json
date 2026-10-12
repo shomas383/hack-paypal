@@ -1,0 +1,232 @@
+{
+  "hts_revision": "2026 Rev. 21",
+  "rules": [
+    {
+      "id": "cn-add-9903-05-31",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.05.31",
+      "kind": "additive",
+      "rate_ppm": 125000,
+      "scope": {
+        "all": true
+      },
+      "quotes": [
+        {
+          "source": "general 9903.05.31",
+          "text": "The duty provided in the applicable subheading + 12.5%"
+        },
+        {
+          "source": "heading 9903.05.31",
+          "text": "articles the product of China, as provided for in U.S. note 52 to this subchapter"
+        },
+        {
+          "source": "note III 52(a)",
+          "text": "all products that are subject to the additional ad valorem rates of duty imposed by headings 9903.05.20–9903.05.84 shall also be subject to any additional duty provided for in this subchapter or in subchapter IV of chapter 99"
+        },
+        {
+          "source": "note III 52(a)",
+          "text": "all products that are subject to the additional ad valorem rates of duty imposed by these headings shall also be subject to the general rates of duty imposed under subheadings in chapters 1 to 97 of the tariff schedule"
+        }
+      ],
+      "numbers": {
+        "rate_ppm": 0
+      },
+      "drafted_from_sha256": {
+        "general 9903.05.31": "4cc3ceb9a0a72600c480abcea4bbd7ccf5b3bb418a08bddfdf4ee142ed7710c6",
+        "heading 9903.05.31": "ab5d5f969bb13763898f62ecfdd79ba964f1597db1ec550371d523dcbc0e95f9",
+        "note III 52(a)": "efa5775f456c21ddd6b826d662e12cd791af3ce09bad56d1caf5a176d6028a3c"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-add-9903-88-01",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.88.01",
+      "kind": "additive",
+      "rate_ppm": 250000,
+      "scope": {
+        "list": "note III 20(b)"
+      },
+      "quotes": [
+        {
+          "source": "note III 20(a)",
+          "text": "For the purposes of heading 9903.88.01, products of China, as provided for in this note, shall be subject to an additional 25 percent ad valorem rate of duty."
+        },
+        {
+          "source": "note III 20(b)",
+          "text": "Heading 9903.88.01 applies to all products of China that are classified in the following 8-digit subheadings"
+        },
+        {
+          "source": "general 9903.88.01",
+          "text": "The duty provided in the applicable subheading plus 25%"
+        },
+        {
+          "source": "note III 20(a)",
+          "text": "Notwithstanding U.S. note 1 to this subchapter, all products of China that are subject to the additional 25 percent ad valorem rate of duty imposed by heading 9903.88.01 shall also be subject to the general rates of duty imposed on products of China classified in the subheadings enumerated in U.S. note 20(b) to subchapter III"
+        }
+      ],
+      "numbers": {
+        "rate_ppm": 0
+      },
+      "drafted_from_sha256": {
+        "general 9903.88.01": "6c33e2bbd27bdd98d2c4755dfcab15b084a2abaf2b8dfaeea8511b702716a0ea",
+        "note III 20(a)": "7e94214b3c9e12ab62cefcfb256350db2d7665e18abd3a0a84c833f2da27955f",
+        "note III 20(b)": "4c9e109fc50c5236b8a2546129905498030690d5c11aca61ddddba8f260d51a5"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-add-9903-88-02",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.88.02",
+      "kind": "additive",
+      "rate_ppm": 250000,
+      "scope": {
+        "list": "note III 20(d)"
+      },
+      "quotes": [
+        {
+          "source": "note III 20(c)",
+          "text": "For the purposes of heading 9903.88.02, products of China, as provided for in this note, shall be subject to an additional 25 percent ad valorem rate of duty."
+        },
+        {
+          "source": "note III 20(d)",
+          "text": "Heading 9903.88.02 applies to all products of China that are classified in the following 8-digit subheadings"
+        },
+        {
+          "source": "general 9903.88.02",
+          "text": "The duty provided in the applicable subheading + 25%"
+        },
+        {
+          "source": "note III 20(c)",
+          "text": "Notwithstanding U.S. note 1 to this subchapter, all products of China that are subject to the additional 25 percent ad valorem rate of duty imposed by heading 9903.88.02 shall also be subject to the general rates of duty imposed on products of China classified in the subheadings enumerated in U.S. note 20(d) to subchapter III"
+        }
+      ],
+      "numbers": {
+        "rate_ppm": 0
+      },
+      "drafted_from_sha256": {
+        "general 9903.88.02": "7aa08d4f10b828579ac5aa3ab5e8458fd0230ad5a9fb8106bb03868582c358d6",
+        "note III 20(c)": "f568953a98ccae0d6ddc293b11d0b1b32d14341d4c2450472a5604d0d988ac06",
+        "note III 20(d)": "6138c83ceac3070b0e63425448ada528de82e8fc9fef4906149146858f04991e"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-add-9903-88-03",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.88.03",
+      "kind": "additive",
+      "rate_ppm": 250000,
+      "scope": {
+        "list": "note III 20(f)"
+      },
+      "quotes": [
+        {
+          "source": "note III 20(e)",
+          "text": "For the purposes of heading 9903.88.03, products of China, as provided for in this note, shall be subject to an additional 25 percent ad valorem rate of duty."
+        },
+        {
+          "source": "note III 20(f)",
+          "text": "Heading 9903.88.03 applies to all products of China that are classified in the following 8-digit subheadings"
+        },
+        {
+          "source": "general 9903.88.03",
+          "text": "The duty provided in the applicable subheading + 25%"
+        },
+        {
+          "source": "note III 20(e)",
+          "text": "Notwithstanding U.S. note 1 to this subchapter, all products of China that are subject to the additional 25 percent ad valorem rate of duty imposed by heading 9903.88.03 shall also be subject to the general rates of duty imposed on products of China classified in the subheadings enumerated in U.S. note 20(f) to subchapter III"
+        }
+      ],
+      "numbers": {
+        "rate_ppm": 0
+      },
+      "drafted_from_sha256": {
+        "general 9903.88.03": "7aa08d4f10b828579ac5aa3ab5e8458fd0230ad5a9fb8106bb03868582c358d6",
+        "note III 20(e)": "d36b7055ab8cb218d439a2e97cb51038ed098f03b70b6d8269ddd8137c4685f9",
+        "note III 20(f)": "667fdd4eb5bbbdfbd02b52f065c7df0e12cf9be5a2e3c5a4015669612a0cf8fb"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-add-9903-88-15",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.88.15",
+      "kind": "additive",
+      "rate_ppm": 75000,
+      "scope": {
+        "list": "note III 20(s)(i)"
+      },
+      "quotes": [
+        {
+          "source": "note III 20(r)",
+          "text": "For the purposes of heading 9903.88.15, products of China, as provided for in this note, shall be subject to an additional 7.5 percent ad valorem rate of duty."
+        },
+        {
+          "source": "note III 20(s)",
+          "text": "Heading 9903.88.15 applies to:"
+        },
+        {
+          "source": "note III 20(s)(i)",
+          "text": "all products of China that are classified in the following 8-digit subheadings"
+        },
+        {
+          "source": "general 9903.88.15",
+          "text": "The duty provided in the applicable subheading + 7.5%"
+        },
+        {
+          "source": "note III 20(r)",
+          "text": "Notwithstanding U.S. note 1 to this subchapter, all products of China that are subject to the additional 7.5 percent ad valorem rate of duty imposed by heading 9903.88.15 shall also be subject to the general rates of duty imposed on products of China classified in the subheadings enumerated in U.S. note 20(s)(i)"
+        }
+      ],
+      "numbers": {
+        "rate_ppm": 0
+      },
+      "drafted_from_sha256": {
+        "general 9903.88.15": "adf3883af077753595d15378c6d47aacd52788db6158ea92eaadb7fb0f7809ea",
+        "note III 20(r)": "41e5ea9d700f55277f64196420bc1ace5d2dfa409ffa95a51942db1f490a03aa",
+        "note III 20(s)": "aea756e2c1c630cb30691de992a9ba4443dbfec2149839d723d4836be6b7753e",
+        "note III 20(s)(i)": "9a6b6f877fce5b4b6626ed01d3759dedb84d5c992d42444cdacacceb1b01ca52"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    },
+    {
+      "id": "cn-not-9903-88-16",
+      "origins": [
+        "CN"
+      ],
+      "heading": "9903.88.16",
+      "kind": "not_applied",
+      "scope": {
+        "all": true
+      },
+      "quotes": [
+        {
+          "source": "heading 9903.88.16",
+          "text": "as provided for in the subheadings enumerated in U.S. note 20(u) [Compiler's note: provision suspended.]"
+        },
+        {
+          "source": "note III 20(u)",
+          "text": "Subdivisions (t) and (u) of this note and heading 9903.88.16 suspended."
+        }
+      ],
+      "numbers": {},
+      "drafted_from_sha256": {
+        "heading 9903.88.16": "cc191bce941e53b31738a1df390b25f7dd38e680c7272678714b7172d149c008",
+        "note III 20(u)": "e4ab78011752a0f12f341c32fec566d3e3c1b91491b94ab9263d8682ce63ff4b"
+      },
+      "drafted_by": "reference (hand-written from the official text, 2026-10-12)"
+    }
+  ]
+}

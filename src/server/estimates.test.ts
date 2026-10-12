@@ -60,7 +60,7 @@ describe('startEstimate', () => {
   it('400 on a non-strict body; 422 for an origin not supported yet — before any reservation', async () => {
     await expect(startEstimate({ ...req, extra: 1 }, 'sess-1', '1.2.3.4', NOW)).rejects.toMatchObject({ status: 400 });
     await expect(startEstimate({ ...req, title: 'x'.repeat(501) }, 'sess-1', '1.2.3.4', NOW)).rejects.toMatchObject({ status: 400 });
-    await expect(startEstimate({ ...req, origin: 'CN' }, 'sess-1', '1.2.3.4', NOW)).rejects.toMatchObject({ status: 422 });
+    await expect(startEstimate({ ...req, origin: 'KR' }, 'sess-1', '1.2.3.4', NOW)).rejects.toMatchObject({ status: 422 });
     expect(limits.reserveCall).not.toHaveBeenCalled();
   });
 

@@ -106,6 +106,45 @@ describe('headingAppliesTo', () => {
   });
   it('EU is DE only until the member list is verified', () => {
     expect(originOf('FR')).toBeNull();
-    expect(originOf('CN')).toBeNull();
+    expect(originOf('KR')).toBeNull();
+  });
+  it('CN: China, but not "Hong Kong, China" (9903.05.43 is Hong Kong\'s heading)', () => {
+    const cn = originOf('CN')!;
+    expect(cn).toMatchObject({ iso: 'CN', group: 'CN' });
+    const t = buildHeadingTable([
+      row('9903.05.31', 0, 'Except for products described in headings 9903.05.85–9903.05.92, articles the product of China, as provided for in U.S. note 52 to this subchapter', 'The duty provided in the applicable subheading + 12.5%'),
+      row('9903.05.43', 0, 'Except for products described in headings 9903.05.85–9903.05.92, articles the product of Hong Kong, China, as provided for in U.S. note 52 to this subchapter', 'The duty provided in the applicable subheading + 12.5%'),
+      row('9903.01.24', 0, 'Except for products described in headings 9903.01.21, 9903.01.22, 9903.01.23, articles the product of China and Hong Kong, as provided for in U.S. note 2(u) to this subchapter', 'The duty provided in the applicable subheading + 10%'),
+    ]);
+    expect(headingAppliesTo(t['9903.05.31']!, cn)).toBe(true);
+    expect(headingAppliesTo(t['9903.05.43']!, cn)).toBe(false);
+    expect(headingAppliesTo(t['9903.01.24']!, cn)).toBe(true);
+    expect(headingAppliesTo(table['9903.88.15']!, cn)).toBe(true);
+    expect(headingAppliesTo(table['9903.41.05']!, cn)).toBe(false);
+  });
+});
+
+describe('outOfForce — an entry period in the heading\'s own text that has ended', () => {
+  // real Rev 21 heading text (cut where marked …)
+  const t = buildHeadingTable([
+    row('9903.88.09', 0, 'Articles the product of China, as provided for in U.S. note 20(l) to this subchapter and as provided for in the subheadings enumerated in U.S. notes 20(f) or 20(g) to this subchapter, if exported to the United States before May 10, 2019 and entered for consumption, or withdrawn from warehouse for consumption, on or after May 10, 2019, and before June 15, 2019', 'The duty provided in the applicable subheading + 10%'),
+    row('9903.88.50', 0, 'Effective with respect to entries on or after June 4, 2020, and through December 31, 2020, articles the product of China, as provided for in U.S. note 20(ccc) to this subchapter, each covered by an exclusion granted by the U.S. Trade Representative', 'The duty provided in the applicable subheading'),
+    row('9903.88.66', 0, 'Effective with respect to entries on or after December 1, 2021, and before June 1, 2023, articles the product of China, as provided for in U.S. note 20(sss) to this subchapter, each covered by an exclusion granted by the U.S. Trade Representative', 'The duty provided in the applicable subheading'),
+    row('9903.88.69', 0, 'Effective with respect to entries on or after June 15, 2024 and through November 9, 2026, articles the product of China, as provided for in U.S. note 20(vvv) to this subchapter, each covered by an exclusion granted by the U.S. Trade Representative', 'The duty provided in the applicable subheading'),
+    row('9903.91.12', 0, 'Effective with respect to entries, on or after November 10, 2026, of intermodal chassis, subassemblies thereof, and parts thereof …', 'The duty provided in subheadings 8716.39.00, 8716.90.30 or 8716.90.50 + 100%'),
+  ]);
+  const none = segmentNotes(doc([]));
+
+  it('"through D" ends after D, "before D" on D; a period not yet ended, or not yet begun, stays in force (fails closed)', () => {
+    const o = outOfForce(t, none, '2026-10-12');
+    expect(o['9903.88.09']).toEqual({ why: 'entry_window_closed', ref: 'heading 9903.88.09', quote: 'on or after May 10, 2019, and before June 15, 2019' });
+    expect(o['9903.88.50']).toEqual({ why: 'entry_window_closed', ref: 'heading 9903.88.50', quote: 'on or after June 4, 2020, and through December 31, 2020' });
+    expect(o['9903.88.66']?.quote).toBe('on or after December 1, 2021, and before June 1, 2023');
+    expect(o['9903.88.69']).toBeUndefined();
+    expect(o['9903.91.12']).toBeUndefined();
+    expect(outOfForce(t, none, '2026-11-09')['9903.88.69']).toBeUndefined();
+    expect(outOfForce(t, none, '2026-11-10')['9903.88.69']).toMatchObject({ why: 'entry_window_closed' });
+    expect(outOfForce(t, none, '2023-05-31')['9903.88.66']).toBeUndefined();
+    expect(outOfForce(t, none, '2023-06-01')['9903.88.66']).toMatchObject({ why: 'entry_window_closed' });
   });
 });
