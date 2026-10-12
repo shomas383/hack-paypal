@@ -6,7 +6,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, NOT_INCLUDED, plainBasis, reasonText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, factQuestion, isUncertain, NOT_INCLUDED, plainBasis, reasonText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { formatUsd } from '@/lib/money';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
 import { parseUsdInput } from '@/domain/seller/form';
@@ -226,10 +227,15 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   // The estimator's own disclosures (e.g. special-program rates), once each, as sentences.
   // The not-a-ruling notice is shown on its own under the result, so it is left out here.
   const disclosures = [...new Set(estimated.flatMap((c) => c.outcome.disclosures))].filter((d) => d !== view.notice).map((d) => (/[.!?]$/.test(d) ? d : `${d}.`));
-  const reason = reasonText(view.reasons, view.separating);
-  // Every candidate estimated and all at the same duty: say what would pick the line, and that it doesn't matter here.
-  const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && min === max ? sameDutyText(view.separating, levels) : null;
+  // Every candidate estimated and all at the same duty: one combined sentence; the top line in full, the rest collapsed.
+  const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && min === max;
+  const sameText = sameDuty ? sameDutyText(view.separating, levels, formatUsd(m(min)), isUncertain(view.reasons)) : null;
+  const reason = sameDuty ? null : reasonText(view.reasons, view.separating);
+  // A line whose verified row (or split) only needs answers isn't a refusal: the title asks instead.
+  const asking = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && (c.outcome.reason === 'NEEDS_FACTS' || c.outcome.reason === 'NEEDS_SPLIT'));
   const needsSplit = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && c.outcome.reason === 'NEEDS_SPLIT');
+  const [top, ...others] = view.candidates;
+  const candidate = (c: CandidateView, i: number) => <Candidate key={c.code} c={c} rank={i + 1} view={view} answers={answers} answering={answering} onAnswer={onAnswer} />;
 
   return (
     <div className={s.resultBody} data-testid="estimate-result">
@@ -237,7 +243,9 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
         {view.candidates.length === 0
           ? 'No HTS line matched'
           : estimated.length === 0
-            ? 'Can’t estimate this product yet'
+            ? asking
+              ? 'Answer the questions below to estimate the duty'
+              : 'Can’t estimate this product yet'
             : min === max
               ? 'US import duty (est.)'
               : 'US import duty (est.), depending on the HTS line'}
@@ -250,7 +258,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
           {min === max ? (
             <>
               <Money value={m(min)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale
-              {estimated.length > 1 ? ' for every likely HTS line' : ''}.
+              {sameDuty ? ' for every likely HTS line' : ''}.
             </>
           ) : (
             <>
@@ -264,10 +272,10 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
           {reason}
         </p>
       ) : null}
-      {sameDuty ? (
+      {sameText ? (
         <p className={s.separating} data-testid="estimate-same-duty">
           <Icon name="info" />
-          <span>{sameDuty}</span>
+          <span>{sameText}</span>
         </p>
       ) : null}
       {levels && estimated.length > 1 && min !== max ? (
@@ -287,11 +295,18 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
 
       {needsSplit ? <SplitQuestion price={view.sellingPriceMinor} answers={answers} answering={answering} onAnswer={onAnswer} /> : null}
 
-      <ol className={s.candidates}>
-        {view.candidates.map((c, i) => (
-          <Candidate key={c.code} c={c} rank={i + 1} view={view} answers={answers} answering={answering} onAnswer={onAnswer} />
-        ))}
-      </ol>
+      {sameDuty && top ? (
+        <>
+          <ol className={s.candidates}>{candidate(top, 0)}</ol>
+          <Disclosure summary={`Other likely lines (same duty): ${others.map((c) => c.code).join(', ')}`} data-testid="estimate-other-lines">
+            <ol className={s.candidates} start={2}>
+              {others.map((c, i) => candidate(c, i + 1))}
+            </ol>
+          </Disclosure>
+        </>
+      ) : (
+        <ol className={s.candidates}>{view.candidates.map(candidate)}</ol>
+      )}
 
       <Disclosure summary="What this estimate includes and leaves out" data-testid="estimate-disclosures">
         <ul className={s.disclosures}>
@@ -313,9 +328,25 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   );
 }
 
+function YesNo({ name, value, disabled, onChange }: { name: string; value: boolean | undefined; disabled: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className={s.radios}>
+      {[true, false].map((v) => (
+        <label key={String(v)}>
+          <input type="radio" name={name} checked={value === v} disabled={disabled} onChange={() => onChange(v)} />
+          {v ? 'Yes' : 'No'}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: CandidateView; rank: number; view: View; answers: Answers; answering: boolean; onAnswer: (a: Answers) => void }) {
   const o = c.outcome;
   const chain = officialChain(c.chain);
+  const setFact = (fact: string, v: boolean) => onAnswer({ ...answers, facts: { ...answers.facts, [fact]: v } });
+  // Facts answered for this line's verified-row questions (shown with the quote they led to, and changeable).
+  const answeredFacts = Object.entries(answers.facts).filter(([f]) => factQuestion(f) !== null);
   return (
     <li className={s.candidate} data-testid={`estimate-candidate-${c.code}`}>
       <div className={s.candidateHead}>
@@ -326,6 +357,10 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
           <StatusBadge tone={o.source === 'verified' ? 'success' : 'info'} data-testid="estimate-source">
             {o.sourceLabel}
           </StatusBadge>
+        ) : o.reason === 'NEEDS_FACTS' ? (
+          <StatusBadge tone="info" data-testid="estimate-needs-facts">
+            {o.facts?.length === 1 ? 'One question to answer' : `${o.facts?.length ?? 0} questions to answer`}
+          </StatusBadge>
         ) : (
           <StatusBadge tone="warning" data-testid="estimate-cant">
             Can’t estimate
@@ -335,6 +370,16 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
       {chain ? <p className={s.chain}>{chain}</p> : null}
       {o.kind === 'ESTIMATE' ? (
         <>
+          {o.source === 'verified' && answeredFacts.length ? (
+            <div className={s.answered} data-testid="estimate-answered">
+              <p className={s.muted}>
+                Your answers: {answeredFacts.map(([f, v]) => `${factQuestion(f)} ${v ? 'Yes' : 'No'}`).join(' · ')}
+              </p>
+              <Button variant="ghost" size="sm" disabled={answering} onClick={() => onAnswer({ ...answers, facts: Object.fromEntries(Object.entries(answers.facts).filter(([f]) => factQuestion(f) === null)) })}>
+                Change answers
+              </Button>
+            </div>
+          ) : null}
           <table className={s.lines}>
             <caption className="sr-only">Duty lines for {c.code}</caption>
             <thead>
@@ -408,21 +453,47 @@ function Candidate({ c, rank, view, answers, answering, onAnswer }: { c: Candida
               <p className={s.muted}>
                 If yes, the duty is <Money value={m(q.dutyMinor)} /> (delivered <Money value={m(q.ddpTotalMinor)} />).
               </p>
-              <div className={s.radios}>
-                {[true, false].map((v) => (
-                  <label key={String(v)}>
-                    <input type="radio" name={`q-${c.code}-${q.fact}`} checked={answers.facts[q.fact] === v} disabled={answering} onChange={() => onAnswer({ ...answers, facts: { ...answers.facts, [q.fact]: v } })} />
-                    {v ? 'Yes' : 'No'}
-                  </label>
-                ))}
-              </div>
+              <YesNo name={`q-${c.code}-${q.fact}`} value={answers.facts[q.fact]} disabled={answering} onChange={(v) => setFact(q.fact, v)} />
             </fieldset>
           ))}
         </>
       ) : (
-        <p className={s.cant} data-testid="estimate-cant-reason">
-          {cantText(o.reason, o.detail, o.refs)}
-        </p>
+        <>
+          <p className={s.cant} data-testid="estimate-cant-reason">
+            {cantText(o.reason, o.detail, o.refs, o.headings)}
+          </p>
+          {o.facts?.map((f) => (
+            <fieldset key={f.fact} className={s.question} data-testid={`estimate-fact-${f.fact}`}>
+              <legend>{factQuestion(f.fact) ?? f.ref}</legend>
+              <p className={s.muted}>
+                Source: {f.ref}. The verified rate row covers the answer “{f.required ? 'Yes' : 'No'}”.
+              </p>
+              <YesNo name={`f-${c.code}-${f.fact}`} value={answers.facts[f.fact]} disabled={answering} onChange={(v) => setFact(f.fact, v)} />
+            </fieldset>
+          ))}
+          {o.ifAnswered ? (
+            <p className={s.cant} data-testid="estimate-if-answered">
+              With the answers the verified rate row covers, the duty is <Money value={m(o.ifAnswered.dutyMinor)} strong /> (delivered <Money value={m(o.ifAnswered.ddpTotalMinor)} />), from the {o.ifAnswered.sourceLabel.charAt(0).toLowerCase()}
+              {o.ifAnswered.sourceLabel.slice(1)}.
+            </p>
+          ) : null}
+          {o.headings?.length ? (
+            <Disclosure summary="Official text of the headings named" data-testid="estimate-cant-official">
+              <dl className={s.officialList}>
+                {o.headings.map((h) => (
+                  <div key={h.heading}>
+                    <dt>
+                      <span className={s.code}>Heading {h.heading}</span>
+                    </dt>
+                    <dd>
+                      <blockquote className={s.official}>{h.text}</blockquote>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Disclosure>
+          ) : null}
+        </>
       )}
     </li>
   );

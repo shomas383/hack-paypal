@@ -7,12 +7,22 @@ import { expect, test, type Page } from '@playwright/test';
 const WIDTHS = [375, 1280] as const;
 
 async function check(page: Page, name: string) {
+  // House style: estimate text cites note and heading numbers, never program names (open every disclosure first).
+  const closed = page.locator('details:not([open]) > summary');
+  while ((await closed.count()) > 0) await closed.first().click();
+  expect(await page.locator('main').innerText(), 'no program names on the page').not.toMatch(/Section 232|\b301\b|IEEPA/i);
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 900 });
     const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
     expect(axe.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`), `axe at ${width}px`).toEqual([]);
     // No horizontal page scroll at either width.
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `no horizontal scroll at ${width}px`).toBe(true);
+  }
+  // Screenshots with the disclosures closed again (as a visitor first sees the page).
+  const open = page.locator('details[open] > summary');
+  while ((await open.count()) > 0) await open.last().click(); // innermost first: a closed parent hides its children
+  for (const width of WIDTHS) {
+    await page.setViewportSize({ width, height: 900 });
     await page.screenshot({ path: `qa/estimate-${name}-${width}.png`, fullPage: true });
   }
 }
@@ -54,24 +64,33 @@ test('range: two candidates (verified row vs automated estimate), the separating
   await expect(page.getByTestId('estimate-notice')).toContainText('Estimate — not a customs ruling.');
   await page.getByText('What this estimate includes and leaves out').click();
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Lower special-program rates may apply');
-  await expect(page.getByTestId('estimate-disclosures')).toContainText('Section 232');
+  await expect(page.getByTestId('estimate-disclosures')).toContainText('Chapter 99 duties the estimator doesn’t model');
   await expect(page.getByTestId('estimate-versions')).toContainText('2026-rev21-e1');
   await expect(page.getByTestId('estimate-same-duty')).toHaveCount(0);
+  await expect(page.getByTestId('estimate-other-lines')).toHaveCount(0);
   await expect(cotton.getByTestId('estimate-basis')).toHaveText(['General rate: 16.6% of the price', 'The General rate is already at least Japan’s 12.5% combined rate, so heading 9903.05.48 adds nothing']);
   await expect(page.getByTestId('estimate-disclosures')).not.toContainText('not a customs ruling'); // shown once, below
   await check(page, 'range');
 });
 
-test('same duty on every line: guitar', async ({ page }) => {
+test('same duty on every line (guitar): one combined sentence, the top line in full, the others collapsed', async ({ page }) => {
   await run(page, 'guitar');
   await expect(page.getByTestId('estimate-summary')).toContainText('on a $400.00 sale for every likely HTS line');
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
-  await expect(page.getByTestId('estimate-same-duty')).toHaveText('The exact line depends on value of the guitar, excluding the case, but the estimate is the same either way.');
+  await expect(page.getByTestId('estimate-reason')).toHaveCount(0);
+  await expect(page.getByTestId('estimate-same-duty')).toHaveText('The exact line depends on value of the guitar, excluding the case, but the estimate is $50.00 either way.');
   // Plain basis in the table; the engine's exact text in the official-text section.
   const top = page.getByTestId('estimate-candidate-9202.90.4000');
   await expect(top.getByTestId('estimate-basis')).toHaveText(['General rate: 8.7% of the price', 'Japan’s 12.5% combined rate applies (heading 9903.05.49)']);
   await top.getByText('Official text and exact basis').click();
   await expect(top.getByTestId('estimate-official')).toContainText('Computed as: combined cap 12.5% (base or AVE below cap)');
+  const others = page.getByTestId('estimate-other-lines');
+  await expect(others).toContainText('Other likely lines (same duty): 9202.90.2000');
+  await expect(page.getByTestId('estimate-candidate-9202.90.2000')).toBeHidden();
+  await others.locator(':scope > summary').click();
+  await expect(page.getByTestId('estimate-candidate-9202.90.2000').getByTestId('estimate-duty')).toHaveText('50.00');
+  await others.locator(':scope > summary').click();
+  await check(page, 'guitar');
 });
 
 test('verified row: the German watch needs the case/band split, then quotes from its verified row', async ({ page }) => {
@@ -86,15 +105,65 @@ test('verified row: the German watch needs the case/band split, then quotes from
   await check(page, 'verified');
 });
 
-test('can’t estimate: lines named by unmodeled Chapter 99 provisions, with plain reasons', async ({ page }) => {
+test('knife (P11): the estimate asks the verified row’s two facts, then quotes the same figure as checkout for L-P11', async ({ page }) => {
+  // Checkout: the stored quote for L-P11 (the listing records both facts).
+  const res = await page.request.post('/api/quotes', { data: { listingId: 'L-P11' } });
+  expect(res.ok()).toBe(true);
+  const { quoteId } = (await res.json()) as { quoteId: string };
+  await page.goto(`/checkout/${quoteId}`);
+  const checkoutDuty = (await page.getByTestId('duty').innerText()).trim();
+  const checkoutTotal = (await page.getByTestId('total').innerText()).trim();
+  expect([checkoutDuty, checkoutTotal]).toEqual(['$43.54', '$208.54']);
+
+  await run(page, 'knife');
+  await expect(page.getByRole('heading', { name: 'Answer the questions below to estimate the duty' })).toBeVisible();
+  const knife = page.getByTestId('estimate-candidate-8211.92.9030');
+  await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/2 questions to answer/);
+  await expect(knife.getByTestId('estimate-cant-reason')).toHaveText('A verified rate row covers this line, but its duty depends on the answers below.');
+  await expect(knife.getByTestId('estimate-if-answered')).toContainText(`the duty is ${checkoutDuty} (delivered ${checkoutTotal})`);
+  await check(page, 'knife');
+
+  await knife.getByTestId('estimate-fact-steel_weight_share_ge_15pct').getByLabel('Yes').click();
+  await expect(knife.getByTestId('estimate-fact-steel_weight_share_ge_15pct')).toHaveCount(0); // answered; one left
+  await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/One question to answer/);
+  await knife.getByTestId('estimate-fact-steel_us_melted_poured_ge_85pct').getByLabel('No').click();
+  await expect(knife.getByTestId('estimate-source')).toHaveText(/Verified rate row \(2026-rev21-v1\)/);
+  await expect(knife.getByTestId('estimate-duty')).toHaveText(checkoutDuty.replace('$', ''));
+  await expect(knife.getByTestId('estimate-ddp')).toHaveText(checkoutTotal.replace('$', ''));
+  await expect(knife.getByTestId('estimate-basis')).toHaveText(['General rate: 0.4¢ each + 6.1%', 'Heading 9903.82.09 adds 25% of the price', 'Heading 9903.05.90 applies: no additional duty']);
+  await check(page, 'knife-answered');
+
+  // An answer the verified row doesn't cover: refused, citing the note and the headings it ties the line to.
+  await knife.getByRole('button', { name: 'Change answers' }).click();
+  await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/2 questions to answer/);
+  await knife.getByTestId('estimate-fact-steel_weight_share_ge_15pct').getByLabel('Yes').click();
+  await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/One question to answer/);
+  await knife.getByTestId('estimate-fact-steel_us_melted_poured_ge_85pct').getByLabel('Yes').click();
+  await expect(knife.getByTestId('estimate-cant-reason')).toHaveText(
+    'U.S. note 16(c)(vii) to subchapter III names this line and ties it to headings 9903.82.03, 9903.82.06 and 9903.82.09, and the estimator doesn’t model them yet.',
+  );
+});
+
+test('can’t estimate: refusals cite the note and headings, with the official text one click away', async ({ page }) => {
   await run(page, 'unsupported');
   await expect(page.getByRole('heading', { name: 'Can’t estimate this product yet' })).toBeVisible();
   await expect(page.getByTestId('estimate-summary')).toHaveCount(0);
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
   const reasons = page.getByTestId('estimate-cant-reason');
   await expect(reasons).toHaveCount(2);
-  for (const r of await reasons.allTextContents()) expect(r).toMatch(/names this line, and the estimator doesn’t model it yet/);
+  for (const r of await reasons.allTextContents())
+    expect(r).toBe(
+      'Heading 9903.82.03 (“…articles where the weight of the applicable metal is less than 15 percent of the weight of the imported article”) names this line. U.S. note 16(c)(vii) to subchapter III also names this line and ties it to headings 9903.82.03, 9903.82.06 and 9903.82.09. The estimator doesn’t model them yet.',
+    );
+  await page.getByTestId('estimate-cant-official').first().locator('summary').click();
+  await expect(page.getByTestId('estimate-cant-official').first()).toContainText('Heading 9903.82.09');
+  await page.getByTestId('estimate-cant-official').first().locator('summary').click();
   await check(page, 'cant');
+
+  await run(page, 'shoes');
+  await expect(page.getByTestId('estimate-cant-reason')).toHaveText(
+    'The line’s own footnote cites heading 9903.41.10 (“Footwear with outer soles of leather and uppers wholly or in part of leather…”), and the estimator doesn’t model it yet.',
+  );
 });
 
 test('rate limited and server error states', async ({ page }) => {

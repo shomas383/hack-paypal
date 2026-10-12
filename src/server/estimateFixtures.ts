@@ -38,13 +38,26 @@ export const ESTIMATE_FIXTURES: Record<string, Fixture> = {
     candidates: [{ code: '9102.21.70', confidence: 0.9 }],
     separating: [],
   },
-  // Lines the estimator refuses: a steel knife (note 16, Section 232) and men's leather shoes (9903.41.10).
+  // The P11 knife at L-P11's price and shipping: its verified row turns on two facts, asked as questions; with the answers
+  // the row covers it quotes the same figure as checkout.
+  knife: {
+    request: { title: "Japanese gyuto chef's knife, stainless steel blade, natural wood handle", origin: 'JP', sellingPriceMinor: 14000, shippingMinor: 2500 },
+    candidates: [{ code: '8211.92.9030', confidence: 0.86 }],
+    separating: [],
+  },
+  // Lines the estimator refuses (no verified row): a steel kettle, named by note 16(c)(vii) and heading 9903.82.03.
   unsupported: {
-    request: { title: "Gyuto chef's knife, stainless steel blade, wooden handle", origin: 'JP', sellingPriceMinor: 14000, shippingMinor: 2000 },
+    request: { title: 'Stainless steel stovetop kettle, 1.5 L', origin: 'JP', sellingPriceMinor: 9000, shippingMinor: 1500 },
     candidates: [
-      { code: '8211.92.9030', confidence: 0.82 },
-      { code: '6403.59.6060', confidence: 0.1 },
+      { code: '7323.93.0015', confidence: 0.78 },
+      { code: '7323.93.0045', confidence: 0.15 },
     ],
+    separating: [],
+  },
+  // A line named by its own footnote and heading (9903.41.10).
+  shoes: {
+    request: { title: "Men's leather oxford shoes, leather soles", origin: 'JP', sellingPriceMinor: 22000, shippingMinor: 2000 },
+    candidates: [{ code: '6403.59.6060', confidence: 0.8 }],
     separating: [],
   },
 };
