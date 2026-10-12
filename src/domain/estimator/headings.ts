@@ -158,12 +158,20 @@ const DATED = /\b(on or after|through|before) (?:12:01 a\.m\. [a-z ]*time on )?(
 const dayBefore = (iso: string) => new Date(Date.parse(`${iso}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
 
 /**
- * The last date the data stays right: before the earliest future date in an in-force heading's own text or in a note's text
- * where something starts or ends ("through November 9, 2026" → 2026-11-09; "on or after November 10, 2026" or "before
- * November 10, 2026" → 2026-11-09). Null when no such date is ahead. Out-of-force headings are left out (their text no longer
- * applies); ties keep the first found (headings in order, then notes).
+ * The last date the data stays right: before the earliest future boundary that would change a computed amount or the set of
+ * refused lines — a date where something starts or ends ("through November 9, 2026" → 2026-11-09; "on or after" / "before
+ * November 10, 2026" → 2026-11-09) in the own text of a heading a gate-accepted rule applies (`scope.headings`) or of a note
+ * subdivision such a rule quotes or lists (`scope.notes`, with its items). Boundaries elsewhere don't count: disclosure-only
+ * items (note 20 exclusions state their own end date on the page) and headings whose lines already refuse (fail closed).
+ * Null when no such date is ahead. Out-of-force headings never count; ties keep the first found (headings, then notes).
  */
-export function validUntil(t: HeadingTable, notes: Ch99Notes, outOfForce: Record<string, OutOfForce>, asOf: string): { date: string; ref: string; quote: string } | null {
+export function validUntil(
+  t: HeadingTable,
+  notes: Ch99Notes,
+  outOfForce: Record<string, OutOfForce>,
+  asOf: string,
+  scope: { headings: string[]; notes: string[] },
+): { date: string; ref: string; quote: string } | null {
   let best: { date: string; ref: string; quote: string } | null = null;
   const scan = (text: string, ref: string) => {
     for (const m of text.matchAll(DATED)) {
@@ -174,9 +182,16 @@ export function validUntil(t: HeadingTable, notes: Ch99Notes, outOfForce: Record
       if (!best || last < best.date) best = { date: last, ref, quote: m[0] };
     }
   };
-  for (const h of Object.keys(t).sort()) if (!outOfForce[h]) scan(t[h]!.text, `heading ${h}`);
-  for (const s of notes.subdivisions) scan(s.text, `note ${s.section} ${s.path}`);
+  for (const h of [...new Set(scope.headings)].sort()) if (t[h] && !outOfForce[h]) scan(t[h].text, `heading ${h}`);
+  const inScope = (ref: string) => scope.notes.some((n) => ref === n || ref.startsWith(`${n}(`));
+  for (const s of notes.subdivisions) if (inScope(`note ${s.section} ${s.path}`)) scan(s.text, `note ${s.section} ${s.path}`);
   return best;
+}
+
+/** The end of a heading's own entry period, as written ("through November 9, 2026"), or null. */
+export function periodEnd(text: string): string | null {
+  const m = PERIOD.exec(text);
+  return m ? `${m[1]} ${m[2]} ${m[3]}, ${m[4]}` : null;
 }
 
 /** True when `quote` is in the docs text after removing Markdown emphasis and folding whitespace. */

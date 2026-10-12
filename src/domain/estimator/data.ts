@@ -3,7 +3,7 @@ import { chainsOf, type HtsIndex } from '@/domain/hts/buildIndex';
 import { buildBaseRates, type BaseRates, type RateExportRow } from './baseRates';
 import { segmentNotes, type Ch99Notes, type SegmentOptions } from './ch99Notes';
 import { stripPageFurniture } from './ch99Text';
-import { buildHeadingTable, outOfForce, validUntil, type HeadingTable, type OutOfForce, type VerifiedOverride } from './headings';
+import { buildHeadingTable, outOfForce, type HeadingTable, type OutOfForce, type VerifiedOverride } from './headings';
 import { buildMentions, type MentionsIndex } from './mentions';
 import type { OriginGroup } from './origin';
 import type { Rule } from './rules';
@@ -14,7 +14,7 @@ export interface EstimatorData {
   hts_revision: string;
   /** Out-of-force decisions (entry windows) are made as of this date (YYYY-MM-DD). */
   asOf: string;
-  /** The last date the data stays right (headings.ts validUntil); after it, estimates refuse until a rebuild. Null: no end. */
+  /** The last date the data stays right (headings.ts validUntil, scoped by the gate's accepted rules); after it, estimates refuse until a rebuild. Null: no end. */
   validUntil: string | null;
   headings: HeadingTable;
   outOfForce: Record<string, OutOfForce>;
@@ -53,7 +53,8 @@ export function buildEstimatorData(src: EstimatorSources): Omit<EstimatorData, '
     version: src.version,
     hts_revision: src.index.hts_revision,
     asOf: src.asOf,
-    validUntil: validUntil(headings, notes, oof, src.asOf)?.date ?? null,
+    // set by the gate from the rules it accepts (headings.ts validUntil)
+    validUntil: null,
     headings,
     outOfForce: oof,
     notes,

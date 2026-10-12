@@ -24,7 +24,7 @@ import { coverageIndex, lineVerdicts, originGaps, type CoverageContext } from '.
 import type { EstimatorData } from './data';
 import { estimateLine } from './estimate';
 import type { Exclusions } from './exclusions';
-import { overrideQuoteHolds, overrideTies, type VerifiedOverride } from './headings';
+import { overrideQuoteHolds, overrideTies, validUntil, type VerifiedOverride } from './headings';
 import { originOf, type OriginGroup } from './origin';
 import { toEngineMfn } from './rateText';
 import { compareToReference, RuleSchema, type Rule } from './rules';
@@ -78,6 +78,8 @@ export interface GateReport {
   overrideTies: { file: string; tied: Record<string, { order: string; group: string }>; changed: string[]; missing: string[]; unlisted: string[] }[];
   /** Note 20 exclusions: counts and every unit with its status and reason. */
   exclusions: Pick<Exclusions, 'counts' | 'inEffect' | 'foreign'> & { units: Exclusions['units'][string][] };
+  /** valid_until (headings.ts validUntil over the accepted rules' headings and notes) and the boundary that sets it. */
+  validUntil: { date: string; ref: string; quote: string } | null;
   /** Numbering fixes applied / not holding, and labels still out of sequence. */
   numbering: { applied: number; unmatched: string[]; outOfSequence: string[] };
 }
@@ -308,7 +310,13 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
   }
 
   // G8 (with what passed so far)
-  const result: EstimatorData = { ...data, rules: accepted, blocked: { rules: blockedRules.filter((b) => b.rule).map((b) => ({ rule: b.rule!, reasons: b.reasons })), origins: {} } };
+  // valid_until: boundaries of what the accepted rules compute (their headings, the notes they quote or list)
+  const scope = {
+    headings: accepted.flatMap((r) => [r.heading, ...(r.cap_heading_at_or_above ? [r.cap_heading_at_or_above] : [])]),
+    notes: accepted.flatMap((r) => [...r.quotes.map((q) => q.source).filter((s) => s.startsWith('note ')), ...('list' in r.scope ? [r.scope.list] : [])]),
+  };
+  const valid = validUntil(data.headings, data.notes, data.outOfForce, data.asOf, scope);
+  const result: EstimatorData = { ...data, validUntil: valid?.date ?? null, rules: accepted, blocked: { rules: blockedRules.filter((b) => b.rule).map((b) => ({ rule: b.rule!, reasons: b.reasons })), origins: {} } };
   for (const c of input.golden) {
     const o = originOf(c.origin);
     if (!o || !input.origins.includes(c.origin)) continue;
@@ -375,6 +383,7 @@ export function runGate(input: GateInput): { data: EstimatorData; report: GateRe
       coverage,
       overrideTies: overrideTieReport,
       exclusions: { counts: ex.counts, inEffect: ex.inEffect, foreign: ex.foreign, units: Object.values(ex.units) },
+      validUntil: valid,
       numbering: { applied: numbering.applied.length, unmatched: numbering.unmatched.map((u) => `note ${u.section} ${u.note} "${u.line}": ${u.reason}`), outOfSequence },
     },
   };

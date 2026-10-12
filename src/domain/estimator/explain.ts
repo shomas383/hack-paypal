@@ -118,9 +118,10 @@ export function separatingLevels(chains: string[][]): string[] | null {
  * effect under U.S. note 20(vvv)(iii)(1) to subchapter III (heading 9903.88.69) covers particular products under this line;
  * it isn't applied here and can only lower the duty."
  */
-export function exclusionText(exclusions: { ref: string; heading: string }[]): string | null {
+export function exclusionText(exclusions: { ref: string; heading: string; until?: string }[]): string | null {
   if (!exclusions.length) return null;
-  const hs = [...new Set(exclusions.map((x) => x.heading))];
+  // each heading with its own end date ("heading 9903.88.69, through November 9, 2026")
+  const hs = [...new Map(exclusions.map((x) => [x.heading, x.until ? `${x.heading}, ${x.until}` : x.heading])).values()];
   const many = exclusions.length > 1;
   return `${many ? 'Exclusions' : 'An exclusion'} in effect under ${andList(exclusions.map((x) => refText(x.ref)))} (heading${hs.length > 1 ? 's' : ''} ${andList(hs)}) cover${many ? '' : 's'} particular products under this line; ${many ? 'they aren’t' : 'it isn’t'} applied here and can only lower the duty.`;
 }

@@ -7,6 +7,7 @@ import type { Money } from '@/domain/money/money';
 import { citesSubdivision, coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
 import { factSource } from './factSources';
 import type { EstimatorData } from './data';
+import { periodEnd } from './headings';
 import { listMembership } from './lists';
 import { headingAppliesTo, originOf, SUPPORTED_ORIGINS } from './origin';
 import { toEngineMfn } from './rateText';
@@ -92,7 +93,7 @@ export interface Estimate {
   ifYes: { question: Question; result: EstimateOk }[];
   disclosures: Disclosure[];
   /** Note 20 exclusions in effect that name this line: not applied (they can only lower the duty), named here. */
-  exclusions: { ref: string; heading: string }[];
+  exclusions: { ref: string; heading: string; until?: string }[];
   /** A verified row that turned on facts: the questions and the answers given. */
   answered?: (VerifiedFact & { answer: boolean })[];
 }
@@ -281,7 +282,7 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
       ifYes.push({ question: u.question, result: r });
     }
   }
-  const exclusions = exclusionsOf(verdicts);
+  const exclusions = exclusionsOf(verdicts, data);
   return {
     kind: 'ESTIMATE',
     code,
@@ -295,7 +296,14 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
   };
 }
 
-const exclusionsOf = (verdicts: ReturnType<typeof lineVerdicts>) => verdicts.filter((v) => v.verdict === 'exclusion').map((v) => ({ ref: v.ref, heading: v.heading! }));
+/** In-effect exclusions naming the line, each with its own end date as its heading writes it ("through November 9, 2026"). */
+const exclusionsOf = (verdicts: ReturnType<typeof lineVerdicts>, data: Pick<EstimatorData, 'headings'>) =>
+  verdicts
+    .filter((v) => v.verdict === 'exclusion')
+    .map((v) => {
+      const until = periodEnd(data.headings[v.heading!]?.text ?? '');
+      return { ref: v.ref, heading: v.heading!, ...(until ? { until } : {}) };
+    });
 const disclosuresFor = (exclusions: Estimate['exclusions']): Disclosure[] => ['SPECIAL_PROGRAMS', ...(exclusions.length ? (['EXCLUSION_MAY_APPLY'] as const) : []), 'NOT_A_RULING'];
 
 /** Note 20 exclusions in effect that name the line, for an origin (none when it is unsupported). */
@@ -304,7 +312,7 @@ function lineExclusions(code: string, iso: string, data: EstimatorData): Estimat
   if (!origin) return [];
   let idx = cache.get(data);
   if (!idx) cache.set(data, (idx = coverageIndex({ ...data })));
-  return exclusionsOf(lineVerdicts(code, origin, { ...data }, idx));
+  return exclusionsOf(lineVerdicts(code, origin, { ...data }, idx), data);
 }
 
 /**

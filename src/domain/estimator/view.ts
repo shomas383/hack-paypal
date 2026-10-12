@@ -38,7 +38,7 @@ export type OutcomeView =
       ifYes: { fact: string; question: string; heading: string; dutyMinor: number; ddpTotalMinor: number }[];
       disclosures: string[];
       /** Note 20 exclusions in effect that name the line (not applied; they can only lower the duty). */
-      exclusions: { ref: string; heading: string }[];
+      exclusions: { ref: string; heading: string; until?: string }[];
       /** A verified row that turned on facts: the questions (official text) and the answers given. */
       answered?: (VerifiedFact & { answer: boolean })[];
     }

@@ -147,14 +147,14 @@ describe('validUntil — only boundaries that change a computed amount or the re
     row('9903.05.31', 0, 'Except for products described in headings 9903.05.85–9903.05.92, articles the product of China, as provided for in U.S. note 52 to this subchapter', 'The duty provided in the applicable subheading + 12.5%'),
     row('9903.05.99', 0, 'synthetic: effective with respect to entries on or after July 24, 2026, and before January 15, 2027, articles the product of China', 'The duty provided in the applicable subheading + 5%'),
   ]);
-  const notes = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '31. (a) synthetic: goods entered on or after December 1, 2026 are subject to (b)', '52. (a) synthetic: through March 31, 2027']));
+  const notes = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '31. (a) synthetic: goods entered on or after December 1, 2026 are subject to (b)', '32. (a) synthetic: through March 31, 2027']));
   const o = outOfForce(t, notes, '2026-10-12');
   it('the exclusion (9903.88.69, through November 9) and a heading whose lines already refuse (9903.91.12, from November 10) do not set it', () => {
     expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31'], notes: [] })).toBeNull();
   });
   it('a modeled rule\x27s heading or quoted note with a future boundary does: "before D" → the day before; "through D" → D', () => {
-    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31', '9903.05.99'], notes: ['note III 52(a)'] })).toEqual({ date: '2027-01-14', ref: 'heading 9903.05.99', quote: 'before January 15, 2027' });
-    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31'], notes: ['note III 52(a)'] })).toEqual({ date: '2027-03-31', ref: 'note III 52(a)', quote: 'through March 31, 2027' });
+    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31', '9903.05.99'], notes: ['note III 32(a)'] })).toEqual({ date: '2027-01-14', ref: 'heading 9903.05.99', quote: 'before January 15, 2027' });
+    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31'], notes: ['note III 32(a)'] })).toEqual({ date: '2027-03-31', ref: 'note III 32(a)', quote: 'through March 31, 2027' });
     // past dates and out-of-force headings never set it
     expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.88.50'], notes: [] })).toBeNull();
   });

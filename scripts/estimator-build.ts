@@ -20,7 +20,6 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { buildEstimatorData } from '../src/domain/estimator/data';
 import { DRAFT_MODEL, draftRules } from '../src/domain/estimator/draft';
 import { runGate, type GoldenCase } from '../src/domain/estimator/gate';
-import { validUntil } from '../src/domain/estimator/headings';
 import { compareToReference, factNameDiff, RulesFileSchema, type Rule } from '../src/domain/estimator/rules';
 import { verifyExportMeta } from '../src/domain/hts/release';
 import { goldenFileName } from '../src/domain/rates/current';
@@ -164,7 +163,7 @@ async function main() {
     ...(previousListCounts ? { previousListCounts: Object.fromEntries(Object.entries(previousListCounts).map(([k, v]) => [k, v.codes])) } : {}),
   });
 
-  const validity = validUntil(data.headings, data.notes, data.outOfForce, asOf);
+  const validity = report.validUntil;
   const manifest = {
     version: data.version,
     hts_revision: data.hts_revision,
