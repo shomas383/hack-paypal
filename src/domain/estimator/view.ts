@@ -5,7 +5,7 @@ import { usd } from '@/domain/money/money';
 import type { RateFile } from '@/domain/rates/schema';
 import type { EstimatorData } from './data';
 import type { HeadingTable } from './headings';
-import { DISCLOSURE_TEXT, estimateVerifiedFirst, sourceLabel, type CantReason, type Estimate } from './estimate';
+import { DISCLOSURE_TEXT, estimateVerifiedFirst, sourceLabel, type CantReason, type Estimate, type VerifiedFact } from './estimate';
 import type { EstimateInputRecord } from './request';
 
 export interface CandidateIn {
@@ -37,6 +37,8 @@ export type OutcomeView =
       /** Unanswered conditional exemptions: the duty if the answer is yes. */
       ifYes: { fact: string; question: string; heading: string; dutyMinor: number; ddpTotalMinor: number }[];
       disclosures: string[];
+      /** A verified row that turned on facts: the questions (official text) and the answers given. */
+      answered?: (VerifiedFact & { answer: boolean })[];
     }
   | {
       kind: 'CANT_ESTIMATE';
@@ -46,7 +48,7 @@ export type OutcomeView =
       /** UNMODELED_REGIME: the headings named, with their own official text. */
       headings?: { heading: string; text: string }[];
       /** NEEDS_FACTS: the questions a verified rate row turns on; `required` is the answer the row covers. */
-      facts?: { fact: string; required: boolean; ref: string }[];
+      facts?: VerifiedFact[];
       /** NEEDS_FACTS: the verified row's figure with the answers it covers. */
       ifAnswered?: { sourceLabel: string; dutyMinor: number; ddpTotalMinor: number };
     };
@@ -85,6 +87,7 @@ function outcome(e: ReturnType<typeof estimateVerifiedFirst>, priceAndShipping: 
     }),
     ifYes: est.ifYes.map((y) => ({ fact: y.question.fact, question: y.question.text, heading: y.question.heading, dutyMinor: cents(y.result.totalDuty), ddpTotalMinor: priceAndShipping + cents(y.result.totalDuty) })),
     disclosures: est.disclosures.map((d) => DISCLOSURE_TEXT[d]),
+    ...(est.answered ? { answered: est.answered } : {}),
   };
 }
 

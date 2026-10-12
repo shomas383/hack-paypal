@@ -5,6 +5,7 @@ import { computeRow, quoteDuty, type QuoteResult } from '@/domain/rates/engine';
 import type { Additional, RateFile, RateRow } from '@/domain/rates/schema';
 import type { Money } from '@/domain/money/money';
 import { citesSubdivision, coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
+import { factSource } from './factSources';
 import type { EstimatorData } from './data';
 import { headingAppliesTo, originOf } from './origin';
 import { toEngineMfn } from './rateText';
@@ -47,7 +48,7 @@ export interface CantEstimate {
   /** UNMODELED_REGIME: the Chapter 99 headings that are open for the line, with their own official text. */
   headings?: { heading: string; text: string }[];
   /** NEEDS_FACTS: the verified row's open conditions; `required` is the answer the row covers. */
-  facts?: { fact: string; required: boolean; ref: string }[];
+  facts?: VerifiedFact[];
   /** NEEDS_FACTS: the verified row's quote when every open fact has the answer it covers. */
   ifAnswered?: EstimateOk;
 }
@@ -66,6 +67,14 @@ export type EstimateSource = { kind: 'verified'; rateVersion: string } | { kind:
 
 export const sourceLabel = (s: EstimateSource) => (s.kind === 'verified' ? `Verified rate row (${s.rateVersion})` : `Automated estimate (${s.estimatorVersion})`);
 
+/** A verified row's condition, asked from the official note text (factSources.ts); `required` is the answer the row covers. */
+export interface VerifiedFact {
+  fact: string;
+  required: boolean;
+  question: string;
+  quotes: { ref: string; text: string }[];
+}
+
 export interface Estimate {
   kind: 'ESTIMATE';
   code: string;
@@ -77,6 +86,8 @@ export interface Estimate {
   /** One figure per unanswered question: the result if the answer is yes. */
   ifYes: { question: Question; result: EstimateOk }[];
   disclosures: Disclosure[];
+  /** A verified row that turned on facts: the questions and the answers given. */
+  answered?: (VerifiedFact & { answer: boolean })[];
 }
 
 /** Always shown; never computed. */
@@ -275,6 +286,10 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
  */
 export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData, verified: RateFile): Estimate | CantEstimate {
   const row = verified.rows.find((r) => r.origin === input.origin && r.hts10 === input.code);
+  const askable = (c: { fact: string; required_value: boolean }, lineRefs: string[]): VerifiedFact | null => {
+    const s = factSource(c.fact, data.notes, { code: input.code, lineRefs });
+    return s ? { fact: c.fact, required: c.required_value, question: s.question, quotes: s.quotes } : null;
+  };
   if (row) {
     const quote = (facts: Record<string, boolean> | undefined) =>
       quoteDuty(verified, {
@@ -296,15 +311,24 @@ export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData,
       // answer then quotes the verified row); the row's own facts are asked only where the automated path refuses (P11).
       const auto = estimateLine(input, data);
       if (auto.kind === 'ESTIMATE') return auto;
+      // Every open fact must be askable from its official sentence; otherwise the refusal stands.
+      const asked = open.map((c) => askable(c, auto.refs));
+      if (asked.some((a) => a === null)) return auto;
       const covered = quote({ ...input.facts, ...Object.fromEntries(open.map((c) => [c.fact, c.required_value])) });
       return {
         ...cant('NEEDS_FACTS', `${row.id} turns on ${open.map((c) => c.fact).join(', ')}`),
-        facts: open.map((c) => ({ fact: c.fact, required: c.required_value, ref: c.ref })),
+        facts: asked as VerifiedFact[],
         ...(covered.kind === 'OK' ? { ifAnswered: covered } : {}),
       };
     }
     const q = quote(input.facts);
     if (q.kind === 'OK') {
+      const given = [...new Map(conditions.filter((c) => input.facts?.[c.fact] !== undefined).map((c) => [c.fact, c])).values()];
+      const refs = given.length ? ((l) => (l.kind === 'CANT_ESTIMATE' ? l.refs : []))(estimateLine(input, data)) : [];
+      const answered = given.flatMap((c) => {
+        const a = askable(c, refs);
+        return a ? [{ ...a, answer: input.facts![c.fact]! }] : [];
+      });
       return {
         kind: 'ESTIMATE',
         code: input.code,
@@ -314,6 +338,7 @@ export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData,
         result: q,
         ifYes: [],
         disclosures: ['SPECIAL_PROGRAMS', 'NOT_A_RULING'],
+        ...(answered.length ? { answered } : {}),
       };
     }
   }

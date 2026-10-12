@@ -172,19 +172,3 @@ export function sameDutyText(separating: { name: string; value_from_listing: str
   if (uncertain) return on ? `Not certain which line applies — it depends on ${on} — but the estimate is ${amount} either way.` : `Not certain which line applies, but the estimate is ${amount} either way.`;
   return on ? `The exact line depends on ${on}, but the estimate is ${amount} either way.` : null;
 }
-
-/**
- * Plain questions for the facts a verified rate row's conditions turn on (the fact names come from the verified sheet; the
- * threshold is read from the name: steel_weight_share_ge_15pct → 15%). Null for a fact without one: it isn't asked.
- */
-export function factQuestion(fact: string): string | null {
-  const pct = /_ge_(\d+)pct$/.exec(fact)?.[1];
-  switch (fact.replace(/_ge_\d+pct$/, '')) {
-    case 'steel_weight_share':
-      return pct ? `Is steel at least ${pct}% of the product’s weight?` : null;
-    case 'steel_us_melted_poured':
-      return pct ? `Was at least ${pct}% of the steel melted and poured in the United States?` : null;
-    default:
-      return null;
-  }
-}

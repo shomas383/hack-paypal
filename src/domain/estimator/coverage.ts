@@ -233,11 +233,20 @@ const labels = (s: string) => [...s.matchAll(/\(([a-z0-9]+)\)/gi)].map((m) => m[
 export function citesSubdivision(heading: string, text: string, ref: string): boolean {
   const r = /^note (\S+) (\d+)(.*)$/.exec(ref);
   if (!r || r[1] !== subchapterOf(heading)) return false;
-  const target = labels(r[3]!);
-  for (const m of text.matchAll(/\bsubdivisions? (.+?) of U\.S\. note (\d+)/g)) {
-    if (m[2] !== r[2]) continue;
+  for (const m of text.matchAll(/\bsubdivisions? (.+?) of U\.S\. note (\d+)/g)) if (m[2] === r[2] && subdivisionListCovers(m[1]!, r[3]!)) return true;
+  return false;
+}
+
+/**
+ * Whether a list of note subdivisions as the HTS writes it ("(c)(iv), (vii), (x) and (xi)", "(c)(vi)–(viii) and (xi)")
+ * covers a subdivision path ("(c)(vii)"): lists, ranges, items relative to the previous one, and a listed parent covers its
+ * children.
+ */
+export function subdivisionListCovers(list: string, path: string): boolean {
+  const target = labels(path);
+  {
     let prev: string[] = [];
-    for (const item of m[1]!.split(/,\s*(?:and\s+|or\s+)?|\s+and\s+|\s+or\s+/)) {
+    for (const item of list.split(/,\s*(?:and\s+|or\s+)?|\s+and\s+|\s+or\s+/)) {
       const [a, b] = item.split(/\s*[–-]\s*/);
       // Fewer labels than the previous item → relative to it ("and (xi)" after (c)(vi) is (c)(xi)); a lone letter that isn't a
       // roman numeral is top-level ("… (xi) and (e) of U.S. note 16" is 16(e)).

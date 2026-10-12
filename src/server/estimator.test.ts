@@ -4,6 +4,7 @@ import { estimateLine, estimateVerifiedFirst, sourceLabel } from '@/domain/estim
 import { usd } from '@/domain/money/money';
 import { quoteDuty } from '@/domain/rates/engine';
 import { loadGolden, loadVerifiedRates } from '@/domain/rates/__fixtures__/verified';
+import { factSource } from '@/domain/estimator/factSources';
 import { loadEstimator } from './estimator';
 
 const { data, manifest } = loadEstimator();
@@ -79,6 +80,15 @@ describe('estimateVerifiedFirst', () => {
     expect(withFacts).toMatchObject({ kind: 'ESTIMATE', source: { kind: 'verified' } });
     if (withFacts.kind !== 'ESTIMATE') throw new Error('expected an estimate');
     expect(withFacts.result.totalDuty).toEqual(usd(4354));
+    // The questions come from note 16's sentences; the quoted answers come back with the verified figure.
+    expect(asked.facts?.map((f) => f.question)).toEqual([
+      'Does the steel in it weigh at least 15 percent of the whole article’s weight?',
+      'Was at least 85 percent of the steel in it melted and poured in the United States?',
+    ]);
+    expect(withFacts.answered?.map((a) => [a.fact, a.answer])).toEqual([
+      ['steel_weight_share_ge_15pct', true],
+      ['steel_us_melted_poured_ge_85pct', false],
+    ]);
     // One answer asked, one still open: still asking (only the open one decides now).
     expect(estimateVerifiedFirst(input({ ...p11, facts: { steel_weight_share_ge_15pct: true } }), data, verified)).toMatchObject({ reason: 'NEEDS_FACTS', facts: [{ fact: 'steel_us_melted_poured_ge_85pct' }] });
     // An answer the verified row doesn't cover: the automated path, which refuses on the note and names its heading.
@@ -92,5 +102,42 @@ describe('estimateVerifiedFirst', () => {
     if (kettle.kind !== 'CANT_ESTIMATE') throw new Error('expected a refusal');
     expect(kettle.headings?.map((h) => h.heading)).toEqual(['9903.82.03', '9903.82.06', '9903.82.09']);
     expect(kettle.headings?.[0]?.text).toBe(data.headings['9903.82.03']!.text);
+  });
+});
+
+describe('factSource: verified-row facts asked from the official note 16 sentences (committed Rev 21 text)', () => {
+  const knife = { code: '8211.92.9030', lineRefs: ['note III 16(c)(vii)'] };
+  it('the knife: both questions, thresholds parsed from the quotes, the trimmed sentences shown', () => {
+    const w = factSource('steel_weight_share_ge_15pct', data.notes, knife);
+    expect(w).toEqual({
+      fact: 'steel_weight_share_ge_15pct',
+      threshold: 15,
+      question: 'Does the steel in it weigh at least 15 percent of the whole article’s weight?',
+      quotes: [
+        { ref: 'note III 16(c)', text: '…only apply where the weight of the applicable metal is at least 15 percent of the weight of the imported article.' },
+        { ref: 'note III 16(c)(vii)', text: 'Derivative steel articles' },
+      ],
+    });
+    const m = factSource('steel_us_melted_poured_ge_85pct', data.notes, knife);
+    expect(m).toEqual({
+      fact: 'steel_us_melted_poured_ge_85pct',
+      threshold: 85,
+      question: 'Was at least 85 percent of the steel in it melted and poured in the United States?',
+      quotes: [{ ref: 'note III 16(e)', text: '…at least 85 percent of the steel content of the article must be composed of steel that was melted and poured in the United States.' }],
+    });
+  });
+  it('fails closed: a threshold that differs from the official text, a metal the list title does not name, a line the sentence does not cover', () => {
+    expect(factSource('steel_weight_share_ge_20pct', data.notes, knife)).toBeNull();
+    expect(factSource('steel_us_melted_poured_ge_80pct', data.notes, knife)).toBeNull();
+    expect(factSource('aluminum_weight_share_ge_15pct', data.notes, knife)).toBeNull();
+    // chapters 72, 73, 74 and 76 are outside the weight condition (16(c)): a steel kettle (7323) is never asked it
+    expect(factSource('steel_weight_share_ge_15pct', data.notes, { code: '7323.93.0015', lineRefs: ['note III 16(c)(vii)'] })).toBeNull();
+    // 16(e)'s steel sentence lists (c)(iv), (vii), (x) and (xi); not (c)(ix)
+    expect(factSource('steel_us_melted_poured_ge_85pct', data.notes, { code: '8211.92.9030', lineRefs: ['note III 16(c)(ix)'] })).toBeNull();
+    expect(factSource('informational_material', data.notes, knife)).toBeNull();
+    expect(factSource('steel_weight_share_ge_15pct', data.notes, { code: '8211.92.9030', lineRefs: [] })).toBeNull();
+  });
+  it('house style: no program names in the questions or quotes', () => {
+    for (const f of ['steel_weight_share_ge_15pct', 'steel_us_melted_poured_ge_85pct']) expect(JSON.stringify(factSource(f, data.notes, knife))).not.toMatch(/Section 232|\b301\b|IEEPA/i);
   });
 });

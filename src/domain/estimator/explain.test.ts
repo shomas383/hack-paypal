@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { KNOWN_FACTS } from './draft';
 import { DISCLOSURE_TEXT, type CantReason } from './estimate';
-import { cantText, factQuestion, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
+import { cantText, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
 
 describe('refText', () => {
   it('names notes, headings and footnotes the way the schedule does', () => {
@@ -104,14 +103,6 @@ describe('sameDutyText', () => {
   });
 });
 
-describe('factQuestion', () => {
-  it('the verified sheet’s facts as plain questions, the threshold read from the fact name', () => {
-    expect(factQuestion('steel_weight_share_ge_15pct')).toBe('Is steel at least 15% of the product’s weight?');
-    expect(factQuestion('steel_us_melted_poured_ge_85pct')).toBe('Was at least 85% of the steel melted and poured in the United States?');
-    expect(factQuestion('something_else')).toBeNull();
-  });
-});
-
 describe('house style: estimate text cites note and heading numbers only', () => {
   it('no generated estimate text names a program (Section 232, 301, IEEPA)', () => {
     const texts: string[] = [NOT_INCLUDED, ...Object.values(DISCLOSURE_TEXT)];
@@ -120,7 +111,7 @@ describe('house style: estimate text cites note and heading numbers only', () =>
     for (const r of reasons) for (const refs of refSets) texts.push(cantText(r, 'x needs kg', refs, [H03, H06, H09, H4110]));
     for (const b of ['8.7% of customs value', 'Free', 'combined cap 12.5% (base or AVE below cap)', 'base ≥ 12.5% cap — no add-on', '+25% of full customs value', 'exempt — no add-on'])
       for (const o of ['JP', 'DE']) texts.push(plainBasis({ label: 'x', chapter99: '9903.82.09', basis: b }, o), plainBasis({ label: 'General rate', basis: b }, o));
-    texts.push(reasonText(['LOW_CONFIDENCE'], [])!, sameDutyText([], null, '$1.00', true)!, ...KNOWN_FACTS.map((f) => factQuestion(f) ?? ''));
+    texts.push(reasonText(['LOW_CONFIDENCE'], [])!, sameDutyText([], null, '$1.00', true)!);
     for (const s of texts) expect(s, s).not.toMatch(/Section 232|\b301\b|IEEPA/i);
   });
 });
