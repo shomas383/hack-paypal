@@ -61,10 +61,36 @@ describe('estimateVerifiedFirst', () => {
     expect(sourceLabel(e.source)).toBe('Automated estimate (2026-rev21-e1)');
     expect(e.result.lines.map((l) => l.chapter99).filter(Boolean)).toEqual(['9903.05.86']);
   });
-  it('a verified row that needs facts the input lacks falls back to the automated path (P11 refuses); with the facts it quotes', () => {
+  it('a verified row that needs facts the input lacks asks them (P11), with the verified figure for the answers it covers', () => {
     const p11 = { origin: 'JP', hts10: '8211.92.9030', price_minor: 14000 };
-    expect(estimateVerifiedFirst(input(p11), data, verified)).toMatchObject({ kind: 'CANT_ESTIMATE', reason: 'UNMODELED_REGIME' });
+    const asked = estimateVerifiedFirst(input(p11), data, verified);
+    expect(asked).toMatchObject({
+      kind: 'CANT_ESTIMATE',
+      reason: 'NEEDS_FACTS',
+      facts: [
+        { fact: 'steel_weight_share_ge_15pct', required: true },
+        { fact: 'steel_us_melted_poured_ge_85pct', required: false },
+      ],
+    });
+    if (asked.kind !== 'CANT_ESTIMATE') throw new Error('expected questions');
+    // The same figure checkout quotes for L-P11 (golden P11: $8.54 + $35.00).
+    expect(asked.ifAnswered?.totalDuty).toEqual(usd(4354));
     const withFacts = estimateVerifiedFirst(input({ ...p11, facts: { steel_weight_share_ge_15pct: true, steel_us_melted_poured_ge_85pct: false } }), data, verified);
     expect(withFacts).toMatchObject({ kind: 'ESTIMATE', source: { kind: 'verified' } });
+    if (withFacts.kind !== 'ESTIMATE') throw new Error('expected an estimate');
+    expect(withFacts.result.totalDuty).toEqual(usd(4354));
+    // One answer asked, one still open: still asking (only the open one decides now).
+    expect(estimateVerifiedFirst(input({ ...p11, facts: { steel_weight_share_ge_15pct: true } }), data, verified)).toMatchObject({ reason: 'NEEDS_FACTS', facts: [{ fact: 'steel_us_melted_poured_ge_85pct' }] });
+    // An answer the verified row doesn't cover: the automated path, which refuses on the note and names its heading.
+    const other = estimateVerifiedFirst(input({ ...p11, facts: { steel_weight_share_ge_15pct: true, steel_us_melted_poured_ge_85pct: true } }), data, verified);
+    expect(other).toMatchObject({ kind: 'CANT_ESTIMATE', reason: 'UNMODELED_REGIME', refs: ['note III 16(c)(vii)'] });
+    if (other.kind !== 'CANT_ESTIMATE') throw new Error('expected a refusal');
+    expect(other.headings?.map((h) => h.heading)).toEqual(['9903.82.03', '9903.82.06', '9903.82.09']); // the open headings whose own text cites 16(c)(vii)
+  });
+  it('a refusal names the open headings with their official text', () => {
+    const kettle = estimateVerifiedFirst(input({ origin: 'JP', hts10: '7323.93.0015', price_minor: 9000 }), data, verified);
+    if (kettle.kind !== 'CANT_ESTIMATE') throw new Error('expected a refusal');
+    expect(kettle.headings?.map((h) => h.heading)).toEqual(['9903.82.03', '9903.82.06', '9903.82.09']);
+    expect(kettle.headings?.[0]?.text).toBe(data.headings['9903.82.03']!.text);
   });
 });

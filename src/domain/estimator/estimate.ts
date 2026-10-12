@@ -4,7 +4,7 @@
 import { computeRow, quoteDuty, type QuoteResult } from '@/domain/rates/engine';
 import type { Additional, RateFile, RateRow } from '@/domain/rates/schema';
 import type { Money } from '@/domain/money/money';
-import { coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
+import { citesSubdivision, coverageIndex, lineVerdicts, type CoverageIndex } from './coverage';
 import type { EstimatorData } from './data';
 import { headingAppliesTo, originOf } from './origin';
 import { toEngineMfn } from './rateText';
@@ -34,7 +34,9 @@ export type CantReason =
   | 'NEEDS_MEASURES'
   | 'NEEDS_SPLIT'
   | 'UNMODELED_REGIME'
-  | 'PARTIAL_LIST';
+  | 'PARTIAL_LIST'
+  /** A verified rate row covers the line but turns on facts the input doesn't have yet (asked as questions). */
+  | 'NEEDS_FACTS';
 
 export interface CantEstimate {
   kind: 'CANT_ESTIMATE';
@@ -42,6 +44,12 @@ export interface CantEstimate {
   detail: string;
   /** What names the line: note subdivisions and headings ("note III 16(c)(vii)", "heading 9903.41.05"). */
   refs: string[];
+  /** UNMODELED_REGIME: the Chapter 99 headings that are open for the line, with their own official text. */
+  headings?: { heading: string; text: string }[];
+  /** NEEDS_FACTS: the verified row's open conditions; `required` is the answer the row covers. */
+  facts?: { fact: string; required: boolean; ref: string }[];
+  /** NEEDS_FACTS: the verified row's quote when every open fact has the answer it covers. */
+  ifAnswered?: EstimateOk;
 }
 
 export type EstimateOk = Extract<QuoteResult, { kind: 'OK' }>;
@@ -164,11 +172,17 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
   const open = verdicts.filter((v) => v.verdict === 'unmodeled');
   if (open.length) {
     const hs = [...new Set(open.flatMap((v) => v.open))];
-    return cant(
-      'UNMODELED_REGIME',
-      `can't estimate for ${origin.iso}: ${open.map((v) => v.ref).join(', ')} name${open.length === 1 ? 's' : ''} this line and ${open.length === 1 ? "isn't" : "aren't"} modeled yet${hs.length ? ` (${hs.join(', ')})` : ''}`,
-      open.map((v) => v.ref),
-    );
+    // The headings to name: a heading or footnote ref is its own heading; a note ref, the open headings whose own text
+    // cites that subdivision (a note governs many headings; naming all of them says nothing).
+    const named = [...new Set(open.flatMap((v) => (v.ref.startsWith('note ') ? v.open.filter((h) => citesSubdivision(h, data.headings[h]?.text ?? '', v.ref)) : v.open)))];
+    return {
+      ...cant(
+        'UNMODELED_REGIME',
+        `can't estimate for ${origin.iso}: ${open.map((v) => v.ref).join(', ')} name${open.length === 1 ? 's' : ''} this line and ${open.length === 1 ? "isn't" : "aren't"} modeled yet${hs.length ? ` (${hs.join(', ')})` : ''}`,
+        open.map((v) => v.ref),
+      ),
+      headings: named.flatMap((h) => (data.headings[h] ? [{ heading: h, text: data.headings[h].text }] : [])),
+    };
   }
 
   const rules = data.rules.filter((r) => r.origins.includes(origin.group));
@@ -260,16 +274,36 @@ export function estimateLine(input: EstimateInput, data: EstimatorData): Estimat
  * doesn't give (e.g. P11's steel facts) — the automated estimator answers. Still an estimate: nothing here is charged.
  */
 export function estimateVerifiedFirst(input: EstimateInput, data: EstimatorData, verified: RateFile): Estimate | CantEstimate {
-  if (verified.rows.some((r) => r.origin === input.origin && r.hts10 === input.code)) {
-    const q = quoteDuty(verified, {
-      origin: input.origin,
-      hts10: input.code,
-      entryDate: input.entryDate,
-      customsValue: input.customsValue,
-      quantity: input.quantity ?? 1,
-      ...(input.valueSplit ? { valueSplit: input.valueSplit } : {}),
-      ...(input.facts ? { facts: input.facts } : {}),
-    });
+  const row = verified.rows.find((r) => r.origin === input.origin && r.hts10 === input.code);
+  if (row) {
+    const quote = (facts: Record<string, boolean> | undefined) =>
+      quoteDuty(verified, {
+        origin: input.origin,
+        hts10: input.code,
+        entryDate: input.entryDate,
+        customsValue: input.customsValue,
+        quantity: input.quantity ?? 1,
+        ...(input.valueSplit ? { valueSplit: input.valueSplit } : {}),
+        ...(facts ? { facts } : {}),
+      });
+    // The row's conditions are facts the buyer-side listing records (e.g. P11's steel facts). An estimate asks the open
+    // ones; an answer the row doesn't cover goes to the automated path, which refuses or estimates on its own terms.
+    const conditions = row.additional.flatMap((a) => a.conditions);
+    const contradicted = conditions.some((c) => input.facts?.[c.fact] !== undefined && input.facts[c.fact] !== c.required_value);
+    const open = [...new Map(conditions.filter((c) => input.facts?.[c.fact] === undefined).map((c) => [c.fact, c])).values()];
+    if (!contradicted && open.length) {
+      // The automated path first when it can estimate (it asks its own official question, e.g. 9903.05.92 for P12, and an
+      // answer then quotes the verified row); the row's own facts are asked only where the automated path refuses (P11).
+      const auto = estimateLine(input, data);
+      if (auto.kind === 'ESTIMATE') return auto;
+      const covered = quote({ ...input.facts, ...Object.fromEntries(open.map((c) => [c.fact, c.required_value])) });
+      return {
+        ...cant('NEEDS_FACTS', `${row.id} turns on ${open.map((c) => c.fact).join(', ')}`),
+        facts: open.map((c) => ({ fact: c.fact, required: c.required_value, ref: c.ref })),
+        ...(covered.kind === 'OK' ? { ifAnswered: covered } : {}),
+      };
+    }
+    const q = quote(input.facts);
     if (q.kind === 'OK') {
       return {
         kind: 'ESTIMATE',

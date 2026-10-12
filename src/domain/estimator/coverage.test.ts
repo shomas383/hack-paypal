@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { RateExportRow } from './baseRates';
 import { segmentNotes } from './ch99Notes';
 import type { StrippedText } from './ch99Text';
-import { coverageIndex, lineVerdicts, originGaps, refVerdict, type CoverageContext } from './coverage';
+import { citesSubdivision, coverageIndex, lineVerdicts, originGaps, refVerdict, type CoverageContext } from './coverage';
 import { buildHeadingTable, outOfForce } from './headings';
 import { buildMentions } from './mentions';
 import { originOf } from './origin';
@@ -98,5 +98,26 @@ describe('originGaps', () => {
     ]));
     const cx: CoverageContext = { headings: h, outOfForce: {}, notes: n, mentions: buildMentions(n, {}), rules: [] };
     expect(originGaps(jp, cx, coverageIndex(cx))).toEqual(['9903.01.25']);
+  });
+});
+
+describe('citesSubdivision (which headings a refusal names)', () => {
+  // Real Rev 21 heading texts (9903.82.09, .02, .03).
+  const h09 = 'Except as provided for in headings 9903.82.16, 9903.82.20–9903.82.26 and 9903.85.68, articles of copper and derivative aluminum and steel articles, as provided for in subdivisions (c)(vi)–(viii) and (xi) of U.S. note 16 to this subchapter';
+  const h02 = 'Except as provided for in headings 9903.82.14, 9903.85.67 and 9903.85.68, articles of aluminum, of steel or of copper and derivative aluminum or steel articles, as provided for in subdivisions (c)(i)–(v) of U.S. note 16 to this subchapter';
+  const h03 = 'Except for articles classifiable in chapters 72, 73, 74 or 76, articles where the weight of the applicable metal is less than 15 percent of the weight of the imported article, as provided for in subdivision (c) of U.S. note 16 to this subchapter';
+  it('ranges, relative items and parents; the note number and subchapter must match', () => {
+    expect(citesSubdivision('9903.82.09', h09, 'note III 16(c)(vii)')).toBe(true);
+    expect(citesSubdivision('9903.82.09', h09, 'note III 16(c)(xi)')).toBe(true); // "and (xi)" is relative to (c)
+    expect(citesSubdivision('9903.82.09', h09, 'note III 16(c)(ix)')).toBe(false);
+    expect(citesSubdivision('9903.82.02', h02, 'note III 16(c)(vii)')).toBe(false);
+    expect(citesSubdivision('9903.82.02', h02, 'note III 16(c)(iv)')).toBe(true);
+    expect(citesSubdivision('9903.82.03', h03, 'note III 16(c)(vii)')).toBe(true); // (c) covers its children
+    const h06 = 'Except as provided for in headings 9903.82.15 and 9903.85.68, articles of copper and derivative aluminum and steel articles, as provided for in subdivisions (c)(ii), (iv), (vi)–(viii), (xi) and (e) of U.S. note 16 to this subchapter';
+    expect(citesSubdivision('9903.82.06', h06, 'note III 16(e)')).toBe(true); // a lone letter is top-level
+    expect(citesSubdivision('9903.82.06', h06, 'note III 16(c)(iv)')).toBe(true);
+    expect(citesSubdivision('9903.82.06', h06, 'note III 16(c)(iii)')).toBe(false);
+    expect(citesSubdivision('9903.82.09', h09, 'note III 17(c)(vii)')).toBe(false);
+    expect(citesSubdivision('9903.82.09', h09, 'note II 16(c)(vii)')).toBe(false);
   });
 });

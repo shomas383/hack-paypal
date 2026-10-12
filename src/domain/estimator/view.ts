@@ -38,7 +38,18 @@ export type OutcomeView =
       ifYes: { fact: string; question: string; heading: string; dutyMinor: number; ddpTotalMinor: number }[];
       disclosures: string[];
     }
-  | { kind: 'CANT_ESTIMATE'; reason: CantReason; detail: string; refs: string[] };
+  | {
+      kind: 'CANT_ESTIMATE';
+      reason: CantReason;
+      detail: string;
+      refs: string[];
+      /** UNMODELED_REGIME: the headings named, with their own official text. */
+      headings?: { heading: string; text: string }[];
+      /** NEEDS_FACTS: the questions a verified rate row turns on; `required` is the answer the row covers. */
+      facts?: { fact: string; required: boolean; ref: string }[];
+      /** NEEDS_FACTS: the verified row's figure with the answers it covers. */
+      ifAnswered?: { sourceLabel: string; dutyMinor: number; ddpTotalMinor: number };
+    };
 
 export interface CandidateView extends CandidateIn {
   outcome: OutcomeView;
@@ -47,7 +58,18 @@ export interface CandidateView extends CandidateIn {
 const cents = (m: { amountMinor: bigint }) => Number(m.amountMinor);
 
 function outcome(e: ReturnType<typeof estimateVerifiedFirst>, priceAndShipping: number, headings: HeadingTable): OutcomeView {
-  if (e.kind === 'CANT_ESTIMATE') return { kind: 'CANT_ESTIMATE', reason: e.reason, detail: e.detail, refs: e.refs };
+  if (e.kind === 'CANT_ESTIMATE')
+    return {
+      kind: 'CANT_ESTIMATE',
+      reason: e.reason,
+      detail: e.detail,
+      refs: e.refs,
+      ...(e.headings?.length ? { headings: e.headings } : {}),
+      ...(e.facts?.length ? { facts: e.facts } : {}),
+      ...(e.ifAnswered
+        ? { ifAnswered: { sourceLabel: sourceLabel({ kind: 'verified', rateVersion: e.ifAnswered.rateVersion }), dutyMinor: cents(e.ifAnswered.totalDuty), ddpTotalMinor: priceAndShipping + cents(e.ifAnswered.totalDuty) } }
+        : {}),
+    };
   const est: Estimate = e;
   const duty = cents(est.result.totalDuty);
   return {

@@ -208,3 +208,56 @@ export function originGaps(origin: Origin, ctx: CoverageContext, idx: CoverageIn
   }
   return gaps.sort();
 }
+
+const ROMAN_DIGIT: Record<string, number> = { i: 1, v: 5, x: 10, l: 50, c: 100 };
+/** A label's place among its siblings: (a)=1 at the top level, roman below it, numbers as numbers. */
+function ordinal(label: string, depth: number): number {
+  if (/^\d+$/.test(label)) return Number(label);
+  if (depth > 0 && /^[ivxlc]+$/.test(label)) {
+    let n = 0;
+    for (let i = 0; i < label.length; i++) {
+      const v = ROMAN_DIGIT[label[i]!]!;
+      n += v < (ROMAN_DIGIT[label[i + 1] ?? ''] ?? 0) ? -v : v;
+    }
+    return n;
+  }
+  return /^([a-z])\1*$/i.test(label) ? (label.toLowerCase().charCodeAt(0) - 96) * label.length : NaN;
+}
+const labels = (s: string) => [...s.matchAll(/\(([a-z0-9]+)\)/gi)].map((m) => m[1]!);
+
+/**
+ * Whether a heading's own text cites a note subdivision ("… as provided for in subdivisions (c)(vi)–(viii) and (xi) of U.S.
+ * note 16 to this subchapter" cites 16(c)(vii)): lists, ranges, items relative to the previous one ("and (xi)" → (c)(xi)),
+ * and a cited parent covers its children. For naming the headings a refusal is about; never decides a verdict.
+ */
+export function citesSubdivision(heading: string, text: string, ref: string): boolean {
+  const r = /^note (\S+) (\d+)(.*)$/.exec(ref);
+  if (!r || r[1] !== subchapterOf(heading)) return false;
+  const target = labels(r[3]!);
+  for (const m of text.matchAll(/\bsubdivisions? (.+?) of U\.S\. note (\d+)/g)) {
+    if (m[2] !== r[2]) continue;
+    let prev: string[] = [];
+    for (const item of m[1]!.split(/,\s*(?:and\s+|or\s+)?|\s+and\s+|\s+or\s+/)) {
+      const [a, b] = item.split(/\s*[–-]\s*/);
+      // Fewer labels than the previous item → relative to it ("and (xi)" after (c)(vi) is (c)(xi)); a lone letter that isn't a
+      // roman numeral is top-level ("… (xi) and (e) of U.S. note 16" is 16(e)).
+      const rel = (ls: string[]) => (ls.length === 1 && /^[a-z]$/.test(ls[0]!) && !/^[ivxlc]$/.test(ls[0]!) ? ls : ls.length < prev.length ? [...prev.slice(0, prev.length - ls.length), ...ls] : ls);
+      const start = rel(labels(a ?? ''));
+      if (!start.length) continue;
+      prev = start;
+      const covers = (p: string[]) => p.length <= target.length && p.every((l, i) => l === target[i]);
+      if (b === undefined) {
+        if (covers(start)) return true;
+        continue;
+      }
+      const endTail = labels(b);
+      const end = [...start.slice(0, start.length - endTail.length), ...endTail];
+      const d = start.length - 1;
+      if (end.length !== start.length || target.length <= d || !start.slice(0, d).every((l, i) => l === target[i])) continue;
+      const [lo, hi, t] = [ordinal(start[d]!, d), ordinal(end[d]!, d), ordinal(target[d]!, d)];
+      if (lo <= t && t <= hi) return true;
+      prev = end;
+    }
+  }
+  return false;
+}
