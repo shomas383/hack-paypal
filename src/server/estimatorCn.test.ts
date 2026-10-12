@@ -94,7 +94,7 @@ describe('CN lines', () => {
   it('an exclusion in effect (20(vvv)) can only lower the duty: the list duty is estimated and the subdivision named', () => {
     const e = cn('0304.72.5000', 10000); // 20(f) and 20(vvv)(iii)(1); also expired 20(iii)(1), 20(oo)(1), 20(ttt)(iii)(1)
     expect(heads(e)).toEqual(['9903.05.31', '9903.88.03']);
-    expect(e.kind === 'ESTIMATE' && e.exclusions).toEqual([{ ref: 'note III 20(vvv)(iii)(1)', heading: '9903.88.69' }]);
+    expect(e.kind === 'ESTIMATE' && e.exclusions).toEqual([{ ref: 'note III 20(vvv)(iii)(1)', heading: '9903.88.69', until: 'through November 9, 2026' }]);
     expect(e.kind === 'ESTIMATE' && e.disclosures).toContain('EXCLUSION_MAY_APPLY');
   });
 

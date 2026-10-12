@@ -105,7 +105,7 @@ describe('getEstimate / answerEstimate', () => {
     expect(v.candidates).toHaveLength(1);
     expect(v.candidates[0]!.outcome).toMatchObject({ kind: 'ESTIMATE', source: 'verified', dutyMinor: 1188, ddpTotalMinor: 9500 + 1188 });
     expect(v.notice).toBe('Estimate — not a customs ruling.');
-    expect(db.state.updates[0]).toMatchObject({ estimatorVersion: '2026-rev21-e3' });
+    expect(db.state.updates[0]).toMatchObject({ estimatorVersion: '2026-rev21-e4' });
     expect(classifier.classifyListingGrounded).not.toHaveBeenCalled();
   });
 
@@ -136,13 +136,25 @@ describe('getEstimate / answerEstimate', () => {
 });
 
 describe('valid_until of the committed estimator data', () => {
-  it('after it, POST refuses before any reservation or model call: "Estimate data needs a rebuild (valid until …)"', async () => {
+  it('the November 9 / 10 boundaries (an exclusion ending, note 31 headings starting) do not block estimates during judging', async () => {
     const { data } = loadEstimator();
-    expect(data.validUntil).toBe('2026-11-09');
-    await expect(startEstimate(req, 'sess-1', '1.2.3.4', new Date('2026-11-10T12:00:00Z'))).rejects.toMatchObject({
-      status: 503,
-      message: 'Estimate data needs a rebuild (valid until 2026-11-09)',
-    });
-    expect(limits.reserveCall).not.toHaveBeenCalled();
+    expect(data.validUntil === null || data.validUntil >= '2026-12-31').toBe(true);
+    db.state.selectResults = [[]];
+    await expect(startEstimate(req, 'sess-1', '1.2.3.4', new Date('2026-11-12T12:00:00Z'))).resolves.toMatchObject({ cached: false });
+  });
+
+  it('after a valid_until, POST refuses before any reservation or model call: "Estimate data needs a rebuild (valid until …)"', async () => {
+    const { data } = loadEstimator();
+    const kept = data.validUntil;
+    data.validUntil = '2026-11-30';
+    try {
+      await expect(startEstimate(req, 'sess-1', '1.2.3.4', new Date('2026-12-01T12:00:00Z'))).rejects.toMatchObject({
+        status: 503,
+        message: 'Estimate data needs a rebuild (valid until 2026-11-30)',
+      });
+      expect(limits.reserveCall).not.toHaveBeenCalled();
+    } finally {
+      data.validUntil = kept;
+    }
   });
 });

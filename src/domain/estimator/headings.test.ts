@@ -139,19 +139,24 @@ describe('headingAppliesTo — civil-aircraft headings name their country with "
   });
 });
 
-describe('validUntil — the earliest future date in an in-force heading\'s or a note\'s own period text', () => {
+describe('validUntil — only boundaries that change a computed amount or the refused lines (modeled rules\x27 headings and notes)', () => {
   const t = buildHeadingTable([
     row('9903.88.50', 0, 'Effective with respect to entries on or after June 4, 2020, and through December 31, 2020, articles the product of China, as provided for in U.S. note 20(ccc) to this subchapter', 'The duty provided in the applicable subheading'),
     row('9903.88.69', 0, 'Effective with respect to entries on or after June 15, 2024 and through November 9, 2026, articles the product of China, as provided for in U.S. note 20(vvv) to this subchapter', 'The duty provided in the applicable subheading'),
     row('9903.91.12', 0, 'Effective with respect to entries, on or after November 10, 2026, of intermodal chassis …', 'The duty provided in subheadings 8716.39.00, 8716.90.30 or 8716.90.50 + 100%'),
-    row('9903.91.06', 0, 'Effective with respect to entries on or after January 1, 2026, articles the product of China, as provided for in subdivision (g) of U.S. note 31 to this subchapter', 'The duty provided in the applicable subheading + 25%'),
+    row('9903.05.31', 0, 'Except for products described in headings 9903.05.85–9903.05.92, articles the product of China, as provided for in U.S. note 52 to this subchapter', 'The duty provided in the applicable subheading + 12.5%'),
+    row('9903.05.99', 0, 'synthetic: effective with respect to entries on or after July 24, 2026, and before January 15, 2027, articles the product of China', 'The duty provided in the applicable subheading + 5%'),
   ]);
-  const notes = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '31. (a) synthetic: goods entered on or after December 1, 2026 are subject to (b)']));
-  it('"through D" → valid through D; "on or after D" → valid through the day before; past dates and out-of-force headings are ignored', () => {
-    const o = outOfForce(t, notes, '2026-10-12');
-    expect(validUntil(t, notes, o, '2026-10-12')).toEqual({ date: '2026-11-09', ref: 'heading 9903.88.69', quote: 'through November 9, 2026' });
-    expect(validUntil(t, notes, outOfForce(t, notes, '2026-11-10'), '2026-11-10')).toEqual({ date: '2026-11-30', ref: 'note III 31(a)', quote: 'on or after December 1, 2026' });
-    expect(validUntil(t, notes, outOfForce(t, notes, '2026-12-01'), '2026-12-01')).toBeNull();
+  const notes = segmentNotes(doc(['SUBCHAPTER III', 'U.S. Notes', '31. (a) synthetic: goods entered on or after December 1, 2026 are subject to (b)', '52. (a) synthetic: through March 31, 2027']));
+  const o = outOfForce(t, notes, '2026-10-12');
+  it('the exclusion (9903.88.69, through November 9) and a heading whose lines already refuse (9903.91.12, from November 10) do not set it', () => {
+    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31'], notes: [] })).toBeNull();
+  });
+  it('a modeled rule\x27s heading or quoted note with a future boundary does: "before D" → the day before; "through D" → D', () => {
+    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31', '9903.05.99'], notes: ['note III 52(a)'] })).toEqual({ date: '2027-01-14', ref: 'heading 9903.05.99', quote: 'before January 15, 2027' });
+    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.05.31'], notes: ['note III 52(a)'] })).toEqual({ date: '2027-03-31', ref: 'note III 52(a)', quote: 'through March 31, 2027' });
+    // past dates and out-of-force headings never set it
+    expect(validUntil(t, notes, o, '2026-10-12', { headings: ['9903.88.50'], notes: [] })).toBeNull();
   });
 });
 

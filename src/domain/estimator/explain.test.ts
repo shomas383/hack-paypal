@@ -127,3 +127,11 @@ describe('exclusionText', () => {
     expect(`${two} ${DISCLOSURE_TEXT.EXCLUSION_MAY_APPLY}`).not.toMatch(/Section 301|\b301\b|List \d|USTR/i);
   });
 });
+
+describe('exclusionText — an exclusion states its own end date', () => {
+  it('"… (heading 9903.88.69, through November 9, 2026) …"', () => {
+    expect(exclusionText([{ ref: 'note III 20(vvv)(iii)(1)', heading: '9903.88.69', until: 'through November 9, 2026' }])).toBe(
+      'An exclusion in effect under U.S. note 20(vvv)(iii)(1) to subchapter III (heading 9903.88.69, through November 9, 2026) covers particular products under this line; it isn’t applied here and can only lower the duty.',
+    );
+  });
+});
