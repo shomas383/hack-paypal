@@ -52,6 +52,10 @@ describe('systemPrompt — the final-message rule (agent:live fails > 4 sentence
     expect(p).toContain('made up of the base rate plus heading 9903.05.39');
     expect(p).toMatch(/never "under the base rate plus/i);
   });
+
+  it('order-status replies call tax_total "US import duty (est.)", never "tax"', () => {
+    expect(p).toContain('In get_order_status replies, call the breakdown\'s tax_total "US import duty (est.)", never "tax".');
+  });
 });
 
 describe('runAgent — the tool loop (mock model)', () => {
