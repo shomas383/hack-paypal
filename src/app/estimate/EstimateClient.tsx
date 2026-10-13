@@ -312,7 +312,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
         <ol className={s.candidates}>{view.candidates.map(candidate)}</ol>
       ) : null}
 
-      <Disclosure summary="What this estimate includes and leaves out" data-testid="estimate-disclosures">
+      <Disclosure summary="What the estimator includes and leaves out" data-testid="estimate-disclosures">
         <ul className={s.disclosures}>
           {disclosures.map((d) => (
             <li key={d}>{d}</li>

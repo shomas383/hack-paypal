@@ -63,6 +63,9 @@ anyone pays.
   selling price give the duty and the delivered price. Never charged; checkout and the agent use only verified rows.
 - **Verified rows first.** Where a human-verified rate row exists it is used and labelled; otherwise the automated estimate
   is labelled with its data version.
+
+  ![Estimate for cotton denim jeans made in Japan: $33.20 from the verified rate row for 6203.42.4511](docs/images/estimate-verified.png)
+  *When a verified rate row exists, the estimate uses it first.*
 - **Ranges when facts are missing**: if candidate lines differ in duty, the page shows the range and the official wording that
   decides it (e.g. a toy line vs an ornamental-plastics line). Unanswered exemption questions show both figures.
 - **Refusals with reasons**: a line named by a Chapter 99 provision the estimator doesn't model is refused, citing the note

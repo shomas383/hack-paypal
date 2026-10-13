@@ -62,7 +62,7 @@ test('range: two candidates (verified row vs automated estimate), the separating
   await expect(synthetic.getByTestId('estimate-source')).toHaveText(/Automated estimate \(2026-rev21-e4\)/);
   await expect(synthetic.getByTestId('estimate-duty')).toHaveText('55.80');
   await expect(page.getByTestId('estimate-notice')).toContainText('Estimate — not a customs ruling.');
-  await page.getByText('What this estimate includes and leaves out').click();
+  await page.getByText('What the estimator includes and leaves out').click();
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Lower special-program rates may apply');
   await expect(page.getByTestId('estimate-disclosures')).toContainText('Chapter 99 duties the estimator doesn’t model');
   await expect(page.getByTestId('estimate-versions')).toContainText('2026-rev21-e4');
@@ -157,6 +157,7 @@ test('can’t estimate: refusals cite the note and headings, with the official t
   await expect(page.getByRole('heading', { name: 'Can’t estimate this product yet' })).toBeVisible();
   await expect(page.getByTestId('estimate-summary')).toHaveCount(0);
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
+  await expect(page.getByTestId('estimate-disclosures').locator('summary')).toHaveText('What the estimator includes and leaves out');
   const reasons = page.getByTestId('estimate-cant-reason');
   await expect(reasons).toHaveCount(2);
   for (const r of await reasons.allTextContents())
@@ -197,6 +198,7 @@ test('too broad (production report, jeans without fabric): the stopped reason na
     'The description fits 120 official lines, more than the estimator compares at once. They differ at “Of cotton”, “Of synthetic fibers” or “Of other textile materials”: add which applies and try again.',
   );
   await expect(page.getByTestId('estimate-result').locator('ol')).toHaveCount(0);
+  await expect(page.getByTestId('estimate-disclosures').locator('summary')).toHaveText('What the estimator includes and leaves out');
   await expect(page.getByTestId('estimate-result').locator('[data-testid^="estimate-candidate-"]')).toHaveCount(0);
   await check(page, 'too-broad');
 });
