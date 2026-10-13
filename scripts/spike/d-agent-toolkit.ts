@@ -46,8 +46,16 @@ export async function run(args: string[]): Promise<void> {
     direct = `threw: ${e instanceof Error ? e.message : String(e)}`;
   }
   const directText = typeof direct === 'string' ? direct : JSON.stringify(direct);
-  checks.push(check('get_order.execute returns the order', !!directText && directText.includes(orderId),
-    directText ? directText.slice(0, 120) : 'no result'));
+  // Never print the raw result: it carries payer details. Only "contains the order id" and the order's status.
+  const hasId = !!directText && directText.includes(orderId);
+  let status = 'unknown';
+  try {
+    const s = (JSON.parse(directText ?? '') as { status?: unknown }).status;
+    if (typeof s === 'string' && /^[A-Z_]{1,30}$/.test(s)) status = s;
+  } catch {
+    // not JSON (e.g. "threw: …"): status stays unknown
+  }
+  checks.push(check('get_order.execute returns the order', hasId, `contains order id: ${hasId ? 'yes' : 'no'}; status: ${status}`));
 
   if (!env.ANTHROPIC_API_KEY) {
     checks.push({ name: 'LLM tool-calling checks', status: 'SKIP', detail: 'ANTHROPIC_API_KEY not set' });
