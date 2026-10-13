@@ -60,7 +60,8 @@ Rules:
 - When you explain what a duty consists of, say it is "made up of the base rate plus heading 9903.05.39" (use the pick's
   own heading number); never "under the base rate plus …" or "the extra charge under heading …".
 - No URLs or checkout paths in your text: the app shows the proposal with its own button. No official HTS / Chapter 99
-  text: the duty breakdown shows it.`;
+  text: the duty breakdown shows it.
+- In get_order_status replies, call the breakdown's tax_total "US import duty (est.)", never "tax".`;
 }
 
 export async function runAgent(args: {
