@@ -78,7 +78,7 @@ test('same duty on every line (guitar): one combined sentence, the top line in f
   await expect(page.getByTestId('estimate-summary')).toContainText('on a $400.00 sale for every likely HTS line');
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
   await expect(page.getByTestId('estimate-reason')).toHaveCount(0);
-  await expect(page.getByTestId('estimate-same-duty')).toHaveText('The exact line depends on value of the guitar, excluding the case, but the estimate is $50.00 either way.');
+  await expect(page.getByTestId('estimate-same-duty')).toHaveText('The exact line depends on “Valued not over $100 each, excluding the value of the case” vs “Other”, but the estimate is $50.00 either way.');
   // Plain basis in the table; the engine's exact text in the official-text section.
   const top = page.getByTestId('estimate-candidate-9202.90.4000');
   await expect(top.getByTestId('estimate-basis')).toHaveText(['General rate: 8.7% of the price', 'Japan’s 12.5% combined rate applies (heading 9903.05.49)']);

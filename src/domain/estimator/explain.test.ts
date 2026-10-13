@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DISCLOSURE_TEXT, type CantReason } from './estimate';
-import { cantText, exclusionText, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
+import { cantText, exclusionText, lineDifferences, NOT_INCLUDED, rangeReasonText, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
 
 describe('refText', () => {
   it('names notes, headings and footnotes the way the schedule does', () => {
@@ -91,15 +91,54 @@ describe('reasonText', () => {
   });
 });
 
-describe('sameDutyText', () => {
-  const sep = [{ name: 'unit value excluding case', value_from_listing: null }, { name: 'electric pickup', value_from_listing: null }];
-  it('one sentence: what picks the line, and that the estimate is the same either way', () => {
-    expect(sameDutyText(sep, null, '$50.00', true)).toBe('Not certain which line applies — it depends on unit value excluding case and electric pickup — but the estimate is $50.00 either way.');
-    expect(sameDutyText(sep, null, '$50.00', false)).toBe('The exact line depends on unit value excluding case and electric pickup, but the estimate is $50.00 either way.');
-    expect(sameDutyText([], ['Of cotton', 'Of synthetic fibers'], '$9.00', true)).toBe('Not certain which line applies — it depends on whether it is “Of cotton” or “Of synthetic fibers” — but the estimate is $9.00 either way.');
-    expect(sameDutyText([{ name: 'Fiber content', value_from_listing: null }, { name: 'UV filter', value_from_listing: null }], null, '$1.00', false)).toBe('The exact line depends on fiber content and UV filter, but the estimate is $1.00 either way.');
-    expect(sameDutyText([], null, '$1.00', true)).toBe('Not certain which line applies, but the estimate is $1.00 either way.');
-    expect(sameDutyText([], null, '$1.00', false)).toBeNull();
+// Which differences the "Not certain" / "either way" notes name: only where the shown lines' official descriptions part,
+// computed by code (decision 2026-10-12). A model attribute name is used only when it clearly matches a difference (each
+// of its content words is in that difference's official text); otherwise the official text, shortened. The model never adds
+// or removes a difference.
+const chain = (...levels: string[]) => ['Head:', ...levels];
+describe('lineDifferences', () => {
+  it('(ii) a difference that changes the duty comes first, then the others by depth', () => {
+    // synthetic chains: the shallow split (Boxed / Loose) doesn't change the duty; the deep one (Of steel / Of plastics) does
+    const lines = [
+      { chain: chain('Boxed:', 'Of steel'), dutyMinor: 500 },
+      { chain: chain('Boxed:', 'Of plastics'), dutyMinor: 300 },
+      { chain: chain('Loose:', 'Of steel'), dutyMinor: 500 },
+    ];
+    const d = lineDifferences(lines, []);
+    expect(d.map((x) => [x.options, x.changesDuty])).toEqual([
+      [['Of steel', 'Of plastics'], true],
+      [['Boxed', 'Loose'], false],
+    ]);
+    expect(rangeReasonText(d, true)).toBe('Not certain which line applies — it depends on “Of steel” vs “Of plastics” and “Boxed” vs “Loose”.');
+  });
+
+  it('(iii) shown lines with no differing level: only "the estimate is $X either way."', () => {
+    const d = lineDifferences([{ chain: chain('Other'), dutyMinor: 100 }, { chain: chain('Other'), dutyMinor: 100 }], [{ name: 'gender', value_from_listing: null }]);
+    expect(d).toEqual([]);
+    expect(sameDutyText(d, '$1.00', true)).toBe('The estimate is $1.00 either way.');
+    expect(sameDutyText(d, '$1.00', false)).toBe('The estimate is $1.00 either way.');
+  });
+
+  it('official text: ":" and a trailing category number dropped, long text shortened as on the refusal pages; "Other" last', () => {
+    const long = 'Containing compact yarns described in statistical reporting numbers 5205.42.0021, 5205.43.0021 5205.44.0021, 5205.46.0021 or 5205.47.0021 (347)';
+    const d = lineDifferences([{ chain: chain('Other:'), dutyMinor: 1 }, { chain: chain(long), dutyMinor: 1 }], []);
+    expect(d[0]!.options[0]).toBe(trimOfficial(long.replace(/ (d+)$/, '')));
+    expect(d[0]!.options[1]).toBe('Other');
+  });
+
+  it('a model name is used only when each of its content words is in the official text of the difference; never a paraphrase', () => {
+    const lines = [{ chain: chain('Of cotton'), dutyMinor: 1 }, { chain: chain('Of synthetic fibers'), dutyMinor: 2 }];
+    expect(lineDifferences(lines, [{ name: 'Fiber content', value_from_listing: null }])[0]!.name).toBe('Fiber content');
+    expect(lineDifferences(lines, [{ name: 'recreational performance outerwear', value_from_listing: null }])[0]!.name).toBeNull();
+    // a value from the listing doesn't remove a difference the shown lines still have
+    expect(lineDifferences(lines, [{ name: 'Fiber content', value_from_listing: 'cotton' }])).toHaveLength(1);
+  });
+
+  it('same duty: one short sentence naming the differences', () => {
+    const lines = [{ chain: chain('Blue denim (347)'), dutyMinor: 3320 }, { chain: chain('Other (347)'), dutyMinor: 3320 }];
+    const d = lineDifferences(lines, [{ name: 'denim color (blue denim vs other)', value_from_listing: null }]);
+    expect(sameDutyText(d, '$33.20', true)).toBe('Not certain which line applies — it depends on denim color (“Blue denim” vs “Other”) — but the estimate is $33.20 either way.');
+    expect(sameDutyText(d, '$33.20', false)).toBe('The exact line depends on denim color (“Blue denim” vs “Other”), but the estimate is $33.20 either way.');
   });
 });
 
@@ -111,7 +150,7 @@ describe('house style: estimate text cites note and heading numbers only', () =>
     for (const r of reasons) for (const refs of refSets) texts.push(cantText(r, 'x needs kg', refs, [H03, H06, H09, H4110]));
     for (const b of ['8.7% of customs value', 'Free', 'combined cap 12.5% (base or AVE below cap)', 'base ≥ 12.5% cap — no add-on', '+25% of full customs value', 'exempt — no add-on'])
       for (const o of ['JP', 'DE']) texts.push(plainBasis({ label: 'x', chapter99: '9903.82.09', basis: b }, o), plainBasis({ label: 'General rate', basis: b }, o));
-    texts.push(reasonText(['LOW_CONFIDENCE'], [])!, sameDutyText([], null, '$1.00', true)!);
+    texts.push(reasonText(['LOW_CONFIDENCE'], [])!, sameDutyText([], '$1.00', true), rangeReasonText(lineDifferences([{ chain: chain('Of steel'), dutyMinor: 1 }, { chain: chain('Of plastics'), dutyMinor: 2 }], []), true)!);
     for (const s of texts) expect(s, s).not.toMatch(/Section 232|\b301\b|IEEPA/i);
   });
 });
