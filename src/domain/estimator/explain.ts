@@ -190,12 +190,71 @@ export function reasonText(reasons: string[], separating: { name: string; value_
 /** Whether the classifier's routing reasons mean it isn't certain which line applies. */
 export const isUncertain = (reasons: string[]) => reasons.some((r) => UNCERTAIN.has(r));
 
+/** Where the shown lines' official descriptions part: the options at that level, and whether the choice changes the duty. */
+export interface LineDifference {
+  /** The model's attribute name, only when it clearly matches this difference (see lineDifferences); else null. */
+  name: string | null;
+  /** The official level texts, shortened as on the refusal pages; "Other" last. */
+  options: string[];
+  /** Some two options lead to lines with no duty in common. */
+  changesDuty: boolean;
+}
+
+/** Words that say what kind of fact an attribute is, not which one: they needn't appear in the official text. */
+const GENERIC = new Set(['content', 'color', 'colour', 'type', 'kind', 'count', 'number', 'material', 'status', 'value', 'presence', 'whether', 'unit']);
+const words = (s: string) => (s.toLowerCase().match(/[a-z]{3,}/g) ?? []).map((w) => w.replace(/s$/, ''));
+/** An official level as a short option: ":" and a trailing category number ("(347)") dropped, then trimOfficial. */
+const option = (level: string) => trimOfficial(level.trim().replace(/:$/, '').replace(/\s+\(\d+\)$/, ''));
+
 /**
- * When every candidate line comes to the same duty, one sentence: what would pick the line (the separating facts, else
- * where the official lines part) and that the estimate is the same either way. `amount` is the formatted duty.
+ * Every level where the shown lines' official descriptions part, found by code (decision 2026-10-12): lines are grouped
+ * by their chains; at the first level a group's lines differ, that is one difference, and each branch is searched again.
+ * Differences that change the duty come first, then by depth. The model never adds or removes a difference: its
+ * attribute names (`separating`) only label one, when each of the name's content words (outside parentheses, generic
+ * words aside) is in that difference's official text; otherwise the official text stands alone.
  */
-export function sameDutyText(separating: { name: string; value_from_listing: string | null }[], levels: string[] | null, amount: string, uncertain: boolean): string | null {
-  const on = separating.length ? andList(separating.map((s) => fact(s.name))) : levels ? `whether it is ${orList(levels.map((l) => `“${l}”`))}` : null;
-  if (uncertain) return on ? `Not certain which line applies — it depends on ${on} — but the estimate is ${amount} either way.` : `Not certain which line applies, but the estimate is ${amount} either way.`;
-  return on ? `The exact line depends on ${on}, but the estimate is ${amount} either way.` : null;
+export function lineDifferences(lines: { chain: string[]; dutyMinor: number | null }[], separating: { name: string; value_from_listing: string | null }[]): LineDifference[] {
+  const found: (LineDifference & { depth: number })[] = [];
+  const visit = (group: typeof lines, from: number) => {
+    if (group.length < 2) return;
+    const depth = Math.max(...group.map((l) => l.chain.length));
+    let d = from;
+    while (d < depth && group.every((l) => l.chain[d] === group[0]!.chain[d])) d++;
+    if (d >= depth) return;
+    const branches = new Map<string, typeof lines>();
+    for (const l of group) branches.set(l.chain[d] ?? '', [...(branches.get(l.chain[d] ?? '') ?? []), l]);
+    const duties = [...branches.values()].map((b) => new Set(b.map((l) => l.dutyMinor)));
+    const changesDuty = duties.some((a, i) => duties.slice(i + 1).some((b) => [...a].every((x) => !b.has(x))));
+    const options = [...branches.keys()].map(option).sort((a, b) => Number(a === 'Other') - Number(b === 'Other'));
+    const text = new Set(words(options.join(' ')));
+    const name = separating.find((s) => {
+      const w = words(s.name.replace(/\([^)]*\)/g, '')).filter((x) => !GENERIC.has(x));
+      return w.length > 0 && w.every((x) => text.has(x));
+    });
+    found.push({ name: name ? name.name.replace(/\s*\([^)]*\)/g, '').trim() : null, options, changesDuty, depth: d });
+    for (const b of branches.values()) visit(b, d + 1);
+  };
+  visit(lines, 0);
+  return found.sort((a, b) => Number(b.changesDuty) - Number(a.changesDuty) || a.depth - b.depth).map(({ depth, ...x }) => (void depth, x));
+}
+
+const differencePhrase = (d: LineDifference) => {
+  const opts = d.options.map((o) => `“${o}”`).join(' vs ');
+  return d.name ? `${fact(d.name)} (${opts})` : opts;
+};
+
+/**
+ * When every shown line comes to the same duty, one short sentence: where the lines part (official text, or a model name
+ * that clearly matches it) and that the estimate is the same either way. With no difference: only the either-way sentence.
+ */
+export function sameDutyText(differences: LineDifference[], amount: string, uncertain: boolean): string {
+  if (!differences.length) return `The estimate is ${amount} either way.`;
+  const on = andList(differences.map(differencePhrase));
+  return uncertain ? `Not certain which line applies — it depends on ${on} — but the estimate is ${amount} either way.` : `The exact line depends on ${on}, but the estimate is ${amount} either way.`;
+}
+
+/** When the shown lines' duties differ and the classifier isn't certain: the differences, those that change the duty first. */
+export function rangeReasonText(differences: LineDifference[], uncertain: boolean): string | null {
+  if (!uncertain || !differences.length) return null;
+  return `Not certain which line applies — it depends on ${andList(differences.map(differencePhrase))}.`;
 }

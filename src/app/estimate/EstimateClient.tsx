@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, exclusionText, isUncertain, NOT_INCLUDED, stoppedText, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, rangeReasonText, stoppedText, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
@@ -235,11 +235,15 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   const disclosures = [...new Set(estimated.flatMap((c) => c.outcome.disclosures))].filter((d) => d !== view.notice).map((d) => (/[.!?]$/.test(d) ? d : `${d}.`));
   // Every candidate estimated and all at the same duty: one combined sentence; the top line in full, the rest collapsed.
   const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && min === max;
-  const sameText = sameDuty ? sameDutyText(view.separating, levels, formatUsd(m(min)), isUncertain(view.reasons)) : null;
-  const reason = sameDuty ? null : reasonText(view.reasons, view.separating);
+  // Where the shown lines' official descriptions part (code; the model's names only label a matching difference).
+  const differences = lineDifferences(view.candidates.map((c) => ({ chain: c.chain, dutyMinor: c.outcome.kind === 'ESTIMATE' ? c.outcome.dutyMinor : null })), view.separating);
+  const sameText = sameDuty ? sameDutyText(differences, formatUsd(m(min)), isUncertain(view.reasons)) : null;
+  const reason = sameDuty ? null : (rangeReasonText(differences, isUncertain(view.reasons)) ?? reasonText(view.reasons, []));
   // A line whose verified row (or split) only needs answers isn't a refusal: the title asks instead.
   const asking = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && (c.outcome.reason === 'NEEDS_FACTS' || c.outcome.reason === 'NEEDS_SPLIT'));
   const needsSplit = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && c.outcome.reason === 'NEEDS_SPLIT');
+  // names of the duty-changing differences, only where a model name clearly matches the official text
+  const decides = differences.filter((d) => d.changesDuty && d.name).map((d) => `${d.name!.charAt(0).toUpperCase()}${d.name!.slice(1)}`);
   const [top, ...others] = view.candidates;
   const candidate = (c: CandidateView, i: number) => <Candidate key={c.code} c={c} rank={i + 1} view={view} answers={answers} answering={answering} onAnswer={onAnswer} />;
 
@@ -292,7 +296,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
                 {i > 0 ? '; ' : ''}“{levels[i]}” → {c.outcome.kind === 'ESTIMATE' ? <Money value={m(c.outcome.dutyMinor)} /> : 'can’t estimate'}
               </span>
             ))}
-            .{view.separating.length ? ` What decides it: ${view.separating.map((x) => x.name).join(', ')}.` : ''}
+            .{decides.length ? ` What decides it: ${decides.join(', ')}.` : ''}
           </span>
         </p>
       ) : null}
