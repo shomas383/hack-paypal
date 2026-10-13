@@ -126,7 +126,9 @@ test('watch: landed cost shown before PayPal, approve, pay in sandbox, policy-ga
   expect(dutyBeforeButton).toBe(true);
 
   // PayPal sandbox popup.
+  const created = page.waitForResponse((r) => r.request().method() === 'POST' && /\/api\/quotes\/[^/]+\/paypal-order$/.test(r.url()));
   const [popup] = await Promise.all([page.waitForEvent('popup'), container.locator('paypal-button').click()]);
+  const { orderId } = (await (await created).json()) as { orderId: string };
   await popup.waitForLoadState();
   await loginBuyer(popup);
   // If the human finished login AND approval during a manual pause, PayPal has already closed the popup.
@@ -141,6 +143,8 @@ test('watch: landed cost shown before PayPal, approve, pay in sandbox, policy-ga
   await expect(page.getByTestId('outcome-status')).toHaveText('CAPTURED', { timeout: 120_000 });
   expect(page.url()).toBe(watchCheckoutUrl);
   await expect(page.getByTestId('capture-id')).not.toBeEmpty();
+  // The PayPal ORDER id (what get_order_status reads) is shown next to the capture id.
+  await expect(page.getByTestId('paypal-order-id')).toHaveText(orderId);
   await expect(page.getByTestId('outcome')).toContainText('all checks passed');
 });
 
