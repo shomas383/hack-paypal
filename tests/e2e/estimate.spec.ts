@@ -189,3 +189,14 @@ test('rate limited and server error states', async ({ page }) => {
   await page.getByTestId('estimate-submit').click();
   await expect(page.getByTestId('estimate-error')).toContainText('Something went wrong on our side.');
 });
+
+test('too broad (production report, jeans without fabric): the stopped reason names where the lines differ; no empty candidate', async ({ page }) => {
+  await run(page, 'jeans-broad');
+  await expect(page.getByRole('heading', { name: 'Too many possible HTS lines' })).toBeVisible();
+  await expect(page.getByTestId('estimate-stopped')).toHaveText(
+    'The description fits 120 official lines, more than the estimator compares at once. They differ at “Of cotton”, “Of synthetic fibers” or “Of other textile materials”: add which applies and try again.',
+  );
+  await expect(page.getByTestId('estimate-result').locator('ol')).toHaveCount(0);
+  await expect(page.getByTestId('estimate-result').locator('[data-testid^="estimate-candidate-"]')).toHaveCount(0);
+  await check(page, 'too-broad');
+});
