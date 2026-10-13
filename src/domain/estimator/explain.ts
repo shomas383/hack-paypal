@@ -126,6 +126,18 @@ export function exclusionText(exclusions: { ref: string; heading: string; until?
   return `${many ? 'Exclusions' : 'An exclusion'} in effect under ${andList(exclusions.map((x) => refText(x.ref)))} (heading${hs.length > 1 ? 's' : ''} ${andList(hs)}) cover${many ? '' : 's'} particular products under this line; ${many ? 'they aren’t' : 'it isn’t'} applied here and can only lower the duty.`;
 }
 
+/**
+ * Why there is no candidate line, in one or two sentences. TOO_BROAD names where the official lines part (verbatim levels,
+ * built by code), so the seller knows which fact to add.
+ */
+export function stoppedText(s: { reason: 'TOO_BROAD' | 'NO_CANDIDATES' | 'INVALID_OUTPUT'; lines: number | null; differAt: string[] }): string {
+  const hint = 'Add what it’s made of, what it’s used for, or the maker’s model name, and try again.';
+  if (s.reason === 'INVALID_OUTPUT') return 'The classifier’s answer couldn’t be checked against the official schedule. Try again in a moment.';
+  if (s.reason === 'NO_CANDIDATES') return `No official HTS line matched this description. ${hint}`;
+  if (s.lines === null || s.differAt.length < 2) return `The description fits too many official lines to compare. ${hint}`;
+  return `The description fits ${s.lines} official lines, more than the estimator compares at once. They differ at ${orList(s.differAt.map((l) => `“${l}”`))}: add which applies and try again.`;
+}
+
 /** The disclosures every estimate carries beyond the estimator's own (what it never includes). */
 export const NOT_INCLUDED =
   'Not included: Chapter 99 duties the estimator doesn’t model (lines they name are refused, not estimated), antidumping and countervailing duties, the merchandise and harbor maintenance fees, and carrier brokerage or other fees.';

@@ -7,6 +7,7 @@ import type { EstimatorData } from './data';
 import type { HeadingTable } from './headings';
 import { DISCLOSURE_TEXT, estimateVerifiedFirst, sourceLabel, type CantReason, type Estimate, type VerifiedFact } from './estimate';
 import type { EstimateInputRecord } from './request';
+import { separatingLevels } from './explain';
 
 export interface CandidateIn {
   code: string;
@@ -99,7 +100,14 @@ export interface EstimateRowIn {
   id: string;
   status: 'ESTIMATING' | 'READY' | 'FAILED';
   input: EstimateInputRecord;
-  classification: { outcome: 'OK' | 'STOPPED' | 'INVALID_OUTPUT'; candidates: CandidateIn[]; separating: { name: string; value_from_listing: string | null }[]; reasons: string[] } | null;
+  classification: {
+    outcome: 'OK' | 'STOPPED' | 'INVALID_OUTPUT';
+    candidates: CandidateIn[];
+    separating: { name: string; value_from_listing: string | null }[];
+    reasons: string[];
+    /** The classifier's run record; `headings` = what the heading call proposed (stored with every classification). */
+    meta?: { headings: string[] } | null;
+  } | null;
   cachedFrom: string | null;
   error: string | null;
 }
@@ -118,11 +126,33 @@ export interface EstimateView {
   reasons: string[];
   separating: { name: string; value_from_listing: string | null }[];
   candidates: CandidateView[];
+  /** READY with no candidate: why the classifier stopped, and (TOO_BROAD) how many lines and where they first differ. */
+  stopped: StoppedView | null;
   answeredFacts: Record<string, boolean>;
   estimatorVersion: string;
   rateVersion: string;
   notice: string;
   error?: string;
+}
+
+export interface StoppedView {
+  reason: 'TOO_BROAD' | 'NO_CANDIDATES' | 'INVALID_OUTPUT';
+  /** Official lines under the proposed headings (null when the headings aren't recorded). */
+  lines: number | null;
+  /** TOO_BROAD: the distinct official texts at the first level where those lines part (verbatim, ":" removed). */
+  differAt: string[];
+}
+
+const digits = (s: string) => s.replace(/\./g, '');
+
+/** Why a READY classification has no candidate, from its outcome and reasons; lines and levels from the official chains. */
+function stoppedView(c: NonNullable<EstimateRowIn['classification']>, chains: Map<string, string[]>): StoppedView | null {
+  if (c.candidates.length > 0) return null;
+  const reason: StoppedView['reason'] = c.outcome === 'INVALID_OUTPUT' ? 'INVALID_OUTPUT' : c.reasons.includes('TOO_BROAD') ? 'TOO_BROAD' : 'NO_CANDIDATES';
+  const heads = c.meta?.headings.map(digits) ?? null;
+  const lines = heads ? [...chains].filter(([code]) => heads.some((h) => digits(code).startsWith(h))).map(([, chain]) => chain) : null;
+  const differAt = reason === 'TOO_BROAD' && lines ? [...new Set(separatingLevels(lines) ?? [])] : [];
+  return { reason, lines: lines ? lines.length : null, differAt };
 }
 
 /** The whole estimate as the page and the API show it. Candidates are computed only for a READY row. */
@@ -141,6 +171,7 @@ export function estimateViewOf(row: EstimateRowIn, data: EstimatorData, verified
     reasons: c ? (c.outcome === 'OK' ? c.reasons : [c.outcome, ...c.reasons]) : [],
     separating: c?.separating ?? [],
     candidates: row.status === 'READY' && c ? estimateCandidates(c.candidates, row.input, data, verified, entryDate) : [],
+    stopped: row.status === 'READY' && c ? stoppedView(c, data.chains) : null,
     answeredFacts: Object.fromEntries(Object.entries(row.input.facts.attributes).flatMap(([k, f]) => (f.value === null ? [] : [[k, f.value]]))),
     estimatorVersion: data.version,
     rateVersion: verified.version,

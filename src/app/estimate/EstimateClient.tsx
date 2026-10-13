@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, exclusionText, isUncertain, NOT_INCLUDED, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, exclusionText, isUncertain, NOT_INCLUDED, stoppedText, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
@@ -221,6 +221,9 @@ export function EstimateClient({ fixture, initial }: { fixture: string | null; i
   );
 }
 
+/** Title when the classifier stopped before choosing a line. */
+const STOPPED_TITLE = { TOO_BROAD: 'Too many possible HTS lines', NO_CANDIDATES: 'No HTS line matched', INVALID_OUTPUT: 'Couldn’t classify this description' } as const;
+
 function Result({ view, answers, answering, onAnswer, headingRef }: { view: View; answers: Answers; answering: boolean; onAnswer: (a: Answers) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
   const estimated = view.candidates.filter((c): c is CandidateView & { outcome: Extract<OutcomeView, { kind: 'ESTIMATE' }> } => c.outcome.kind === 'ESTIMATE');
   const duties = estimated.map((c) => c.outcome.dutyMinor);
@@ -244,7 +247,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
     <div className={s.resultBody} data-testid="estimate-result">
       <h3 ref={headingRef} tabIndex={-1} className={s.summaryTitle}>
         {view.candidates.length === 0
-          ? 'No HTS line matched'
+          ? STOPPED_TITLE[view.stopped?.reason ?? 'NO_CANDIDATES']
           : estimated.length === 0
             ? asking
               ? 'Answer the questions below to estimate the duty'
@@ -253,9 +256,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
               ? 'US import duty (est.)'
               : 'US import duty (est.), depending on the HTS line'}
       </h3>
-      {view.candidates.length === 0 ? (
-        <p data-testid="estimate-no-candidates">No official HTS line matched this description. Add what it’s made of, what it’s used for, or the maker’s model name, and try again.</p>
-      ) : null}
+      {view.candidates.length === 0 ? <p data-testid="estimate-stopped">{stoppedText(view.stopped ?? { reason: 'NO_CANDIDATES', lines: null, differAt: [] })}</p> : null}
       {estimated.length > 0 ? (
         <p className={s.summary} data-testid="estimate-summary">
           {min === max ? (
@@ -307,9 +308,9 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
             </ol>
           </Disclosure>
         </>
-      ) : (
+      ) : view.candidates.length > 0 ? (
         <ol className={s.candidates}>{view.candidates.map(candidate)}</ol>
-      )}
+      ) : null}
 
       <Disclosure summary="What this estimate includes and leaves out" data-testid="estimate-disclosures">
         <ul className={s.disclosures}>

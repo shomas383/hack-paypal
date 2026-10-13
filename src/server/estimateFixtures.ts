@@ -11,6 +11,8 @@ interface Fixture {
   request: EstimateRequestT;
   candidates: { code: string; confidence: number }[];
   separating: { name: string; value_from_listing: string | null }[];
+  /** A classification that stopped before choosing a line (default OK), with its reasons and the headings it proposed. */
+  stopped?: { outcome: 'STOPPED' | 'INVALID_OUTPUT'; reasons: string[]; headings?: string[] };
 }
 
 export const ESTIMATE_FIXTURES: Record<string, Fixture> = {
@@ -54,6 +56,14 @@ export const ESTIMATE_FIXTURES: Record<string, Fixture> = {
     ],
     separating: [],
   },
+  // The production report of 2026-10-12: jeans without the fabric. The heading call proposed the three fabric subheadings,
+  // 6203.42 / .43 / .49 = 120 official lines, more than the 100 the second call compares → TOO_BROAD (no second call).
+  'jeans-broad': {
+    request: { title: "Men's jeans, straight leg, 14 oz denim", details: 'Fabric content not stated by the maker.', origin: 'JP', sellingPriceMinor: 20000 },
+    candidates: [],
+    separating: [],
+    stopped: { outcome: 'STOPPED', reasons: ['TOO_BROAD'], headings: ['6203.42', '6203.43', '6203.49'] },
+  },
   // A line named by its own footnote and heading (9903.41.10).
   shoes: {
     request: { title: "Men's leather oxford shoes, leather soles", origin: 'JP', sellingPriceMinor: 22000, shippingMinor: 2000 },
@@ -75,7 +85,13 @@ export function fixtureView(name: string, answers: EstimateAnswersT = {}, now = 
       id: `fixture-${name}`,
       status: 'READY',
       input,
-      classification: { outcome: 'OK', candidates: f.candidates.map((c) => ({ ...c, chain: chains.get(c.code) ?? [] })), separating: f.separating, reasons: [] },
+      classification: {
+        outcome: f.stopped?.outcome ?? 'OK',
+        candidates: f.candidates.map((c) => ({ ...c, chain: chains.get(c.code) ?? [] })),
+        separating: f.separating,
+        reasons: f.stopped?.reasons ?? [],
+        ...(f.stopped?.headings ? { meta: { headings: f.stopped.headings } } : {}),
+      },
       cachedFrom: null,
       error: null,
     },
