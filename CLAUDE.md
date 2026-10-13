@@ -214,6 +214,8 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   Verify!W for P05, P09, P13, P14 still name programs ("301", "List 4A/4B", "Section 232", "IEEPA"; pinned in
   houseStyle.test.ts) and Products!S for P05 — reword to note/heading numbers; then importer EU_EVIDENCE ('IEEPA
   (terminated)') changes with P14's W, and rates:import makes a new version.
+- Guitar case-value question: when the price per item is over $100, ask ‘Is the guitar alone, without its case, worth $100
+  or less?’ instead of leaving both lines open (wording only; duty unchanged for JP).
 - Ledger (/seller Orders and duty): a filter on the Rate version column (README screenshot shows old-version orders on
   purpose: every order keeps the rate version it was quoted under).
 - CURRENT_HTS_REV_SHORT (src/domain/rates/current.ts): the regex is /^d{4} Rev. / (missing backslash) — labels read
