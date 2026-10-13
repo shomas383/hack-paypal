@@ -42,6 +42,9 @@ anyone pays.
   PayPal Orders API through the Agent Toolkit's read-only `get_order`, which passed sandbox spike (d) on 2026-10-05 and
   a live run on production on 2026-10-13 ([docs/PAYPAL.md](docs/PAYPAL.md)); not part of the demo flow.
 
+![Agent run: get_order_status reports a COMPLETED order, $362.50 = $300.00 goods + $25.00 shipping + $37.50 US import duty (est.)](docs/images/agent-order-status.png)
+*The agent reads an order’s status and amounts, never the payer’s details.*
+
 ### Seller console (`/seller`, passcode)
 ![Seller console: a Japanese watch listing classified as 9102.21.70 at confidence 0.55 and sent to review, with evidence quoted from the listing](docs/images/seller-classify.png)
 - **Grounded classification**: paste a listing in any language. The page shows the real steps (headings proposed →
