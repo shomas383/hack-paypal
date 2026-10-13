@@ -253,6 +253,18 @@ export function sameDutyText(differences: LineDifference[], amount: string, unce
   return uncertain ? `Not certain which line applies — it depends on ${on} — but the estimate is ${amount} either way.` : `The exact line depends on ${on}, but the estimate is ${amount} either way.`;
 }
 
+/**
+ * The note above the shown lines. One shown line: none (its own description says what it is). Two or more: the same-duty
+ * sentence (with no differing level, only "The estimate is $X either way."), or for a range, when the classifier isn't
+ * certain, the differences (else the general "compare the official descriptions" sentence).
+ */
+export function resultNote(a: { shown: number; sameDuty: boolean; differences: LineDifference[]; uncertain: boolean; reasons: string[]; amount: string }): { kind: 'same' | 'reason'; text: string } | null {
+  if (a.shown < 2) return null;
+  if (a.sameDuty) return { kind: 'same', text: sameDutyText(a.differences, a.amount, a.uncertain) };
+  const text = rangeReasonText(a.differences, a.uncertain) ?? reasonText(a.reasons, []);
+  return text ? { kind: 'reason', text } : null;
+}
+
 /** When the shown lines' duties differ and the classifier isn't certain: the differences, those that change the duty first. */
 export function rangeReasonText(differences: LineDifference[], uncertain: boolean): string | null {
   if (!uncertain || !differences.length) return null;

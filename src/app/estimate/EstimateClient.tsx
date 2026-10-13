@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
-import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, rangeReasonText, stoppedText, plainBasis, reasonText, refText, sameDutyText, separatingLevels } from '@/domain/estimator/explain';
+import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, resultNote, stoppedText, plainBasis, refText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
@@ -237,8 +237,9 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && min === max;
   // Where the shown lines' official descriptions part (code; the model's names only label a matching difference).
   const differences = lineDifferences(view.candidates.map((c) => ({ chain: c.chain, dutyMinor: c.outcome.kind === 'ESTIMATE' ? c.outcome.dutyMinor : null })), view.separating);
-  const sameText = sameDuty ? sameDutyText(differences, formatUsd(m(min)), isUncertain(view.reasons)) : null;
-  const reason = sameDuty ? null : (rangeReasonText(differences, isUncertain(view.reasons)) ?? reasonText(view.reasons, []));
+  const note = resultNote({ shown: view.candidates.length, sameDuty, differences, uncertain: isUncertain(view.reasons), reasons: view.reasons, amount: estimated.length ? formatUsd(m(min)) : '' });
+  const sameText = note?.kind === 'same' ? note.text : null;
+  const reason = note?.kind === 'reason' ? note.text : null;
   // A line whose verified row (or split) only needs answers isn't a refusal: the title asks instead.
   const asking = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && (c.outcome.reason === 'NEEDS_FACTS' || c.outcome.reason === 'NEEDS_SPLIT'));
   const needsSplit = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && c.outcome.reason === 'NEEDS_SPLIT');
