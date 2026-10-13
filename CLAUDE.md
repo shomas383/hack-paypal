@@ -89,7 +89,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 10. Secrets only via env. `.env` is gitignored; `.env.example` is the contract. Never print secrets in logs/tests.
 11. Exact pinned dependency versions (no `^`, `~`, `latest`). Commit the lockfile. ASK before adding any dependency.
 12. Never circumvent a hook or permission rule (no path splitting, encoding, alternate tools or indirection). If a guard
-    blocks something you need, stop and ask me.
+    blocks something you need, stop and ask me. No path obfuscation (splitting, encoding, globbing tricks) to avoid a hook;
+    use the Read/Glob/Grep tools or stop and ask.
 13. `.env` is never read, with ONE approved exception: the secret scan's rule 3 (`pnpm secrets:scan`) reads it at runtime
     to compare added lines against local secret values. Conditions:
     - `src/guards/secretScan.ts` and `scripts/secret-scan.ts` never print, log or return secret values or matched text
@@ -213,6 +214,8 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   Verify!W for P05, P09, P13, P14 still name programs ("301", "List 4A/4B", "Section 232", "IEEPA"; pinned in
   houseStyle.test.ts) and Products!S for P05 — reword to note/heading numbers; then importer EU_EVIDENCE ('IEEPA
   (terminated)') changes with P14's W, and rates:import makes a new version.
+- Ledger (/seller Orders and duty): a filter on the Rate version column (README screenshot shows old-version orders on
+  purpose: every order keeps the rate version it was quoted under).
 - CURRENT_HTS_REV_SHORT (src/domain/rates/current.ts): the regex is /^d{4} Rev. / (missing backslash) — labels read
   "2026 Rev. 21" instead of "Rev 21". One-character fix; on main since d0dba74.
 - Estimator: split note 21 out of 20(www). The official text prints the 9903.89 note as "(21) (a) …" right after
