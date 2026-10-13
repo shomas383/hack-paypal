@@ -1,0 +1,79 @@
+{
+  "id": "5O190127TN364715T",
+  "intent": "AUTHORIZE",
+  "status": "COMPLETED",
+  "payment_source": {
+    "paypal": {
+      "email_address": "fixture-buyer@example.com",
+      "account_id": "PAYERIDFIXTURE",
+      "account_status": "VERIFIED",
+      "name": { "given_name": "Fixture", "surname": "Buyer" },
+      "address": { "country_code": "US" }
+    }
+  },
+  "purchase_units": [
+    {
+      "reference_id": "default",
+      "custom_id": "0b4c6a52-6f0e-4d3e-9a51-6a3a8b2f0c11",
+      "amount": {
+        "currency_code": "USD",
+        "value": "362.50",
+        "breakdown": {
+          "item_total": { "currency_code": "USD", "value": "300.00" },
+          "shipping": { "currency_code": "USD", "value": "25.00" },
+          "tax_total": { "currency_code": "USD", "value": "37.50" }
+        }
+      },
+      "payee": { "email_address": "fixture-merchant@example.com", "merchant_id": "MERCHANTIDFIXTURE" },
+      "items": [
+        {
+          "name": "Fixture automatic diver watch",
+          "unit_amount": { "currency_code": "USD", "value": "300.00" },
+          "tax": { "currency_code": "USD", "value": "37.50" },
+          "quantity": "1",
+          "category": "PHYSICAL_GOODS"
+        }
+      ],
+      "shipping": {
+        "name": { "full_name": "Fixture Buyer" },
+        "address": {
+          "address_line_1": "1 Fixture St",
+          "admin_area_2": "Fixtureville",
+          "admin_area_1": "CA",
+          "postal_code": "90000",
+          "country_code": "US"
+        }
+      },
+      "payments": {
+        "authorizations": [
+          {
+            "status": "CAPTURED",
+            "id": "AUTHFIXTURE0001",
+            "amount": { "currency_code": "USD", "value": "362.50" },
+            "seller_protection": { "status": "ELIGIBLE" },
+            "expiration_time": "2026-11-09T00:00:00Z",
+            "links": [{ "href": "https://example.com/fixture/authorization", "rel": "self", "method": "GET" }]
+          }
+        ],
+        "captures": [
+          {
+            "status": "COMPLETED",
+            "id": "CAPTUREFIXTURE01",
+            "amount": { "currency_code": "USD", "value": "362.50" },
+            "final_capture": true,
+            "links": [{ "href": "https://example.com/fixture/capture", "rel": "self", "method": "GET" }]
+          }
+        ]
+      }
+    }
+  ],
+  "payer": {
+    "name": { "given_name": "Fixture", "surname": "Buyer" },
+    "email_address": "fixture-buyer@example.com",
+    "payer_id": "PAYERIDFIXTURE",
+    "address": { "country_code": "US" }
+  },
+  "create_time": "2026-10-12T00:00:00Z",
+  "update_time": "2026-10-12T00:01:00Z",
+  "links": [{ "href": "https://example.com/fixture/order", "rel": "self", "method": "GET" }]
+}

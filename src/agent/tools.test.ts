@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FAKE_LISTINGS, fakeDeps, INJECTION, sellerListing, WATCH_CHAIN } from './fakeDeps';
+import { FAKE_LISTINGS, fakeDeps, INJECTION, ORDER_FIXTURE_JSON, sellerListing, WATCH_CHAIN } from './fakeDeps';
+import { orderView } from './orderView';
 import { AGENT_TOOL_NAMES, buildAgentTools, NOT_SEARCHED, QUERY_NOT_SEARCHED, WITHHELD, WITHHELD_UNCHECKED, type AgentListing } from './tools';
 
 const ctx = { sessionId: 's-1', budgetMinor: 40_000n };
@@ -212,7 +213,8 @@ describe('agent tools — read and prepare only; amounts from stored quotes; sel
 
   it("get_order_status reads only this session's PayPal orders", async () => {
     const tools = buildAgentTools(ctx, fakeDeps().deps);
-    expect(await run(tools.get_order_status, { paypalOrderId: '5O190127TN364715T' })).toEqual({ order: { id: '5O190127TN364715T', status: 'COMPLETED' } });
+    expect(await run(tools.get_order_status, { paypalOrderId: '5O190127TN364715T' })).toEqual(orderView(ORDER_FIXTURE_JSON));
+    expect(await run(tools.get_order_status, { paypalOrderId: '5O190127TN364715T' })).toMatchObject({ order: { id: '5O190127TN364715T', status: 'COMPLETED', amount: { value: '362.50' } } });
     expect(await run(tools.get_order_status, { paypalOrderId: '9XX99999XX9999999' })).toEqual({ error: 'not an order of this session' });
   });
 
