@@ -239,3 +239,17 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
 - **Render build image: `corepack enable` fails** (first build, 2026-10-07: `Internal Error: EROFS: read-only file system, unlink
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).
+
+## Agent Toolkit `get_order` — live run on production (2026-10-13)
+- **PASS**, Render deploy `d2d8117` (`get_order_status` returns an allow-list only: id, intent, status, custom_id, amount,
+  breakdown, authorization/capture statuses). One /agent run per message, same browser session as a normal checkout.
+- Order `1VC48838C5454262A` (L-P03, JP watch, captured by the app's checkout in that session): the agent reported status
+  `COMPLETED`, authorized then captured, $362.50 = $300.00 item + $25.00 shipping + $37.50 — matching the ledger row and the
+  stored quote. No payer details and no links in the agent's text. The raw tool output was not inspected, so
+  `capture_statuses` on an AUTHORIZE order (VERIFY in the plan) is known only from the agent's wording ("the capture is complete").
+- Order `06R32448RY9333933` (2026-10-07, another session): refused by code (`not an order of this session`); the agent said it
+  couldn't see any details and showed none.
+- **Mistake caught:** the checkout success page showed only "Capture <id>", so the first two tries asked about capture ids
+  (correctly refused: not order ids of this session). The order id came from /seller. Fix: the outcome now shows
+  "PayPal order <id> · Capture <id>" (`src/ui/orderIds.ts`).
+- The reply called the $37.50 "tax"; the system prompt now says to call `tax_total` "US import duty (est.)" (not yet deployed).

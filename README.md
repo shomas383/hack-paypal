@@ -39,8 +39,8 @@ anyone pays.
 - A seller listing written in Japanese is found by an English query through the **official English HTS description** of its
   settled code (no translation, no model keywords). The page shows which official levels matched.
 - `get_order_status` checks in the local database that a PayPal order belongs to this buyer session, then reads it from the
-  PayPal Orders API through the Agent Toolkit's read-only `get_order`, which passed sandbox spike (d) on 2026-10-05
-  ([docs/PAYPAL.md](docs/PAYPAL.md)); not part of the demo flow yet.
+  PayPal Orders API through the Agent Toolkit's read-only `get_order`, which passed sandbox spike (d) on 2026-10-05 and
+  a live run on production on 2026-10-13 ([docs/PAYPAL.md](docs/PAYPAL.md)); not part of the demo flow.
 
 ### Seller console (`/seller`, passcode)
 ![Seller console: a Japanese watch listing classified as 9102.21.70 at confidence 0.55 and sent to review, with evidence quoted from the listing](docs/images/seller-classify.png)
@@ -173,6 +173,9 @@ flowchart LR
   not flagged.
 - **No money-moving tools for the agent.** It has no approve, authorize, capture, void or refund tool; a unit test asserts
   that, and that no agent code imports a money-moving function.
+- **Order reads return only status and amounts.** The agent's order tool passes on an allow-list (order id, status, quote
+  reference, amount and breakdown, authorization and capture statuses); no payer or payee details or PayPal links reach the
+  model or the browser.
 - **Rate limits** before any model call (per session, IP and day); the seller console locks sign-in after 5 wrong passcodes
   per IP for 15 minutes.
 
@@ -252,7 +255,6 @@ allow `corepack enable`). Register the sandbox webhook at `/api/webhooks/paypal`
 - **Origin research:** AI suggestions of country of origin from photos and model numbers, confirmed by the seller.
 - **Sourcing mode:** profit per item and marketplace price comparison.
 - **Scheduled revision runs:** rebuild the data automatically when a new HTS revision is published.
-- **PayPal Agent Toolkit `get_order` read:** exercise the agent's order-status tool in a live run on production.
 
 ## How it was built
 Built solo for the PayPal AI Hackathon with AI-assisted development (Claude Code): code, tests and drafts were written
