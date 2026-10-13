@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DISCLOSURE_TEXT, type CantReason } from './estimate';
-import { cantText, exclusionText, lineDifferences, NOT_INCLUDED, rangeReasonText, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
+import { cantText, exclusionText, lineDifferences, NOT_INCLUDED, rangeReasonText, resultNote, plainBasis, reasonText, refText, sameDutyText, separatingLevels, trimOfficial } from './explain';
 
 describe('refText', () => {
   it('names notes, headings and footnotes the way the schedule does', () => {
@@ -172,5 +172,21 @@ describe('exclusionText — an exclusion states its own end date', () => {
     expect(exclusionText([{ ref: 'note III 20(vvv)(iii)(1)', heading: '9903.88.69', until: 'through November 9, 2026' }])).toBe(
       'An exclusion in effect under U.S. note 20(vvv)(iii)(1) to subchapter III (heading 9903.88.69, through November 9, 2026) covers particular products under this line; it isn’t applied here and can only lower the duty.',
     );
+  });
+});
+
+describe('resultNote — which note the result shows', () => {
+  const diff = lineDifferences([{ chain: chain('Of cotton'), dutyMinor: 1 }, { chain: chain('Of synthetic fibers'), dutyMinor: 2 }], []);
+  it('one shown line: no note at all, even when the classifier is not certain', () => {
+    expect(resultNote({ shown: 1, sameDuty: false, differences: [], uncertain: true, reasons: ['LOW_CONFIDENCE'], amount: '$1.00' })).toBeNull();
+    expect(resultNote({ shown: 1, sameDuty: false, differences: [], uncertain: false, reasons: [], amount: '$1.00' })).toBeNull();
+  });
+  it('two or more shown lines: same duty with no differing level → only the either-way sentence; a range → the differences', () => {
+    expect(resultNote({ shown: 2, sameDuty: true, differences: [], uncertain: false, reasons: [], amount: '$1.00' })).toEqual({ kind: 'same', text: 'The estimate is $1.00 either way.' });
+    expect(resultNote({ shown: 2, sameDuty: false, differences: diff, uncertain: true, reasons: ['LOW_CONFIDENCE'], amount: '$1.00' })).toEqual({
+      kind: 'reason',
+      text: 'Not certain which line applies — it depends on “Of cotton” vs “Of synthetic fibers”.',
+    });
+    expect(resultNote({ shown: 2, sameDuty: false, differences: diff, uncertain: false, reasons: [], amount: '$1.00' })).toBeNull();
   });
 });
