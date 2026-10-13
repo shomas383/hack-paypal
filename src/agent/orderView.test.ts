@@ -8,7 +8,7 @@ const money = (value: string) => ({ currency_code: 'USD', value });
 
 describe('orderView — get_order_status passes on an allow-list only', () => {
   it('keeps exactly the allow-listed fields of a captured order', () => {
-    const r = orderView(ORDER_FIXTURE_JSON) as { order: Record<string, unknown> };
+    const r = orderView(ORDER_FIXTURE_JSON) as unknown as { order: Record<string, unknown> };
     expect(Object.keys(r)).toEqual(['order']);
     expect(Object.keys(r.order).sort()).toEqual(['amount', 'authorization_statuses', 'breakdown', 'capture_statuses', 'custom_id', 'id', 'intent', 'status']);
     expect(r.order).toEqual({
@@ -36,7 +36,7 @@ describe('orderView — get_order_status passes on an allow-list only', () => {
     const o = JSON.parse(ORDER_FIXTURE_JSON);
     delete o.purchase_units[0].amount.breakdown.shipping;
     delete o.purchase_units[0].payments;
-    const r = orderView(o) as { order: { breakdown: Record<string, unknown>; authorization_statuses: string[]; capture_statuses: string[] } };
+    const r = orderView(o) as unknown as { order: { breakdown: Record<string, unknown>; authorization_statuses: string[]; capture_statuses: string[] } };
     expect(r.order.breakdown).toEqual({ item_total: money('300.00'), shipping: null, tax_total: money('37.50') });
     expect(r.order.authorization_statuses).toEqual([]);
     expect(r.order.capture_statuses).toEqual([]);

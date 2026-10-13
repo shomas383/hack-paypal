@@ -9,6 +9,7 @@ import { queryKey, rankListings } from '@/domain/agent/search';
 import { formatDisplay } from '@/domain/money/format';
 import { usd } from '@/domain/money/money';
 import type { QuoteRecord } from '@/domain/quote/buildQuote';
+import { orderView } from './orderView';
 
 export const AGENT_TOOL_NAMES = ['search_listings', 'compare_landed_costs', 'get_landed_cost_quote', 'get_duty_breakdown', 'propose_purchase', 'get_order_status'] as const;
 
@@ -239,7 +240,7 @@ export function buildAgentTools(ctx: AgentContext, deps: AgentDeps) {
       inputSchema: z.object({ paypalOrderId: z.string().min(5).max(40) }).strict(),
       execute: async ({ paypalOrderId }) => {
         if (!(await deps.paypalOrderIdsForSession(ctx.sessionId)).has(paypalOrderId)) return { error: 'not an order of this session' };
-        return { order: await deps.getPayPalOrder(paypalOrderId) };
+        return orderView(await deps.getPayPalOrder(paypalOrderId)); // allow-list only: no payer, payee or links
       },
     }),
   } satisfies ToolSet;

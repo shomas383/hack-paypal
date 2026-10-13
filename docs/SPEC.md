@@ -235,7 +235,8 @@ AC:
   them sorted by delivered total, over-budget rows included), `get_landed_cost_quote(listingId)` (stored quote via the rate
   engine; refused for any id no search in the run returned), `get_duty_breakdown(quoteId)`, `propose_purchase(quoteId,
   reasoning)` (a PENDING proposal + checkout link; budget and caps checked in code on the stored quote; not an approval),
-  `get_order_status` (toolkit `get_order`, this session's orders only). The model chooses the query, reads the breakdown,
+  `get_order_status` (toolkit `get_order`, this session's orders only; returns an allow-list only — id, intent, status,
+  custom_id, amount, breakdown, authorization/capture statuses — no payer, payee or links; 2026-10-12). The model chooses the query, reads the breakdown,
   explains and proposes; which listings are compared is decided by code (2026-10-10, after the production search/quote
   mismatch).
 - Search matching (`src/domain/agent/search.ts`, 2026-10-11): words are lowercase `[a-z0-9]+`, ≥ 3 chars, not all digits,
