@@ -82,7 +82,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ quote
         totalDisplay={formatUsd(total)}
         orderCapDisplay={formatUsd(usd(view.caps.perOrderMinor))}
         initiallyApproved={view.approved}
-        initialOrder={view.order ? { status: view.order.status, captureId: view.order.captureId, reasons: view.order.policy?.reasons ?? [] } : null}
+        initialOrder={view.order ? { status: view.order.status, paypalOrderId: view.order.paypalOrderId, captureId: view.order.captureId, reasons: view.order.policy?.reasons ?? [] } : null}
       />
     </AppShell>
   );

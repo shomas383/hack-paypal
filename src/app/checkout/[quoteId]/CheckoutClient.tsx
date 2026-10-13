@@ -2,17 +2,19 @@
 // Approve (recorded) → PayPal v6 button → onApprove → server completes (authorize → policy → capture | void).
 // The browser never sends an amount: the order is built on the server from the stored quote.
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { loadCoreSdkScript } from '@paypal/paypal-js/sdk-v6';
 import { Button } from '@/ui/Button';
 import { policyReasonText } from '@/ui/dutyText';
 import { Icon } from '@/ui/Icon';
+import { orderIds } from '@/ui/orderIds';
 import { Skeleton } from '@/ui/Skeleton';
 import { StatusBadge } from '@/ui/StatusBadge';
 import s from './checkout-client.module.css';
 
 interface Outcome {
   status: string;
+  paypalOrderId: string | null;
   captureId: string | null;
   reasons: string[];
 }
@@ -81,7 +83,7 @@ export function CheckoutClient(props: Props) {
           setNote({ kind: 'progress', text: 'Authorizing and running the policy checks…' });
           try {
             const r = await post<{ status: string; captureId: string | null; policy: { reasons: string[] } | null }>(`/api/orders/${orderId}/complete`);
-            setOutcome({ status: r.status, captureId: r.captureId, reasons: r.policy?.reasons ?? [] });
+            setOutcome({ status: r.status, paypalOrderId: orderId, captureId: r.captureId, reasons: r.policy?.reasons ?? [] });
             setNote(null);
           } catch (e) {
             setNote({ kind: 'error', text: `Completing the payment failed: ${msg(e)}. Nothing was captured; reload the page to check the order.` });
@@ -157,9 +159,14 @@ export function CheckoutClient(props: Props) {
               Payment <span data-testid="outcome-status">{outcome.status}</span>
             </StatusBadge>
           )}
-          {outcome.captureId ? (
+          {orderIds(outcome).length ? (
             <p className={s.small}>
-              Capture <code data-testid="capture-id">{outcome.captureId}</code>
+              {orderIds(outcome).map((l, i) => (
+                <Fragment key={l.testId}>
+                  {i > 0 ? ' · ' : null}
+                  {l.label} <code data-testid={l.testId}>{l.id}</code>
+                </Fragment>
+              ))}
             </p>
           ) : null}
           <p className={s.small}>

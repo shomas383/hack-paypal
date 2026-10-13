@@ -130,7 +130,7 @@ export async function getCheckoutView(quoteId: string, sessionId: string | undef
     quote,
     proposal: proposal ?? null,
     approved: Boolean(approval),
-    order: order ? { status: order.status, captureId: order.captureId, policy: order.policyDecision } : null,
+    order: order ? { status: order.status, paypalOrderId: order.paypalOrderId, captureId: order.captureId, policy: order.policyDecision } : null,
     rateRow: row ?? null,
     currentRateVersion: currentRateTable().version,
     caps: { perOrderMinor: env.spendCapPerOrderMinor, perSessionMinor: env.spendCapPerSessionMinor },
