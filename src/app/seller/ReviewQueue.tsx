@@ -1,6 +1,7 @@
 'use client';
 // Review queue (AG Grid Community). The URL holds the tab, status filter, search and the open row, so a reload or a shared
-// link shows the same view. Opening a row shows the detail panel (questions, actions, audit trail).
+// link shows the same view. Opening a row shows the detail panel (questions, actions, audit trail). mode 'public' (the
+// read-only /seller/demo) reads the allowlisted GET-only API and the panel renders no form or action.
 import { AgGridReact } from 'ag-grid-react';
 import type { CellKeyDownEvent, ColDef } from 'ag-grid-community';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -55,12 +56,15 @@ function ConfidenceCell({ value, compact }: { value: number | null; compact?: bo
   );
 }
 
-async function fetchQueue(): Promise<{ rows: QueueRow[]; error: string | null }> {
+export type SellerViewMode = 'owner' | 'public';
+const QUEUE_URL: Record<SellerViewMode, string> = { owner: '/api/seller/classifications', public: '/api/seller/public/queue' };
+
+async function fetchQueue(mode: SellerViewMode): Promise<{ rows: QueueRow[]; error: string | null }> {
   try {
-    const res = await fetch('/api/seller/classifications', { cache: 'no-store' });
+    const res = await fetch(QUEUE_URL[mode], { cache: 'no-store' });
     const j = (await res.json()) as QueueRow[] | { error?: string };
     if (!res.ok || !Array.isArray(j)) {
-      return { rows: [], error: res.status === 401 ? 'Your seller session ended. Reload the page and sign in again.' : `The queue didn't load: ${(j as { error?: string }).error ?? res.status}.` };
+      return { rows: [], error: res.status === 401 ? 'Your seller session ended. Reload the page and sign in again.' : mode === 'public' && res.status === 404 ? 'The read-only view is off.' : `The queue didn't load: ${(j as { error?: string }).error ?? res.status}.` };
     }
     return { rows: j, error: null };
   } catch {
@@ -68,7 +72,7 @@ async function fetchQueue(): Promise<{ rows: QueueRow[]; error: string | null }>
   }
 }
 
-export function ReviewQueue() {
+export function ReviewQueue({ mode = 'owner' }: { mode?: SellerViewMode }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -96,15 +100,15 @@ export function ReviewQueue() {
     setRows(r.rows);
     setError(r.error);
   }, []);
-  const load = useCallback(() => fetchQueue().then(applyResult), [applyResult]);
+  const load = useCallback(() => fetchQueue(mode).then(applyResult), [applyResult, mode]);
 
   useEffect(() => {
     let stop = false;
-    void fetchQueue().then((r) => !stop && applyResult(r));
+    void fetchQueue(mode).then((r) => !stop && applyResult(r));
     return () => {
       stop = true;
     };
-  }, [applyResult]);
+  }, [applyResult, mode]);
 
   // Search goes to the URL after a short pause (no history entry per keystroke).
   useEffect(() => {
@@ -183,10 +187,10 @@ export function ReviewQueue() {
             getRowClass={(p) => (p.data?.id === rowId ? s.selectedRow : undefined)}
             tooltipShowDelay={400}
             overlayLoadingTemplate='<span class="ag-overlay-loading-center">Loading the queue…</span>'
-            overlayNoRowsTemplate={rows?.length ? '<span>No classifications match these filters.</span>' : '<span>No classifications yet. Classify a listing to start.</span>'}
+            overlayNoRowsTemplate={rows?.length ? '<span>No classifications match these filters.</span>' : mode === 'public' ? '<span>No classifications yet.</span>' : '<span>No classifications yet. Classify a listing to start.</span>'}
           />
         </div>
-        {rowId ? <ReviewPanel key={rowId} id={rowId} onChanged={load} onClose={() => setParam({ row: null })} /> : null}
+        {rowId ? <ReviewPanel key={rowId} id={rowId} mode={mode} onChanged={load} onClose={() => setParam({ row: null })} /> : null}
       </div>
     </div>
   );

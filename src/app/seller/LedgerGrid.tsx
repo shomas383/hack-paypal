@@ -1,6 +1,7 @@
 'use client';
 // Orders and duty ledger (AG Grid Community): every sandbox order with its stored quote. Amounts are Money (integer minor
 // units) through the shared exact formatter; the pinned row sums captured duty in code; CSV exports exact decimals.
+// mode 'public' (the read-only /seller/demo) reads the allowlisted GET-only API; the grid and the CSV are the same.
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ProcessCellForExportParams } from 'ag-grid-community';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -13,6 +14,7 @@ import { Icon } from '@/ui/Icon';
 import { StatusBadge, type Tone } from '@/ui/StatusBadge';
 import { registerGridModules } from '@/ui/grid/setup';
 import { useNarrow } from '@/ui/grid/useNarrow';
+import type { SellerViewMode } from './ReviewQueue';
 import s from './seller.module.css';
 
 registerGridModules();
@@ -67,7 +69,9 @@ function StatusCell({ value, data }: { value: string; data?: Row }) {
 
 const dateFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-export function LedgerGrid() {
+const ORDERS_URL: Record<SellerViewMode, string> = { owner: '/api/seller/orders', public: '/api/seller/public/orders' };
+
+export function LedgerGrid({ mode = 'owner' }: { mode?: SellerViewMode }) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const grid = useRef<AgGridReact<Row>>(null);
@@ -79,12 +83,12 @@ export function LedgerGrid() {
 
   useEffect(() => {
     let stop = false;
-    fetch('/api/seller/orders', { cache: 'no-store' })
+    fetch(ORDERS_URL[mode], { cache: 'no-store' })
       .then(async (res) => {
         const j = (await res.json()) as Api[] | { error?: string };
         if (stop) return;
         if (!res.ok || !Array.isArray(j)) {
-          setError(res.status === 401 ? 'Your seller session ended. Reload the page and sign in again.' : `Orders didn't load: ${(j as { error?: string }).error ?? res.status}.`);
+          setError(res.status === 401 ? 'Your seller session ended. Reload the page and sign in again.' : mode === 'public' && res.status === 404 ? 'The read-only view is off.' : `Orders didn't load: ${(j as { error?: string }).error ?? res.status}.`);
           setRows([]);
           return;
         }
@@ -109,7 +113,7 @@ export function LedgerGrid() {
     return () => {
       stop = true;
     };
-  }, []);
+  }, [mode]);
 
   // Code-computed: the sum of duty on CAPTURED orders (integer minor units).
   const captured = useMemo(() => (rows ?? []).filter((r) => r.status === 'CAPTURED'), [rows]);

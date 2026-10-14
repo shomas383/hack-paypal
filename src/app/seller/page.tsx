@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { readSellerSession, sellerConsoleEnabled } from '@/server/seller/access';
+import { sellerPublicViewEnabled } from '@/server/seller/publicView';
 import { AppShell } from '@/ui/AppShell';
 import { PageHeader } from '@/ui/PageHeader';
 import { ClassifyPanel } from './ClassifyPanel';
@@ -9,6 +10,7 @@ import { LedgerGrid } from './LedgerGrid';
 import { ReviewQueue } from './ReviewQueue';
 import { SellerSignIn } from './SellerSignIn';
 import { SignOutButton } from './SignOutButton';
+import { demoLinkFor } from './demoLink';
 import s from './seller.module.css';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 
@@ -26,11 +28,19 @@ export default async function SellerPage({ searchParams }: { searchParams: Promi
   if (!sellerConsoleEnabled()) notFound();
   const session = await readSellerSession();
   if (!session) {
+    const demo = demoLinkFor(sellerPublicViewEnabled());
     return (
       <AppShell>
         <div className={s.signIn}>
           <PageHeader title="Seller console" lead={`Classify listings against the official HTS ${CURRENT_HTS_REVISION} schedule and publish them for landed-cost quotes.`} />
           <SellerSignIn />
+          {demo ? (
+            <p className={s.demoLink}>
+              <Link href={demo.href} data-testid="seller-demo-link">
+                {demo.text}
+              </Link>
+            </p>
+          ) : null}
         </div>
       </AppShell>
     );

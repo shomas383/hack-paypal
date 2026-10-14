@@ -26,6 +26,8 @@ export default defineConfig({
     command: 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
+    // The public read-only seller view (tests/e2e/seller-public.spec.ts). Merged over process.env by Playwright.
+    env: { SELLER_PUBLIC_VIEW: '1' },
     timeout: 120_000,
   },
 });

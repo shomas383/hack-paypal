@@ -408,3 +408,25 @@
 .dialog::backdrop {
   background: color-mix(in srgb, var(--text) 30%, transparent);
 }
+
+/* ── Public read-only demo (/seller/demo) ── */
+.readOnlyNote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--accent-subtle);
+  color: var(--text);
+}
+
+.demoLink {
+  margin-top: var(--space-5);
+}
+
+.answered {
+  font-weight: var(--weight-medium);
+}

@@ -2,6 +2,8 @@
 // One classification under review: the proposed line with its official chain, reasons in plain words, the questions code
 // generated from the official chains, the actions (accept / override / publish) and the audit trail. Accept and override
 // are optimistic with a 6 s Undo; publish asks for confirmation (and the case/band split when the line needs it).
+// mode 'public' (the read-only /seller/demo): the questions and the seller's recorded answers as plain lists; no form,
+// radio, action button, override form or publish dialog is rendered, and the audit trail names no seller session.
 import { useEffect, useRef, useState } from 'react';
 import { citesStatisticalNumber } from '@/domain/classifier/questions';
 import { parseUsdInput } from '@/domain/seller/form';
@@ -15,6 +17,7 @@ import { Icon } from '@/ui/Icon';
 import { StatusBadge } from '@/ui/StatusBadge';
 import { Toast } from '@/ui/Toast';
 import { classificationStatus, reasonText } from '@/ui/reasonText';
+import type { SellerViewMode } from './ReviewQueue';
 import s from './seller.module.css';
 
 interface Detail {
@@ -34,7 +37,7 @@ interface Detail {
   answers: Record<string, string>;
   exclusionsApply: boolean | null;
   statements: { question: string; answer: string; at: string }[];
-  actions: { id: string; action: string; fromStatus: string; toStatus: string; fromHts10: string | null; toHts10: string | null; reason: string | null; at: string; undone: boolean; by: string }[];
+  actions: { id: string; action: string; fromStatus: string; toStatus: string; fromHts10: string | null; toHts10: string | null; reason: string | null; at: string; undone: boolean; by?: string }[];
   expanded: { code: string; chain: string[] }[];
   suggested: string | null;
   publish: { code: string | null; needsSplit: boolean; verifiedRate: boolean };
@@ -53,7 +56,50 @@ async function call<T>(url: string, body: unknown = {}): Promise<T> {
   return j;
 }
 
-export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged: () => void; onClose: () => void }) {
+/** The public view: what code asked the seller and what was answered, without any control. */
+function ReadOnlyQuestions({ questions, answers, exclusionsApply }: Pick<Detail, 'questions' | 'answers' | 'exclusionsApply'>) {
+  if (!questions.choices.length && !questions.exclusions.length) return null;
+  return (
+    <section className={s.block} aria-labelledby="q-h" data-testid="read-only-questions">
+      <h3 id="q-h" className={s.h3}>
+        Questions for the seller
+      </h3>
+      <p className={s.muted}>Built by code from the official HTS descriptions. Read-only here; only the seller answers them.</p>
+      {questions.choices.map((q) => (
+        <div key={q.id}>
+          <p>{q.text}</p>
+          <ul className={s.exclusions}>
+            {q.options.map((o) => (
+              <li key={o.id} className={answers[q.id] === o.id ? s.answered : undefined}>
+                {o.text}
+                {answers[q.id] === o.id ? ' (the seller’s answer)' : ''}
+              </li>
+            ))}
+          </ul>
+          {answers[q.id] ? null : <p className={s.muted}>Not answered yet.</p>}
+        </div>
+      ))}
+      {questions.exclusions.length ? (
+        <div>
+          <p>Do any of these apply to the item?</p>
+          <ul className={s.exclusions}>
+            {questions.exclusions.map((x) => (
+              <li key={x.code}>
+                <span className={s.mono}>{x.code}</span> {x.text}
+              </li>
+            ))}
+          </ul>
+          <p className={s.muted}>{exclusionsApply === null ? 'Not answered yet.' : exclusionsApply ? 'The seller answered: none of these apply.' : 'The seller answered: one of these applies.'}</p>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+const DETAIL_URL: Record<SellerViewMode, string> = { owner: '/api/seller/classifications/', public: '/api/seller/public/classifications/' };
+
+export function ReviewPanel({ id, mode = 'owner', onChanged, onClose }: { id: string; mode?: SellerViewMode; onChanged: () => void; onClose: () => void }) {
+  const readOnly = mode === 'public';
   const [d, setD] = useState<Detail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -77,7 +123,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
 
   useEffect(() => {
     let stop = false;
-    fetch(`/api/seller/classifications/${id}`, { cache: 'no-store' })
+    fetch(`${DETAIL_URL[mode]}${id}`, { cache: 'no-store' })
       .then(async (res) => {
         const j = (await res.json()) as Detail & { error?: string };
         if (stop) return;
@@ -89,7 +135,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
     return () => {
       stop = true;
     };
-  }, [id]);
+  }, [id, mode]);
 
   async function act(kind: string, fn: () => Promise<void>) {
     setBusy(kind);
@@ -241,13 +287,19 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
           ))}
         </ul>
       ) : null}
-      {d.suggested ? (
+      {d.suggested && readOnly ? (
+        <p>
+          The seller&rsquo;s answers point to <span className={s.mono}>{d.suggested}</span>.
+        </p>
+      ) : d.suggested ? (
         <p>
           Your answers point to <span className={s.mono}>{d.suggested}</span>. Override the code if that&rsquo;s right.
         </p>
       ) : null}
 
-      {canAnswer ? (
+      {readOnly ? (
+        <ReadOnlyQuestions questions={d.questions} answers={d.answers} exclusionsApply={d.exclusionsApply} />
+      ) : canAnswer ? (
         <form
           className={s.block}
           aria-labelledby="q-h"
@@ -315,7 +367,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
         </p>
       ) : null}
 
-      {!settledCode && d.status !== 'PUBLISHED' ? (
+      {!readOnly && !settledCode && d.status !== 'PUBLISHED' ? (
         <p className={s.muted} data-testid="review-no-line">
           There is no official line to accept or override. Add detail to the listing (for example the material) and classify it again.
         </p>
@@ -332,7 +384,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
             <p>{d.quote && !d.quote.quotable ? d.quote.reason : 'No verified rate yet.'}</p>
           )}
         </div>
-      ) : (
+      ) : readOnly ? null : (
         // Primary action first (Accept, or Publish once settled), then Override.
         <div className={s.actions}>
           {canAccept && settledCode ? (
@@ -353,7 +405,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
         </div>
       )}
 
-      {overrideOpen ? (
+      {overrideOpen && !readOnly ? (
         <form className={s.block} onSubmit={override} aria-label="Override code" noValidate>
           <Field id="ov-code" label="Code (official lines this classification matched)" error={ovError && !ovCode ? ovError : null}>
             <Select value={ovCode} onChange={(e) => setOvCode(e.target.value)}>
@@ -400,7 +452,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
             ...d.statements.map((x) => ({ at: x.at, text: `Answered “${x.question}”: ${x.answer}` })),
             ...d.actions.map((a) => ({
               at: a.at,
-              text: `${ACTION_TEXT[a.action] ?? a.action}${a.toHts10 ? ` ${a.toHts10}` : ''}${a.reason && a.action === 'override' ? ` (“${a.reason}”)` : ''} by seller session …${a.by}${a.undone ? ' · undone' : ''}`,
+              text: `${ACTION_TEXT[a.action] ?? a.action}${a.toHts10 ? ` ${a.toHts10}` : ''}${a.reason && a.action === 'override' ? ` (“${a.reason}”)` : ''}${a.by ? ` by seller session …${a.by}` : ''}${a.undone ? ' · undone' : ''}`,
             })),
           ]
             .sort((a, b) => a.at.localeCompare(b.at))
@@ -412,6 +464,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
         </ol>
       </Disclosure>
 
+      {readOnly ? null : (
       <dialog ref={dialog} className={s.dialog} aria-labelledby="pub-h">
         <form onSubmit={publish} noValidate>
           <h3 id="pub-h" className={s.h3}>
@@ -446,6 +499,7 @@ export function ReviewPanel({ id, onChanged, onClose }: { id: string; onChanged:
           </div>
         </form>
       </dialog>
+      )}
 
       {toast ? <Toast message={toast.message} {...(toast.undo ? { action: { label: 'Undo', onClick: () => void undo(toast.undo!) } } : {})} onDismiss={() => setToast(null)} /> : null}
     </aside>
