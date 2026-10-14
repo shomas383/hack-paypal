@@ -265,6 +265,6 @@ with the assistant, and a human reviewed every rate that touches a payment again
 before it entered the verified data.
 
 ## License & disclaimer
-MIT — see [LICENSE](LICENSE). Sandbox only; no real payments. Duty figures are estimates from the official HTS, not customs
+AGPL-3.0 — see [LICENSE](LICENSE). Copyright (C) 2026 Shoma Sawa. Sandbox only; no real payments. Duty figures are estimates from the official HTS, not customs
 rulings, and exclude antidumping/countervailing duties, merchandise and harbor maintenance fees, and carrier or brokerage
 fees.

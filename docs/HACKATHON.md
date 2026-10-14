@@ -10,7 +10,8 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - Build/update an app integrating the PayPal developer platform (free sandbox) + any AI tool. PayPal must be central.
 - New projects, or existing ones significantly updated after Oct 1, 2026. Our code is new; the 12-product sheet and earlier LLM test are prior research data — say so in README.
 - Text description of features. Functional demo: hosted URL OR complete setup/run instructions (we provide both). Mockups don't count.
-- Public GitHub repo with all source/assets/instructions and an OSS license detectable in the repo About section (MIT `LICENSE`).
+- Public GitHub repo with all source/assets/instructions and an OSS license detectable in the repo About section (AGPL-3.0 `LICENSE`; the rule requires any open source
+  license file, not a specific one — confirmed against the Devpost rules 2026-10-13).
 - Include test credentials/sandbox login details judges need (sandbox buyer account only — never API secrets).
 - Video: < 3 minutes (judges need not watch beyond 3:00), shows project running, public on YouTube, no third-party trademarks or
   copyrighted music without permission → use generic product names on screen; royalty-free/no music.
@@ -37,7 +38,7 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
   checking current ag-grid-community / ag-grid-react versions and React 19 support on npm.
 
 ## Submission checklist
-- [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); MIT LICENSE visible in About; README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1
+- [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); AGPL-3.0 LICENSE visible in About (any open source license meets the rule); README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1
 - [ ] `.env.example` complete; no secrets in git history (run a secret scan BEFORE making the repo public)
 - [x] Sandbox webhook URL points at the live Render URL (not a dead quick tunnel) — live deliveries verified 2026-10-07
 - [ ] Hosted demo works from a fresh browser; seeded data present; stays up through Dec 15 (not on a free tier that sleeps/expires)

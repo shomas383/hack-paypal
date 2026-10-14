@@ -97,6 +97,8 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
       (file:line + rule only); the no-leak test in `src/guards/secretScan.test.ts` stays.
     - Any change to those two files needs my explicit approval before commit; show me the diff first.
     - Never run the scanner with its output redirected to a file that gets committed.
+14. Do not accept or merge outside code contributions into this repo; all code must come from the owner or the owner's own
+    AI-assisted sessions.
 
 ## Workflow
 - Non-trivial change (multi-file, unclear approach, PayPal/rates/policy code): use plan mode first; show me the plan.
