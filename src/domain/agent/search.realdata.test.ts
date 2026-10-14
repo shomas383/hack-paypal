@@ -45,7 +45,7 @@ describe('seed queries: before → after (seed catalog; chain matching never app
     ['figure', ['L-P05', 'L-T-INJ'], ['L-P05', 'L-T-INJ']],
     ['chef knife', ['L-P11'], ['L-P11']],
     ['denim jeans', ['L-P08'], ['L-P08']],
-    ['anime blu-ray box set', ['L-P12'], ['L-P12']],
+    ['anime disc box set', ['L-P12'], ['L-P12']],
     ['watches', [], WATCHES], // the only change: plural normalisation
     ['toy', [], []], // 9503 chain says "other toys", but seed rows never match through the chain
   ];

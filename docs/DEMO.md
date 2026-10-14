@@ -17,14 +17,14 @@ Timing: 25 + 33 + 38 + 34 + 20 + 20 = 170 s = 2:50. 331 spoken words ≈ 117 wpm
 sentence and scene 5 gained 5 s, taken from scenes 2–4).
 
 ## 1 · The problem — 0:00–0:25 (25 s, 55 words)
-- **Screen:** `/listings`: nine listings on one screen (no scroll) — four automatic diver watches (Japan ×2, China,
-  Germany), a chef's knife, an anime disc box set, men's denim jeans and two collectible figures — generic titles,
-  Sandbox badge. Hold, and move the cursor slowly down the rows.
+- **Screen:** `/listings`: nine listings on one screen (no scroll) — five automatic diver watches (three from Japan,
+  including the Japanese-language seller listing; one from China; one from Germany), one articulated PVC figure, men's
+  denim jeans, a chef's knife and the anime disc box set — generic titles, Sandbox badge. Hold, and move the cursor
+  slowly down the rows.
 - **Say:** "The US ended duty-free entry for small parcels from every country. Every cross-border order now owes import duty,
   and most checkouts don't show it. One major marketplace now requires sellers in Japan to ship US orders duty-paid, but
   leaves them to work out the duty. Landed shows the delivered price, duty included, before anyone pays."
-- **Must be true:** generic names only, no trademark in any title (L-P12 still says "Blu-ray" until it is renamed);
-  Sandbox badge visible.
+- **Must be true:** generic names only, no trademark in any title; Sandbox badge visible.
 
 ## 2 · Buyer checkout with duty — 0:25–0:58 (33 s, 57 words)
 - **Screen:** `/listings` → *Get landed cost* on the Japanese watch (L-P03) → `/checkout/<quoteId>` → PayPal popup (3 s or

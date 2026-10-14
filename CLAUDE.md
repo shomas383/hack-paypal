@@ -215,7 +215,9 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   16(c) ("Headings 9903.82.02–9903.82.26 apply to the full customs value …"); only feeds data/eval (products.json). Also
   Verify!W for P05, P09, P13, P14 still name programs ("301", "List 4A/4B", "Section 232", "IEEPA"; pinned in
   houseStyle.test.ts) and Products!S for P05 — reword to note/heading numbers; then importer EU_EVIDENCE ('IEEPA
-  (terminated)') changes with P14's W, and rates:import makes a new version.
+  (terminated)') changes with P14's W, and rates:import makes a new version. Same batch: P12's title and evidence still
+  say "Blu-ray" (trademark) in the importer's GENERIC map, data/rates and data/eval — rename to "optical disc" as the seed
+  listing L-P12 already is (2026-10-13); not shown in the UI (no rate-row description or evidence is displayed).
 - Guitar case-value question: when the price per item is over $100, ask ‘Is the guitar alone, without its case, worth $100
   or less?’ instead of leaving both lines open (wording only; duty unchanged for JP).
 - Ledger (/seller Orders and duty): a filter on the Rate version column (README screenshot shows old-version orders on
