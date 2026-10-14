@@ -8,7 +8,7 @@ import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, resultNote, stoppedText, plainBasis, refText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
-import { headlineOf, headlineTitle, refusalText, unlikelyRefusedText } from '@/domain/estimator/headline';
+import { headlineOf, headlineTitle, refusalText, unlikelyOtherText, unlikelyRefusedText } from '@/domain/estimator/headline';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
 import { parseUsdInput } from '@/domain/seller/form';
@@ -225,9 +225,11 @@ export function EstimateClient({ fixture, initial }: { fixture: string | null; i
 function Result({ view, answers, answering, onAnswer, headingRef }: { view: View; answers: Answers; answering: boolean; onAnswer: (a: Answers) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
   const estimated = view.candidates.filter((c): c is CandidateView & { outcome: Extract<OutcomeView, { kind: 'ESTIMATE' }> } => c.outcome.kind === 'ESTIMATE');
   // The headline is decided by code on the server (headlineOf) from the likely lines: a refusal whenever a likely line is
-  // refused, and a figure only when it covers every likely line. Refused less likely lines get one line under it.
+  // refused, and a figure only when it covers every likely line. Less likely lines that are refused, or estimated at a
+  // duty outside the figure, get one line each under it.
   const headline = view.headline ?? headlineOf(view.candidates, view.stopped);
   const unlikelyRefused = unlikelyRefusedText(headline);
+  const unlikelyOther = unlikelyOtherText(headline);
   const figure = headline.kind === 'FIGURE' ? headline : null;
   const refusal = headline.kind === 'REFUSED' ? headline : null;
   const levels = separatingLevels(view.candidates.map((c) => c.chain));
@@ -275,6 +277,11 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
       {unlikelyRefused ? (
         <p className={s.inlineNote} data-testid="estimate-unlikely-refused">
           {unlikelyRefused}
+        </p>
+      ) : null}
+      {unlikelyOther ? (
+        <p className={s.inlineNote} data-testid="estimate-unlikely-other">
+          {unlikelyOther}
         </p>
       ) : null}
       {reason && view.candidates.length > 0 ? (

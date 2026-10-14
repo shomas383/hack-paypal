@@ -118,7 +118,7 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
   // Production report after 148fad3: refused less likely lines (7%, 3%) must not decide the headline; they get one line.
   await run(page, 'knife');
   await expect(page.getByRole('heading', { name: 'Answer the questions below to estimate the duty' })).toBeVisible();
-  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.6000.');
+  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.9060.');
   await expect(page.getByTestId('estimate-refusal')).toHaveCount(0);
   const knife = page.getByTestId('estimate-candidate-8211.92.9030');
   await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/2 questions to answer/);
@@ -145,7 +145,8 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
   // the headline now shows the verified row's figure, with the less likely refusals still disclosed
   await expect(page.getByRole('heading', { name: 'US import duty (est.)', exact: true })).toBeVisible();
   await expect(page.getByTestId('estimate-summary')).toHaveText(`${checkoutDuty} on a $140.00 sale.`);
-  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.6000.');
+  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.9060.');
+  await expect(page.getByTestId('estimate-unlikely-other')).toHaveCount(0); // its less likely lines are refused, not estimated
   await check(page, 'knife-answered');
 
   // An answer the verified row doesn't cover: refused, citing the note and the headings it ties the line to.

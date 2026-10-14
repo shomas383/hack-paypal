@@ -4,9 +4,12 @@
 //     that could be estimated are shown below it, labelled);
 //   - otherwise any likely line that only needs answers (a verified row's facts, a case/band split) → ask, no figure;
 //   - otherwise → the min–max of every likely line's duty.
-// Less likely lines never produce or block the headline; refused ones are disclosed in one line under it.
+// Less likely lines never produce or block the headline; refused ones, and estimated ones whose duty is outside the
+// figure, are disclosed in one line each under it.
 // Production reports: 2026-10-13 the kettle's 92% and 5% lines were refused but the headline showed the 1% line's $11.25;
 // after the fix the knife's 7% plastic-handle line made the headline "Can't estimate" next to an 88% verified row.
+import { formatUsd } from '@/lib/money';
+import { usd } from '@/domain/money/money';
 import type { CantReason } from './estimate';
 import { cantText, refText } from './explain';
 import type { CandidateView, StoppedView } from './view';
@@ -33,7 +36,10 @@ export type Headline =
       unlikelyRefused: UnlikelyRefused;
     }
   | { kind: 'ASKING'; unlikelyRefused: UnlikelyRefused }
-  | { kind: 'FIGURE'; minMinor: number; maxMinor: number; unlikelyRefused: UnlikelyRefused };
+  | { kind: 'FIGURE'; minMinor: number; maxMinor: number; unlikelyRefused: UnlikelyRefused; unlikelyOther: UnlikelyOther };
+
+/** Less likely estimated lines whose duty is outside the headline's figure or range (disclosed under it). */
+export type UnlikelyOther = { codes: string[]; confidence: number; minMinor: number; maxMinor: number } | null;
 
 /** Not refusals: the line's verified row (or the case/band split) only needs answers the seller can give. */
 const ASKS: readonly CantReason[] = ['NEEDS_FACTS', 'NEEDS_SPLIT'];
@@ -63,7 +69,14 @@ export function headlineOf(candidates: CandidateView[], stopped: StoppedView | n
   }
   const duties = likely.flatMap((c) => (c.outcome.kind === 'ESTIMATE' ? [c.outcome.dutyMinor] : []));
   if (duties.length < likely.length) return { kind: 'ASKING', unlikelyRefused };
-  return { kind: 'FIGURE', minMinor: Math.min(...duties), maxMinor: Math.max(...duties), unlikelyRefused };
+  const [minMinor, maxMinor] = [Math.min(...duties), Math.max(...duties)];
+  const other = byConfidence.flatMap((c) =>
+    !likely.includes(c) && c.outcome.kind === 'ESTIMATE' && (c.outcome.dutyMinor < minMinor || c.outcome.dutyMinor > maxMinor) ? [{ code: c.code, confidence: c.confidence, duty: c.outcome.dutyMinor }] : [],
+  );
+  const unlikelyOther: UnlikelyOther = other.length
+    ? { codes: other.map((o) => o.code), confidence: other.reduce((a, o) => a + o.confidence, 0), minMinor: Math.min(...other.map((o) => o.duty)), maxMinor: Math.max(...other.map((o) => o.duty)) }
+    : null;
+  return { kind: 'FIGURE', minMinor, maxMinor, unlikelyRefused, unlikelyOther };
 }
 
 const STOPPED_TITLE = { TOO_BROAD: 'Too many possible HTS lines', NO_CANDIDATES: 'No HTS line matched', INVALID_OUTPUT: 'Couldn’t classify this description' } as const;
@@ -103,4 +116,15 @@ export function unlikelyRefusedText(h: Headline): string | null {
   return u.codes.length === 1
     ? `1 less likely line (${pct}%) can’t be estimated: ${u.codes[0]}.`
     : `${u.codes.length} less likely lines (${pct}% combined) can’t be estimated: ${u.codes.join(', ')}.`;
+}
+
+/** One line under a figure for less likely lines at another duty; null when there are none (or no figure). */
+export function unlikelyOtherText(h: Headline): string | null {
+  const u = h.kind === 'FIGURE' ? h.unlikelyOther : null;
+  if (!u) return null;
+  const pct = Math.round(u.confidence * 100);
+  const duty = u.minMinor === u.maxMinor ? formatUsd(usd(u.minMinor)) : `${formatUsd(usd(u.minMinor))} to ${formatUsd(usd(u.maxMinor))}`;
+  return u.codes.length === 1
+    ? `1 less likely line (${pct}%) would be ${duty}: ${u.codes[0]}.`
+    : `${u.codes.length} less likely lines (${pct}% combined) would be ${duty}: ${u.codes.join(', ')}.`;
 }

@@ -412,7 +412,8 @@ AC:
       the most confident refused line, never a figure (lines that could be estimated are listed below it); otherwise any
       likely line that needs answers → the questions, no figure; otherwise a figure or range covering every likely line.
       Less likely lines never produce or block the headline; refused ones get one line under it ("N less likely lines (X%
-      combined) can't be estimated: <codes>."). Production reports: 2026-10-13 the kettle (Japan, $90) showed the 1%
+      combined) can't be estimated: <codes>."), and so do estimated ones whose duty is outside the headline's figure or
+      range ("1 less likely line (5%) would be $55.80: <code>."; none when the duty is the same). Production reports: 2026-10-13 the kettle (Japan, $90) showed the 1%
       line's $11.25 next to refused 92% and 5% lines; after that fix the knife (Japan, $140) became "Can't estimate"
       because of a refused 7% line, hiding its 88% verified row ($43.54 after Yes/No). Tests: `estimateHeadline.test.ts`,
       e2e.

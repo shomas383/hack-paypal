@@ -5,7 +5,7 @@
 // after 148fad3 the knife (Japan, $140) showed "Can't estimate" because of a 7% plastic-handle line, so its verified row's
 // $43.54 could never reach the headline.
 import { describe, expect, it } from 'vitest';
-import { headlineTitle, LIKELY_CONFIDENCE, refusalText, unlikelyRefusedText, type Headline } from '@/domain/estimator/headline';
+import { headlineTitle, LIKELY_CONFIDENCE, refusalText, unlikelyOtherText, unlikelyRefusedText, type Headline } from '@/domain/estimator/headline';
 import { toInputRecord, type EstimateRequestT } from '@/domain/estimator/request';
 import { estimateViewOf, type EstimateView } from '@/domain/estimator/view';
 import { loadVerifiedRates } from '@/domain/rates/__fixtures__/verified';
@@ -52,20 +52,20 @@ describe('(1) the knife (production, after 148fad3): 88% needs answers, 7% + 3% 
     expect(before.candidates.map((c) => [c.code, c.confidence])).toEqual([
       ['8211.92.9030', 0.88],
       ['8211.92.2000', 0.07],
-      ['8211.92.6000', 0.03],
+      ['8211.92.9060', 0.03],
     ]);
     expect(kinds(before)).toEqual(['NEEDS_FACTS', 'UNMODELED_REGIME', 'UNMODELED_REGIME']);
   });
 
   it('before the answers: the headline asks; the less likely refusals are disclosed, not the headline', () => {
-    expect(before.headline).toEqual({ kind: 'ASKING', unlikelyRefused: { codes: ['8211.92.2000', '8211.92.6000'], confidence: 0.1 } });
+    expect(before.headline).toEqual({ kind: 'ASKING', unlikelyRefused: { codes: ['8211.92.2000', '8211.92.9060'], confidence: 0.1 } });
     expect(headlineTitle(before.headline!)).toBe('Answer the questions below to estimate the duty');
-    expect(unlikelyRefusedText(before.headline!)).toBe('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.6000.');
+    expect(unlikelyRefusedText(before.headline!)).toBe('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.9060.');
   });
 
   it('after Yes / No: the verified row’s $43.54 is the headline figure, with the same disclosure', () => {
     expect(kinds(after)[0]).toBe(4354);
-    expect(after.headline).toEqual({ kind: 'FIGURE', minMinor: 4354, maxMinor: 4354, unlikelyRefused: { codes: ['8211.92.2000', '8211.92.6000'], confidence: 0.1 } });
+    expect(after.headline).toEqual({ kind: 'FIGURE', minMinor: 4354, maxMinor: 4354, unlikelyRefused: { codes: ['8211.92.2000', '8211.92.9060'], confidence: 0.1 }, unlikelyOther: null });
     expect(headlineTitle(after.headline!)).toBe('US import duty (est.)');
   });
 });
@@ -106,7 +106,7 @@ describe('(3) every likely line estimated → the figure', () => {
       { code: '6203.42.4518', confidence: 0.2 },
       { code: '6203.42.4503', confidence: 0.1 },
     ]);
-    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320, unlikelyRefused: null });
+    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320, unlikelyRefused: null, unlikelyOther: null });
     expect(headlineTitle(v.headline!)).toBe('US import duty (est.)');
     expect(unlikelyRefusedText(v.headline!)).toBeNull();
   });
@@ -114,17 +114,52 @@ describe('(3) every likely line estimated → the figure', () => {
   it('jeans, fabric not stated: the range covers both likely lines ($33.20 to $55.80)', () => {
     const v = fixtureView('jeans', {}, NOW)!;
     expect(kinds(v)).toEqual([3320, 5580]);
-    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 5580, unlikelyRefused: null });
+    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 5580, unlikelyRefused: null, unlikelyOther: null });
     expect(headlineTitle(v.headline!)).toBe('US import duty (est.), depending on the HTS line');
   });
 
-  it('a less likely estimated line doesn’t widen the range', () => {
+  it('90% at $33.20 + 5% at $55.80: the less likely line doesn’t widen the figure; it gets a disclosure line', () => {
     const v = view(JEANS, [
       { code: '6203.42.4511', confidence: 0.9 },
       { code: '6203.43.9011', confidence: 0.05 },
     ]);
     expect(kinds(v)).toEqual([3320, 5580]);
-    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320, unlikelyRefused: null });
+    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320, unlikelyRefused: null, unlikelyOther: { codes: ['6203.43.9011'], confidence: 0.05, minMinor: 5580, maxMinor: 5580 } });
+    expect(unlikelyOtherText(v.headline!)).toBe('1 less likely line (5%) would be $55.80: 6203.43.9011.');
+  });
+
+  it('less likely lines at the headline’s duty: no line', () => {
+    const v = view(JEANS, [
+      { code: '6203.42.4511', confidence: 0.9 },
+      { code: '6203.42.4518', confidence: 0.05 },
+    ]);
+    expect(kinds(v)).toEqual([3320, 3320]);
+    expect(v.headline).toMatchObject({ kind: 'FIGURE', unlikelyOther: null });
+    expect(unlikelyOtherText(v.headline!)).toBeNull();
+  });
+
+  it('several less likely lines with other duties: plural, combined %, their range', () => {
+    const v = view(JEANS, [
+      { code: '6203.42.4511', confidence: 0.85 },
+      { code: '6203.43.9011', confidence: 0.06 },
+      { code: '6203.42.4518', confidence: 0.05 },
+      { code: '8516.79.0000', confidence: 0.04 },
+    ]);
+    const other = kinds(v)[3] as number;
+    expect(kinds(v)).toEqual([3320, 5580, 3320, other]);
+    expect(other).not.toBe(3320);
+    const [lo, hi] = [Math.min(other, 5580), Math.max(other, 5580)];
+    const usd = (c: number) => `$${(c / 100).toFixed(2)}`;
+    expect(unlikelyOtherText(v.headline!)).toBe(`2 less likely lines (10% combined) would be ${usd(lo)} to ${usd(hi)}: 6203.43.9011, 8516.79.0000.`);
+  });
+
+  it('a range headline only discloses less likely lines outside it', () => {
+    const v = view(JEANS, [
+      { code: '6203.42.4511', confidence: 0.6 },
+      { code: '6203.43.9011', confidence: 0.35 },
+      { code: '6203.42.4518', confidence: 0.05 },
+    ]);
+    expect(v.headline).toMatchObject({ kind: 'FIGURE', minMinor: 3320, maxMinor: 5580, unlikelyOther: null });
   });
 });
 
