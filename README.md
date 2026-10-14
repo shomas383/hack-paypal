@@ -242,9 +242,9 @@ a listing can't be quoted); health check `/api/health`. Every step runs through 
 allow `corepack enable`). Register the sandbox webhook at `/api/webhooks/paypal`.
 
 ## Tests
-- **947 unit tests** in 88 files (Vitest), incl. fast-check properties for money and rates, the capture policy, the gate with
+- **968 unit tests** in 92 files (Vitest), incl. fast-check properties for money and rates, the capture policy, the gate with
   deliberately broken rules, and CN/JP/DE estimates over the committed data.
-- **13 Playwright tests**: the sandbox demo path, the agent replay and the estimate page (with axe accessibility checks).
+- **14 Playwright tests**: the sandbox demo path, the agent replay and the estimate page (with axe accessibility checks).
 - **Golden tests** prove the engine reproduces each verified row's reviewed duty exactly (15 cases, P01–P14) and that the
   estimator reproduces every verified case from official text alone, or refuses on the regime the row records.
 - **Classifier eval** (11 verified products, 3 runs, 2026-10-08; [SPEC §4.1](docs/SPEC.md)): wrong code auto-accepted 0 of 33
