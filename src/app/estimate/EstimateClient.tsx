@@ -8,6 +8,7 @@ import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, resultNote, stoppedText, plainBasis, refText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
+import { headlineOf, headlineTitle, refusalText } from '@/domain/estimator/headline';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
 import { parseUsdInput } from '@/domain/seller/form';
@@ -221,27 +222,24 @@ export function EstimateClient({ fixture, initial }: { fixture: string | null; i
   );
 }
 
-/** Title when the classifier stopped before choosing a line. */
-const STOPPED_TITLE = { TOO_BROAD: 'Too many possible HTS lines', NO_CANDIDATES: 'No HTS line matched', INVALID_OUTPUT: 'Couldn’t classify this description' } as const;
-
 function Result({ view, answers, answering, onAnswer, headingRef }: { view: View; answers: Answers; answering: boolean; onAnswer: (a: Answers) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
   const estimated = view.candidates.filter((c): c is CandidateView & { outcome: Extract<OutcomeView, { kind: 'ESTIMATE' }> } => c.outcome.kind === 'ESTIMATE');
-  const duties = estimated.map((c) => c.outcome.dutyMinor);
-  const min = Math.min(...duties);
-  const max = Math.max(...duties);
+  // The headline is decided by code on the server (headlineOf): a refusal whenever any shown line is refused, and a figure
+  // only when it covers every shown line.
+  const headline = view.headline ?? headlineOf(view.candidates, view.stopped);
+  const figure = headline.kind === 'FIGURE' ? headline : null;
+  const refusal = headline.kind === 'REFUSED' ? headline : null;
   const levels = separatingLevels(view.candidates.map((c) => c.chain));
   // The estimator's own disclosures (e.g. special-program rates), once each, as sentences.
   // The not-a-ruling notice is shown on its own under the result, so it is left out here.
   const disclosures = [...new Set(estimated.flatMap((c) => c.outcome.disclosures))].filter((d) => d !== view.notice).map((d) => (/[.!?]$/.test(d) ? d : `${d}.`));
   // Every candidate estimated and all at the same duty: one combined sentence; the top line in full, the rest collapsed.
-  const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && min === max;
+  const sameDuty = estimated.length > 1 && figure !== null && figure.minMinor === figure.maxMinor;
   // Where the shown lines' official descriptions part (code; the model's names only label a matching difference).
   const differences = lineDifferences(view.candidates.map((c) => ({ chain: c.chain, dutyMinor: c.outcome.kind === 'ESTIMATE' ? c.outcome.dutyMinor : null })), view.separating);
-  const note = resultNote({ shown: view.candidates.length, sameDuty, differences, uncertain: isUncertain(view.reasons), reasons: view.reasons, amount: estimated.length ? formatUsd(m(min)) : '' });
+  const note = resultNote({ shown: view.candidates.length, sameDuty, differences, uncertain: isUncertain(view.reasons), reasons: view.reasons, amount: figure ? formatUsd(m(figure.minMinor)) : '' });
   const sameText = note?.kind === 'same' ? note.text : null;
   const reason = note?.kind === 'reason' ? note.text : null;
-  // A line whose verified row (or split) only needs answers isn't a refusal: the title asks instead.
-  const asking = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && (c.outcome.reason === 'NEEDS_FACTS' || c.outcome.reason === 'NEEDS_SPLIT'));
   const needsSplit = view.candidates.some((c) => c.outcome.kind === 'CANT_ESTIMATE' && c.outcome.reason === 'NEEDS_SPLIT');
   // names of the duty-changing differences, only where a model name clearly matches the official text
   const decides = differences.filter((d) => d.changesDuty && d.name).map((d) => `${d.name!.charAt(0).toUpperCase()}${d.name!.slice(1)}`);
@@ -251,27 +249,24 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   return (
     <div className={s.resultBody} data-testid="estimate-result">
       <h3 ref={headingRef} tabIndex={-1} className={s.summaryTitle}>
-        {view.candidates.length === 0
-          ? STOPPED_TITLE[view.stopped?.reason ?? 'NO_CANDIDATES']
-          : estimated.length === 0
-            ? asking
-              ? 'Answer the questions below to estimate the duty'
-              : 'Can’t estimate this product yet'
-            : min === max
-              ? 'US import duty (est.)'
-              : 'US import duty (est.), depending on the HTS line'}
+        {headlineTitle(headline)}
       </h3>
       {view.candidates.length === 0 ? <p data-testid="estimate-stopped">{stoppedText(view.stopped ?? { reason: 'NO_CANDIDATES', lines: null, differAt: [] })}</p> : null}
-      {estimated.length > 0 ? (
+      {refusal ? (
+        <p className={s.summary} data-testid="estimate-refusal">
+          {refusalText(refusal)}
+        </p>
+      ) : null}
+      {figure ? (
         <p className={s.summary} data-testid="estimate-summary">
-          {min === max ? (
+          {figure.minMinor === figure.maxMinor ? (
             <>
-              <Money value={m(min)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale
+              <Money value={m(figure.minMinor)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale
               {sameDuty ? ' for every likely HTS line' : ''}.
             </>
           ) : (
             <>
-              <Money value={m(min)} strong /> to <Money value={m(max)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale.
+              <Money value={m(figure.minMinor)} strong /> to <Money value={m(figure.maxMinor)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale.
             </>
           )}
         </p>
@@ -287,7 +282,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
           <span>{sameText}</span>
         </p>
       ) : null}
-      {levels && estimated.length > 1 && min !== max ? (
+      {levels && figure && estimated.length > 1 && figure.minMinor !== figure.maxMinor ? (
         <p className={s.separating} data-testid="estimate-separating">
           <Icon name="info" />
           <span>
@@ -312,6 +307,16 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
               {others.map((c, i) => candidate(c, i + 1))}
             </ol>
           </Disclosure>
+        </>
+      ) : refusal?.estimable ? (
+        <>
+          <ol className={s.candidates}>{view.candidates.map((c, i) => (c.outcome.kind === 'ESTIMATE' ? null : candidate(c, i)))}</ol>
+          <section aria-labelledby="est-estimable-title" data-testid="estimate-estimable">
+            <h4 id="est-estimable-title" className={s.estimableTitle}>
+              {refusal.estimable.label}
+            </h4>
+            <ol className={s.candidates}>{view.candidates.map((c, i) => (c.outcome.kind === 'ESTIMATE' ? candidate(c, i) : null))}</ol>
+          </section>
         </>
       ) : view.candidates.length > 0 ? (
         <ol className={s.candidates}>{view.candidates.map(candidate)}</ol>

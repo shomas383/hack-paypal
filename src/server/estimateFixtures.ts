@@ -47,12 +47,15 @@ export const ESTIMATE_FIXTURES: Record<string, Fixture> = {
     candidates: [{ code: '8211.92.9030', confidence: 0.86 }],
     separating: [],
   },
-  // Lines the estimator refuses (no verified row): a steel kettle, named by note 16(c)(vii) and heading 9903.82.03.
+  // Lines the estimator refuses (no verified row): a steel kettle, named by note 16(c)(vii) and heading 9903.82.03. The
+  // candidates of the production report of 2026-10-13: the 1% electric-appliance line estimates, but the headline must
+  // still be the refusal (it showed that line's $11.25).
   unsupported: {
     request: { title: 'Stainless steel stovetop kettle, 1.5 L', origin: 'JP', sellingPriceMinor: 9000, shippingMinor: 1500 },
     candidates: [
-      { code: '7323.93.0015', confidence: 0.78 },
-      { code: '7323.93.0045', confidence: 0.15 },
+      { code: '7323.93.0015', confidence: 0.92 },
+      { code: '7323.93.0045', confidence: 0.05 },
+      { code: '8516.79.0000', confidence: 0.01 },
     ],
     separating: [],
   },

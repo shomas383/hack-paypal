@@ -8,6 +8,7 @@ import type { HeadingTable } from './headings';
 import { DISCLOSURE_TEXT, estimateVerifiedFirst, sourceLabel, type CantReason, type Estimate, type VerifiedFact } from './estimate';
 import type { EstimateInputRecord } from './request';
 import { separatingLevels } from './explain';
+import { headlineOf, type Headline } from './headline';
 
 export interface CandidateIn {
   code: string;
@@ -128,6 +129,8 @@ export interface EstimateView {
   candidates: CandidateView[];
   /** READY with no candidate: why the classifier stopped, and (TOO_BROAD) how many lines and where they first differ. */
   stopped: StoppedView | null;
+  /** READY: what the headline says (refusal, question, or a figure covering every shown line); null otherwise. */
+  headline: Headline | null;
   answeredFacts: Record<string, boolean>;
   estimatorVersion: string;
   rateVersion: string;
@@ -159,6 +162,9 @@ function stoppedView(c: NonNullable<EstimateRowIn['classification']>, chains: Ma
 export function estimateViewOf(row: EstimateRowIn, data: EstimatorData, verified: RateFile, entryDate: string): EstimateView {
   const p = row.input.pricing;
   const c = row.classification;
+  const ready = row.status === 'READY' && c !== null;
+  const candidates = ready ? estimateCandidates(c.candidates, row.input, data, verified, entryDate) : [];
+  const stopped = ready ? stoppedView(c, data.chains) : null;
   return {
     id: row.id,
     status: row.status,
@@ -170,8 +176,9 @@ export function estimateViewOf(row: EstimateRowIn, data: EstimatorData, verified
     cached: row.cachedFrom !== null,
     reasons: c ? (c.outcome === 'OK' ? c.reasons : [c.outcome, ...c.reasons]) : [],
     separating: c?.separating ?? [],
-    candidates: row.status === 'READY' && c ? estimateCandidates(c.candidates, row.input, data, verified, entryDate) : [],
-    stopped: row.status === 'READY' && c ? stoppedView(c, data.chains) : null,
+    candidates,
+    stopped,
+    headline: ready ? headlineOf(candidates, stopped) : null,
     answeredFacts: Object.fromEntries(Object.entries(row.input.facts.attributes).flatMap(([k, f]) => (f.value === null ? [] : [[k, f.value]]))),
     estimatorVersion: data.version,
     rateVersion: verified.version,

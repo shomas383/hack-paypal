@@ -407,6 +407,11 @@ AC:
 - [x] After a valid_until the API and page refuse with the rebuild message; the November 9/10 boundaries don't (tests).
 - [x] Public API: strict body, owner-only GET, `estimate` rate limit (`ESTIMATE_LIMIT_PER_SESSION_PER_HOUR` 5, `_PER_IP_PER_HOUR`
       10, `ESTIMATE_DAILY_CEILING` 100), 24 h classification cache; migration 0011.
+- [x] Headline (`headline.ts`, decided by code in the view): if any shown line is refused, the headline is the refusal,
+      citing what named the most confident refused line, never a figure; lines that could be estimated are listed below it
+      ("Less likely lines that could be estimated" when all are less likely). A line that only needs answers → the
+      question, no figure. A figure or range covers every shown line. Production report 2026-10-13: the kettle (Japan,
+      $90) showed the 1% line's $11.25 next to refused 92% and 5% lines (tests: `estimateHeadline.test.ts`, e2e).
 
 ## 5. Data model (initial)
 listings, classifications (+review status), rate_versions, quotes (immutable: lines, totals, rateVersion, expiresAt),

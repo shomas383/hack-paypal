@@ -153,10 +153,32 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
 });
 
 test('can’t estimate: refusals cite the note and headings, with the official text one click away', async ({ page }) => {
+  // Production report 2026-10-13: the 92% and 5% lines are refused and the 1% line estimates $11.25. The headline is the
+  // refusal, never that figure; the line that could be estimated is shown below, labelled, with its confidence.
   await run(page, 'unsupported');
   await expect(page.getByRole('heading', { name: 'Can’t estimate this product yet' })).toBeVisible();
+  await expect(page.getByTestId('estimate-refusal')).toHaveText(
+    'The most likely line, 7323.93.0015 (confidence 92%), is named by heading 9903.82.03 and U.S. note 16(c)(vii) to subchapter III, which the estimator doesn’t model yet.',
+  );
   await expect(page.getByTestId('estimate-summary')).toHaveCount(0);
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
+  const estimable = page.getByTestId('estimate-estimable');
+  await expect(estimable.getByRole('heading', { name: 'Less likely lines that could be estimated' })).toBeVisible();
+  const appliance = estimable.getByTestId('estimate-candidate-8516.79.0000');
+  await expect(appliance).toContainText('Confidence 1%');
+  await expect(appliance.getByTestId('estimate-duty')).toHaveText('11.25');
+  await expect(estimable.locator('[data-testid^="estimate-candidate-"]')).toHaveCount(1);
+  // nothing above the estimable section shows a figure
+  const headlineArea = await page.getByTestId('estimate-result').evaluate((el) => {
+    const stop = el.querySelector('[data-testid="estimate-candidate-7323.93.0015"]');
+    let text = '';
+    for (const node of Array.from(el.children)) {
+      if (node.contains(stop)) break;
+      text += node.textContent ?? '';
+    }
+    return text;
+  });
+  expect(headlineArea).not.toContain('$');
   await expect(page.getByTestId('estimate-disclosures').locator('summary')).toHaveText('What the estimator includes and leaves out');
   const reasons = page.getByTestId('estimate-cant-reason');
   await expect(reasons).toHaveCount(2);

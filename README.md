@@ -141,6 +141,10 @@ flowchart LR
   (`compare_landed_costs` quotes exactly the search matches) and quoting a listing no search in the run returned is refused.
 - **A citation without a verified source.** A CBP bulletin was cited on duty lines without a verified row behind it; rate
   version v5 removed it (figures unchanged).
+- **A headline figure next to refused lines.** On production, a steel kettle's 92% and 5% lines were refused (heading
+  9903.82.03, U.S. note 16(c)(vii)) but the headline said "$11.25 on a $90.00 sale", the duty of a 1% electric-appliance
+  line. Code now decides the headline: if any shown line is refused, it is the refusal and cites what named the most likely
+  refused line; a figure or range always covers every shown line, and lines that could be estimated are listed below it.
 - **A new HTS revision mid-build.** HTS 2026 Rev. 21 replaced Rev. 20 during the build. A full-text comparison found no
   change to any rate, heading or note text our rows use; the data moved to `2026-rev21` with identical figures.
 
@@ -242,7 +246,7 @@ a listing can't be quoted); health check `/api/health`. Every step runs through 
 allow `corepack enable`). Register the sandbox webhook at `/api/webhooks/paypal`.
 
 ## Tests
-- **968 unit tests** in 92 files (Vitest), incl. fast-check properties for money and rates, the capture policy, the gate with
+- **981 unit tests** in 93 files (Vitest), incl. fast-check properties for money and rates, the capture policy, the gate with
   deliberately broken rules, and CN/JP/DE estimates over the committed data.
 - **14 Playwright tests**: the sandbox demo path, the agent replay and the estimate page (with axe accessibility checks).
 - **Golden tests** prove the engine reproduces each verified row's reviewed duty exactly (15 cases, P01–P14) and that the

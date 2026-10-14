@@ -85,7 +85,7 @@ Timing: 25 + 35 + 40 + 35 + 15 + 20 = 170 s = 2:50. 324 spoken words ≈ 114 wpm
   - The queue has rows with a confidence value and "Needs review".
 
 ## 6 · Trust — end card — 2:30–2:50 (20 s, 50 words ≈ 150 wpm, the fastest scene; rehearse the pace)
-- **Screen:** our own end-card slide: **"15 golden cases to the cent · 0 of 33 wrong codes auto-accepted · 968 tests
+- **Screen:** our own end-card slide: **"15 golden cases to the cent · 0 of 33 wrong codes auto-accepted · 981 tests
   passing"**, then "Landed — duty included, before you pay. Sandbox only."
 - **Say:** "Every verified duty is reproduced to the cent by golden tests. The classifier auto-accepted zero wrong
   codes in thirty-three answers. The AI proposes, code decides, and a human approves every payment.
@@ -93,7 +93,7 @@ Timing: 25 + 35 + 40 + 35 + 15 + 20 = 170 s = 2:50. 324 spoken words ≈ 114 wpm
 - **Numbers (checked 2026-10-13):**
   - 15 = cases in `data/eval/golden-2026-rev21-v2.json` (P01–P14, P07 twice).
   - 0 of 33 = SPEC §4.1: wrong ∧ auto 0 across 33 verified answers (11 products × 3 runs).
-  - 968 = `pnpm test` unit tests, in 92 files.
+  - 981 = `pnpm test` unit tests, in 93 files.
   - Re-check all three before the final take.
 
 ## Before recording

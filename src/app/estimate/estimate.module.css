@@ -87,6 +87,14 @@
   border-radius: var(--radius-sm);
 }
 
+/* Under a refusal headline: the lines that could still be estimated. */
+.estimableTitle {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-16);
+  line-height: var(--leading-16);
+  font-weight: var(--weight-semibold);
+}
+
 .summary {
   font-size: var(--text-16);
   line-height: var(--leading-16);
