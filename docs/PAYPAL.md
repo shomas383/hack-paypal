@@ -240,6 +240,16 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   '/usr/bin/pnpm'`, Node 24.21.0). Build, pre-deploy and start all run `npx --yes pnpm@10.32.1 …`, so every step uses our
   pinned pnpm rather than the preinstalled one. Same commands verified locally (install --frozen-lockfile, build, db:migrate, db:seed).
 
+## Judges' sandbox buyers (decided 2026-10-14)
+- Judges pay with a dedicated sandbox **personal** account (plus a spare) that the owner creates in our developer
+  dashboard. It is not the `.env` buyer (`PAYPAL_SANDBOX_BUYER_EMAIL` stays the invoice recipient and the e2e login).
+  Credentials go only in Devpost's testing field. Capture doesn't check who the payer is (`decideCapture` checks the
+  stored quote, the approval, the authorization and the caps), so any sandbox personal account that can log in can pay.
+- VERIFY (owner, by hand): a sandbox personal account created under a *different* developer account can approve and pay
+  an order from our sandbox app (the README's "use your own sandbox account" fallback relies on it). Record the date and
+  the PayPal order id here.
+- Keep both judge accounts working until winners are announced (Dec 21, 2026), then rotate or delete them.
+
 ## Agent Toolkit `get_order` — live run on production (2026-10-13)
 - **PASS**, Render deploy `d2d8117` (`get_order_status` returns an allow-list only: id, intent, status, custom_id, amount,
   breakdown, authorization/capture statuses). One /agent run per message, same browser session as a normal checkout.

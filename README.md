@@ -9,6 +9,17 @@ the buyer, or their shopping agent, sees the delivered price before paying.
 > Duty figures are estimates, **not customs rulings**. Seeded listings charge a flat $25.00 demo shipping rate (not a
 > carrier quote); shipping is excluded from customs value, so it never changes the duty.
 
+## Try it
+- **Buyer checkout** (`/listings` → **Get landed cost** → **Approve purchase**): the PayPal sandbox popup needs a sandbox
+  **personal** account. Judges can use the sandbox buyer login in the Devpost testing instructions. Or use your own: in the
+  [PayPal developer dashboard](https://developer.paypal.com/dashboard/), open Sandbox accounts (under Testing tools), create
+  a **Personal** account, and log in to the popup with its email and password (shown in the account's details). No real
+  money moves.
+- **Shopping agent** (`/agent`): try "automatic diver watch under $400 delivered".
+- **Estimate** (`/estimate`): any product description, made in Japan, Germany or China.
+- **Seller console:** [Seller console (read-only demo)](https://landed-hd19.onrender.com/seller/demo). The review queue and
+  the orders and duty ledger in AG Grid; no passcode, nothing can be changed.
+
 ## The problem
 A US buyer orders from an overseas seller and is surprised by an import-duty bill at the door, or the parcel is refused.
 Sellers who ship "delivered duty paid" (DDP) absorb that cost themselves, and a wrong tariff code or a missed add-on
@@ -54,6 +65,8 @@ anyone pays.
 - **Accept, override** (only official lines the run matched, with a reason), **undo** and **publish**, each recorded with who,
   when and why. A published listing quotes only if a verified rate row exists.
 - **Review queue** and **orders and duty ledger** in AG Grid, with CSV export.
+- **No passcode?** [Seller console (read-only demo)](https://landed-hd19.onrender.com/seller/demo) shows the queue, each
+  classification's questions and audit trail, and the ledger, with every write control removed.
 
 ![Review queue: the Japanese watch in review, with the jewel-count question built from the official HTS descriptions](docs/images/seller-review.png)
 
@@ -187,6 +200,9 @@ flowchart LR
   model or the browser.
 - **Rate limits** before any model call (per session, IP and day); the seller console locks sign-in after 5 wrong passcodes
   per IP for 15 minutes.
+- **The public seller view is read-only on the server.** `/seller/demo` reads through GET-only routes whose payloads are
+  allowlisted field by field (no seller session, IP, email or payer field). Every write route still needs the owner's
+  session. It is off unless `SELLER_PUBLIC_VIEW=1`.
 
 ## Tech stack
 TypeScript (strict) · Next.js App Router · Node 24 LTS · pnpm · Postgres + Drizzle ORM · Vercel AI SDK with Claude
@@ -240,6 +256,7 @@ pnpm dev                    # http://localhost:3000
 | `AGENT_LIMIT_PER_SESSION_PER_HOUR`, `AGENT_DAILY_CEILING` | Agent run budget |
 | `ESTIMATE_LIMIT_PER_SESSION_PER_HOUR`, `ESTIMATE_LIMIT_PER_IP_PER_HOUR`, `ESTIMATE_DAILY_CEILING` | Public estimate budget |
 | `SELLER_CONSOLE_PASSCODE` | Enables `/seller` (≥ 12 characters); unset → 404 |
+| `SELLER_PUBLIC_VIEW` | `1` enables the public read-only `/seller/demo`; unset or `0` → 404 |
 | `TRUSTED_PROXY_HOPS` | Proxy hops to skip when reading the client IP |
 
 **Deploy (Render).** `render.yaml` is a Blueprint (web service + Postgres). Secrets are entered when prompted; each deploy

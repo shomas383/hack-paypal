@@ -314,6 +314,17 @@ AC:
   columns, data rows only, exact decimals). No buyer data.
 - Demo samples (`src/domain/seller/samples.ts`, also `pnpm seller:seed`): the Japanese-language watch without a jewel count
   and P08's denim title.
+- Public read-only view `/seller/demo` (so judges can see the queue and the ledger without the passcode; decided
+  2026-10-14). Env `SELLER_PUBLIC_VIEW`: unset or `0` → page and API are 404; `1` → on; anything else refuses to boot.
+  - API: `GET /api/seller/public/{queue,orders,classifications/<id>}` only, no seller session read or created. Payloads go
+    through allowlist projections (`src/domain/seller/publicView.ts`, keys copied by name), so there is no "by" (seller
+    session), session, IP, email or payer field. The ledger already has no buyer data.
+  - The detail is read without the interrupted-run close-out, so a public read never writes.
+  - Page: Review queue and Orders and duty tabs (no Classify; the read-only note points to `/estimate`).
+  - Panel: the code-built questions and the seller's recorded answers as plain lists. No form, radio, Accept / Override /
+    Undo / Publish, override form or publish dialog is rendered. CSV export stays.
+  - Every owner write route still needs the owner's seller session (401 without it, also while the public view is on).
+  - With the flag on, the `/seller` sign-in page links "No passcode? See the read-only demo →".
 AC:
 - [x] Reviewer override is persisted with who/when/why and changes subsequent quotes. (Overrides are recorded actions with
       the reason; publishing uses the settled code, and the listing quotes from that code's verified rate row. Unit tests:
@@ -323,6 +334,14 @@ AC:
       watch → jewel-count question + exclusions, "jewel count" cleared, low confidence stayed; denim → two choice questions +
       exclusions, all cleared → auto-accepted 6203.42.4511).
 - [x] Orders and duty ledger with CSV export (14 sandbox orders, captured duty $233.13, CSV of 14 rows, 2026-10-10).
+- [x] Public read-only view, local (2026-10-14):
+  - unit: env flag; allowlist projections, including a fast-check property that extra keys never survive; public routes
+    404 when off, GET only, no forbidden key; all six write routes 401 without the owner session with the flag on; no
+    close-out write;
+  - e2e `seller-public.spec.ts`: no form, radio, dialog or action in the panel; ledger and CSV; sign-in link; axe WCAG 2.2
+    AA at 375 and 1280 px.
+- [ ] Public read-only view on production: `SELLER_PUBLIC_VIEW=1` set on Render after the deploy that contains it, then
+      checked from a fresh browser.
 
 ### 4.6 DDP invoice path (PayPal Invoicing v2)
 - Draft invoice → send, with duty itemized (see docs/PAYPAL.md for field choice). For direct/repeat buyers.

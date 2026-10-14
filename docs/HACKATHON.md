@@ -4,7 +4,8 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 ## Dates
 - Submission period: Oct 1, 2026 9:00 AM PT – **Nov 12, 2026 12:00 PM PT** (PST after DST ends Nov 1; = 20:00 UTC; = Nov 13 05:00 JST).
 - Judging: Dec 1, 2026 (2:00 pm PT) – Dec 15, 2026 (8:00 am PT). Winners announced on or around Dec 21, 2026 (2:00 pm PT), per the official rules.
-- Project must remain available free for testing until judging ends (Dec 15) → keep the hosted app + sandbox app alive through Dec 15.
+- Project must remain available free for testing until judging ends → keep the hosted app, the sandbox app and the judge
+  sandbox buyers working until winners are announced (**Dec 21, 2026**); then rotate or delete the judge sandbox buyers.
 
 ## Requirements
 - Build/update an app integrating the PayPal developer platform (free sandbox) + any AI tool. PayPal must be central.
@@ -41,10 +42,34 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); AGPL-3.0 LICENSE visible in About (any open source license meets the rule); README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1
 - [ ] `.env.example` complete; no secrets in git history (run a secret scan BEFORE making the repo public)
 - [x] Sandbox webhook URL points at the live Render URL (not a dead quick tunnel) — live deliveries verified 2026-10-07
-- [ ] Hosted demo works from a fresh browser; seeded data present; stays up through Dec 15 (not on a free tier that sleeps/expires)
+- [ ] Hosted demo works from a fresh browser; seeded data present; stays up until winners are announced, Dec 21, 2026 (not on a
+  free tier that sleeps/expires)
+- [ ] `SELLER_PUBLIC_VIEW=1` on Render after the deploy that contains `/seller/demo`; open it from a fresh browser
+- [ ] Owner: create a judge sandbox **personal** buyer and a spare (not the `.env` buyer, which stays the invoice recipient
+  and e2e login); fund them; one production checkout with each. Credentials go only in the Devpost testing field, never in
+  the repo
+- [ ] VERIFY (owner, by hand): a sandbox personal account created under a *different* developer account can pay our
+  sandbox merchant (the README fallback relies on it; if it fails, remove that fallback from the README). Record the
+  result in docs/PAYPAL.md
+- [ ] VERIFY (owner, by hand): who can see Devpost's testing-instructions field (judges/managers only, or public)
+- [ ] After Dec 21, 2026: rotate or delete the judge sandbox buyers
 - [ ] YouTube video public, < 2:55, captions on
 - [ ] Devpost form: description, tools list (PayPal Orders v2, Payments v2, Invoicing v2, Webhooks, JS SDK v6, Agent Toolkit, Claude, AG Grid, Render), repo + video links
 - [ ] Submit by **Nov 10**; never submit on deadline day
+
+## Devpost testing instructions (draft — fill the placeholders on the form only, never here)
+> Live app: https://landed-hd19.onrender.com (PayPal **sandbox** only; no real money moves).
+> 1. Buyer checkout: /listings → pick a watch → **Get landed cost** (the US import duty is shown before any PayPal button)
+>    → **Approve purchase** → PayPal popup → log in with the sandbox buyer below. The server captures only if its policy
+>    check passes; the order then appears in the seller ledger (step 4).
+>    Sandbox buyer (test account, sandbox only): `<judge buyer email>` / `<judge buyer password>`.
+>    Or use your own sandbox personal account (README → Try it).
+> 2. Shopping agent: /agent → "automatic diver watch under $400 delivered" → confirm the budget → it compares delivered
+>    prices and prepares the checkout; you approve and pay there.
+> 3. Estimate: /estimate → any product description, made in Japan, Germany or China (live AI, rate-limited).
+> 4. Seller console (AG Grid): https://landed-hd19.onrender.com/seller/demo, read-only, no passcode: Review queue
+>    (open a row for the code-built questions and audit trail) and Orders and duty (CSV export).
+> The first request after a quiet period may take a few seconds.
 
 ## Timeline
 - Wk1 Oct 5–11: PayPal sandbox spike — DONE early (Oct 5). Still to do: ask PayPal Discord re Cart API access (nice-to-have).

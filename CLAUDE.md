@@ -157,6 +157,11 @@ CN DONE (2026-10-12, data `2026-rev21-e4`, valid_until: none — scoped to model
 name their origin. G8 green JP/DE/CN (P13 $72.09). Refused of 19,926: JP 4,532 / DE 5,004 / CN 3,739. Drafting: CN lists
 7 calls, exemptions 7 calls; 9903.05.87 blocked by GR for JP/EU and CN. e1–e3 kept as history. SPEC §4.7.
 Pushed to main 2026-10-12. After 2026-11-09 the 20(vvv)/(www) exclusion notices are stale (they state their end date): rebuild.
+Judge access (2026-10-14, estimate-mode, not pushed): public read-only `/seller/demo` behind `SELLER_PUBLIC_VIEW=1` (off
+by default; GET-only allowlisted `/api/seller/public/*`; owner write routes unchanged), with a link from the /seller
+sign-in page. README "Try it" covers the sandbox buyer (Devpost testing field) and an own-sandbox-account fallback. Owner
+to do: set the Render variable after deploy; create the judge and spare sandbox buyers; two VERIFYs by hand (docs/HACKATHON.md).
+Keep everything working until winners are announced, Dec 21, 2026.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from
 the official HTS export, add-on rules encoded per Chapter 99 program).
 
