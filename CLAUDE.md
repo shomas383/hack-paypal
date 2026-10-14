@@ -91,6 +91,7 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
 12. Never circumvent a hook or permission rule (no path splitting, encoding, alternate tools or indirection). If a guard
     blocks something you need, stop and ask me. No path obfuscation (splitting, encoding, globbing tricks) to avoid a hook;
     use the Read/Glob/Grep tools or stop and ask.
+    This includes false positives: e.g. a commit message naming a protected folder is blocked → stop and tell me; never reword it.
 13. `.env` is never read, with ONE approved exception: the secret scan's rule 3 (`pnpm secrets:scan`) reads it at runtime
     to compare added lines against local secret values. Conditions:
     - `src/guards/secretScan.ts` and `scripts/secret-scan.ts` never print, log or return secret values or matched text
