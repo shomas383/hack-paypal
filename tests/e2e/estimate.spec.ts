@@ -115,8 +115,11 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
   const checkoutTotal = (await page.getByTestId('total').innerText()).trim();
   expect([checkoutDuty, checkoutTotal]).toEqual(['$43.54', '$208.54']);
 
+  // Production report after 148fad3: refused less likely lines (7%, 3%) must not decide the headline; they get one line.
   await run(page, 'knife');
   await expect(page.getByRole('heading', { name: 'Answer the questions below to estimate the duty' })).toBeVisible();
+  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.6000.');
+  await expect(page.getByTestId('estimate-refusal')).toHaveCount(0);
   const knife = page.getByTestId('estimate-candidate-8211.92.9030');
   await expect(knife.getByTestId('estimate-needs-facts')).toHaveText(/2 questions to answer/);
   await expect(knife.getByTestId('estimate-cant-reason')).toHaveText('A verified rate row covers this line, but its duty depends on the answers below.');
@@ -139,6 +142,10 @@ test('knife (P11): the estimate asks the verified row’s two facts, then quotes
   await expect(knife.getByTestId('estimate-duty')).toHaveText(checkoutDuty.replace('$', ''));
   await expect(knife.getByTestId('estimate-ddp')).toHaveText(checkoutTotal.replace('$', ''));
   await expect(knife.getByTestId('estimate-basis')).toHaveText(['General rate: 0.4¢ each + 6.1%', 'Heading 9903.82.09 adds 25% of the price', 'Heading 9903.05.90 applies: no additional duty']);
+  // the headline now shows the verified row's figure, with the less likely refusals still disclosed
+  await expect(page.getByRole('heading', { name: 'US import duty (est.)', exact: true })).toBeVisible();
+  await expect(page.getByTestId('estimate-summary')).toHaveText(`${checkoutDuty} on a $140.00 sale.`);
+  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.6000.');
   await check(page, 'knife-answered');
 
   // An answer the verified row doesn't cover: refused, citing the note and the headings it ties the line to.
@@ -160,6 +167,7 @@ test('can’t estimate: refusals cite the note and headings, with the official t
   await expect(page.getByTestId('estimate-refusal')).toHaveText(
     'The most likely line, 7323.93.0015 (confidence 92%), is named by heading 9903.82.03 and U.S. note 16(c)(vii) to subchapter III, which the estimator doesn’t model yet.',
   );
+  await expect(page.getByTestId('estimate-unlikely-refused')).toHaveText('1 less likely line (5%) can’t be estimated: 7323.93.0045.');
   await expect(page.getByTestId('estimate-summary')).toHaveCount(0);
   await expect(page.getByTestId('estimate-separating')).toHaveCount(0);
   const estimable = page.getByTestId('estimate-estimable');

@@ -41,10 +41,16 @@ export const ESTIMATE_FIXTURES: Record<string, Fixture> = {
     separating: [],
   },
   // The P11 knife at L-P11's price and shipping: its verified row turns on two facts, asked as questions; with the answers
-  // the row covers it quotes the same figure as checkout.
+  // the row covers it quotes the same figure as checkout. Candidates as in the production report after 148fad3: 88% for
+  // 8211.92.9030 and refused less likely lines at 7% (8211.92.2000, plastic handles) and 3% (the report gives no code for
+  // the 3% line; 8211.92.6000 is a real neighbouring line the estimator also refuses) — they must not decide the headline.
   knife: {
     request: { title: "Japanese gyuto chef's knife, stainless steel blade, natural wood handle", origin: 'JP', sellingPriceMinor: 14000, shippingMinor: 2500 },
-    candidates: [{ code: '8211.92.9030', confidence: 0.86 }],
+    candidates: [
+      { code: '8211.92.9030', confidence: 0.88 },
+      { code: '8211.92.2000', confidence: 0.07 },
+      { code: '8211.92.6000', confidence: 0.03 },
+    ],
     separating: [],
   },
   // Lines the estimator refuses (no verified row): a steel kettle, named by note 16(c)(vii) and heading 9903.82.03. The

@@ -1,9 +1,11 @@
-// The headline must never show a figure while a shown line is refused, and its figure or range covers every shown line
-// (committed data). Production report 2026-10-13: "Stainless steel stovetop kettle, 1.5 L" (Japan, $90) showed
-// "$11.25 on a $90.00 sale" — the 1% electric-appliance line — while the 92% and 5% lines were refused (heading 9903.82.03,
-// note 16(c)(vii)).
+// The headline is decided by the LIKELY lines (confidence ≥ LIKELY_CONFIDENCE, committed data): any likely line refused →
+// the refusal; any likely line needing answers → the questions; else a figure or range covering every likely line. Less
+// likely lines never produce or block the headline; refused ones are disclosed in one line under it.
+// Production reports: 2026-10-13 the kettle (Japan, $90) showed the 1% line's $11.25 next to refused 92% and 5% lines;
+// after 148fad3 the knife (Japan, $140) showed "Can't estimate" because of a 7% plastic-handle line, so its verified row's
+// $43.54 could never reach the headline.
 import { describe, expect, it } from 'vitest';
-import { headlineTitle, refusalText, type Headline } from '@/domain/estimator/headline';
+import { headlineTitle, LIKELY_CONFIDENCE, refusalText, unlikelyRefusedText, type Headline } from '@/domain/estimator/headline';
 import { toInputRecord, type EstimateRequestT } from '@/domain/estimator/request';
 import { estimateViewOf, type EstimateView } from '@/domain/estimator/view';
 import { loadVerifiedRates } from '@/domain/rates/__fixtures__/verified';
@@ -15,6 +17,7 @@ const { data } = loadEstimator();
 const chains = currentHtsIndex().chains;
 const NOW = new Date('2026-10-13T12:00:00Z');
 const KETTLE: EstimateRequestT = { title: 'Stainless steel stovetop kettle, 1.5 L', origin: 'JP', sellingPriceMinor: 9000 };
+const JEANS: EstimateRequestT = { title: "Men's jeans, straight leg, 14 oz cotton denim.", origin: 'JP', sellingPriceMinor: 20000 };
 
 function view(request: EstimateRequestT, candidates: { code: string; confidence: number }[]): EstimateView {
   return estimateViewOf(
@@ -37,7 +40,37 @@ const refused = (h: Headline | null) => {
   return h as Extract<Headline, { kind: 'REFUSED' }>;
 };
 
-describe('(1) the kettle (production 2026-10-13): refused 92% + refused 5% + estimated 1% → the headline is the refusal', () => {
+it('the threshold is one named constant: 10%', () => {
+  expect(LIKELY_CONFIDENCE).toBe(0.1);
+});
+
+describe('(1) the knife (production, after 148fad3): 88% needs answers, 7% + 3% refused → the questions, then $43.54', () => {
+  const before = fixtureView('knife', {}, NOW)!;
+  const after = fixtureView('knife', { facts: { steel_weight_share_ge_15pct: true, steel_us_melted_poured_ge_85pct: false } }, NOW)!;
+
+  it('reproduces the production lines', () => {
+    expect(before.candidates.map((c) => [c.code, c.confidence])).toEqual([
+      ['8211.92.9030', 0.88],
+      ['8211.92.2000', 0.07],
+      ['8211.92.6000', 0.03],
+    ]);
+    expect(kinds(before)).toEqual(['NEEDS_FACTS', 'UNMODELED_REGIME', 'UNMODELED_REGIME']);
+  });
+
+  it('before the answers: the headline asks; the less likely refusals are disclosed, not the headline', () => {
+    expect(before.headline).toEqual({ kind: 'ASKING', unlikelyRefused: { codes: ['8211.92.2000', '8211.92.6000'], confidence: 0.1 } });
+    expect(headlineTitle(before.headline!)).toBe('Answer the questions below to estimate the duty');
+    expect(unlikelyRefusedText(before.headline!)).toBe('2 less likely lines (10% combined) can’t be estimated: 8211.92.2000, 8211.92.6000.');
+  });
+
+  it('after Yes / No: the verified row’s $43.54 is the headline figure, with the same disclosure', () => {
+    expect(kinds(after)[0]).toBe(4354);
+    expect(after.headline).toEqual({ kind: 'FIGURE', minMinor: 4354, maxMinor: 4354, unlikelyRefused: { codes: ['8211.92.2000', '8211.92.6000'], confidence: 0.1 } });
+    expect(headlineTitle(after.headline!)).toBe('US import duty (est.)');
+  });
+});
+
+describe('(2) the kettle (production 2026-10-13): refused 92% → still the refusal', () => {
   const v = fixtureView('unsupported', {}, NOW)!;
 
   it('reproduces the production lines: two refusals and an $11.25 estimate on the 1% line', () => {
@@ -59,72 +92,86 @@ describe('(1) the kettle (production 2026-10-13): refused 92% + refused 5% + est
     expect(JSON.stringify(h)).not.toContain('1125'); // no amount anywhere in the headline
   });
 
-  it('the estimated line is shown below as a less likely line, with its confidence', () => {
+  it('the estimated 1% line is listed below as less likely; the 5% refusal is disclosed in one line', () => {
     const h = refused(v.headline);
     expect(h.estimable).toEqual({ label: 'Less likely lines that could be estimated', codes: ['8516.79.0000'] });
+    expect(unlikelyRefusedText(h)).toBe('1 less likely line (5%) can’t be estimated: 7323.93.0045.');
   });
 });
 
-describe('(2) estimated top line + refused lower line → also the refusal', () => {
+describe('(3) every likely line estimated → the figure', () => {
+  it('jeans, cotton (DEMO scene 4a): $33.20 on every line', () => {
+    const v = view(JEANS, [
+      { code: '6203.42.4511', confidence: 0.7 },
+      { code: '6203.42.4518', confidence: 0.2 },
+      { code: '6203.42.4503', confidence: 0.1 },
+    ]);
+    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320, unlikelyRefused: null });
+    expect(headlineTitle(v.headline!)).toBe('US import duty (est.)');
+    expect(unlikelyRefusedText(v.headline!)).toBeNull();
+  });
+
+  it('jeans, fabric not stated: the range covers both likely lines ($33.20 to $55.80)', () => {
+    const v = fixtureView('jeans', {}, NOW)!;
+    expect(kinds(v)).toEqual([3320, 5580]);
+    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 5580, unlikelyRefused: null });
+    expect(headlineTitle(v.headline!)).toBe('US import duty (est.), depending on the HTS line');
+  });
+
+  it('a less likely estimated line doesn’t widen the range', () => {
+    const v = view(JEANS, [
+      { code: '6203.42.4511', confidence: 0.9 },
+      { code: '6203.43.9011', confidence: 0.05 },
+    ]);
+    expect(kinds(v)).toEqual([3320, 5580]);
+    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320, unlikelyRefused: null });
+  });
+});
+
+describe('(4) a likely refused line at 12% next to an 85% estimated line → the refusal', () => {
   const v = view(KETTLE, [
-    { code: '8516.79.0000', confidence: 0.6 },
-    { code: '7323.93.0015', confidence: 0.3 },
+    { code: '8516.79.0000', confidence: 0.85 },
+    { code: '7323.93.0015', confidence: 0.12 },
   ]);
 
-  it('the 60% line estimates, the 30% line is refused', () => {
+  it('the 85% line estimates, the 12% line is refused', () => {
     expect(kinds(v)).toEqual([1125, 'UNMODELED_REGIME']);
   });
 
   it('headline: refusal citing the refused line (not the most likely line overall); no figure', () => {
     const h = refused(v.headline);
-    expect(h.line).toEqual({ code: '7323.93.0015', confidence: 0.3 });
-    expect(refusalText(h)).toBe('Line 7323.93.0015 (confidence 30%) is named by heading 9903.82.03 and U.S. note 16(c)(vii) to subchapter III, which the estimator doesn’t model yet.');
+    expect(h.line).toEqual({ code: '7323.93.0015', confidence: 0.12 });
+    expect(refusalText(h)).toBe('Line 7323.93.0015 (confidence 12%) is named by heading 9903.82.03 and U.S. note 16(c)(vii) to subchapter III, which the estimator doesn’t model yet.');
     expect(h.estimable).toEqual({ label: 'Other lines that could be estimated', codes: ['8516.79.0000'] });
-  });
-});
-
-describe('(3) every shown line estimated → the figure, unchanged', () => {
-  it('jeans, cotton (DEMO scene 4a): $33.20 on every line', () => {
-    const v = view({ title: "Men's jeans, straight leg, 14 oz cotton denim.", origin: 'JP', sellingPriceMinor: 20000 }, [
-      { code: '6203.42.4511', confidence: 0.7 },
-      { code: '6203.42.4518', confidence: 0.2 },
-      { code: '6203.42.4503', confidence: 0.1 },
-    ]);
-    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 3320 });
-    expect(headlineTitle(v.headline!)).toBe('US import duty (est.)');
-  });
-
-  it('jeans, fabric not stated: the range covers both lines ($33.20 to $55.80)', () => {
-    const v = fixtureView('jeans', {}, NOW)!;
-    expect(kinds(v)).toEqual([3320, 5580]);
-    expect(v.headline).toEqual({ kind: 'FIGURE', minMinor: 3320, maxMinor: 5580 });
-    expect(headlineTitle(v.headline!)).toBe('US import duty (est.), depending on the HTS line');
+    expect(h.unlikelyRefused).toBeNull();
   });
 });
 
 describe('other states', () => {
-  it('a line that only needs answers (knife) asks; no figure', () => {
-    const v = fixtureView('knife', {}, NOW)!;
-    expect(v.headline).toEqual({ kind: 'ASKING' });
-    expect(headlineTitle(v.headline!)).toBe('Answer the questions below to estimate the duty');
-  });
-
-  it('a line that needs answers next to an estimated line: still asks — a figure would not cover the asking line', () => {
+  it('a likely line needing answers next to a likely estimated line: asks — a figure would not cover it', () => {
     const v = view({ title: "Japanese gyuto chef's knife, stainless steel blade", origin: 'JP', sellingPriceMinor: 14000 }, [
       { code: '8211.92.9030', confidence: 0.8 },
       { code: '8516.79.0000', confidence: 0.1 },
     ]);
     expect(kinds(v)).toEqual(['NEEDS_FACTS', expect.any(Number)]);
-    expect(v.headline).toEqual({ kind: 'ASKING' });
+    expect(v.headline).toEqual({ kind: 'ASKING', unlikelyRefused: null });
   });
 
-  it('a refusal next to a line that needs answers: the refusal wins', () => {
+  it('a likely refusal next to a likely line needing answers: the refusal wins', () => {
     const v = view(KETTLE, [
       { code: '8211.92.9030', confidence: 0.5 },
       { code: '7323.93.0015', confidence: 0.4 },
     ]);
     expect(refused(v.headline).line.code).toBe('7323.93.0015');
     expect(refused(v.headline).estimable).toBeNull();
+  });
+
+  it('no line reaches 10%: the most confident line still decides the headline', () => {
+    const v = view(KETTLE, [
+      { code: '7323.93.0015', confidence: 0.08 },
+      { code: '8516.79.0000', confidence: 0.06 },
+    ]);
+    expect(refused(v.headline).line.code).toBe('7323.93.0015');
   });
 
   it('a footnote refusal (shoes) cites the heading from the line’s own footnote', () => {

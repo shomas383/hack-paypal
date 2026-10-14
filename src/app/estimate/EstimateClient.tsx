@@ -8,7 +8,7 @@ import type { ProgressView } from '@/domain/classifier/progress';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, resultNote, stoppedText, plainBasis, refText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
-import { headlineOf, headlineTitle, refusalText } from '@/domain/estimator/headline';
+import { headlineOf, headlineTitle, refusalText, unlikelyRefusedText } from '@/domain/estimator/headline';
 import type { CandidateView, EstimateView, OutcomeView } from '@/domain/estimator/view';
 import { usd } from '@/domain/money/money';
 import { parseUsdInput } from '@/domain/seller/form';
@@ -224,9 +224,10 @@ export function EstimateClient({ fixture, initial }: { fixture: string | null; i
 
 function Result({ view, answers, answering, onAnswer, headingRef }: { view: View; answers: Answers; answering: boolean; onAnswer: (a: Answers) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
   const estimated = view.candidates.filter((c): c is CandidateView & { outcome: Extract<OutcomeView, { kind: 'ESTIMATE' }> } => c.outcome.kind === 'ESTIMATE');
-  // The headline is decided by code on the server (headlineOf): a refusal whenever any shown line is refused, and a figure
-  // only when it covers every shown line.
+  // The headline is decided by code on the server (headlineOf) from the likely lines: a refusal whenever a likely line is
+  // refused, and a figure only when it covers every likely line. Refused less likely lines get one line under it.
   const headline = view.headline ?? headlineOf(view.candidates, view.stopped);
+  const unlikelyRefused = unlikelyRefusedText(headline);
   const figure = headline.kind === 'FIGURE' ? headline : null;
   const refusal = headline.kind === 'REFUSED' ? headline : null;
   const levels = separatingLevels(view.candidates.map((c) => c.chain));
@@ -234,7 +235,7 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
   // The not-a-ruling notice is shown on its own under the result, so it is left out here.
   const disclosures = [...new Set(estimated.flatMap((c) => c.outcome.disclosures))].filter((d) => d !== view.notice).map((d) => (/[.!?]$/.test(d) ? d : `${d}.`));
   // Every candidate estimated and all at the same duty: one combined sentence; the top line in full, the rest collapsed.
-  const sameDuty = estimated.length > 1 && figure !== null && figure.minMinor === figure.maxMinor;
+  const sameDuty = estimated.length > 1 && estimated.length === view.candidates.length && figure !== null && figure.minMinor === figure.maxMinor;
   // Where the shown lines' official descriptions part (code; the model's names only label a matching difference).
   const differences = lineDifferences(view.candidates.map((c) => ({ chain: c.chain, dutyMinor: c.outcome.kind === 'ESTIMATE' ? c.outcome.dutyMinor : null })), view.separating);
   const note = resultNote({ shown: view.candidates.length, sameDuty, differences, uncertain: isUncertain(view.reasons), reasons: view.reasons, amount: figure ? formatUsd(m(figure.minMinor)) : '' });
@@ -269,6 +270,11 @@ function Result({ view, answers, answering, onAnswer, headingRef }: { view: View
               <Money value={m(figure.minMinor)} strong /> to <Money value={m(figure.maxMinor)} strong /> on a <Money value={m(view.sellingPriceMinor)} /> sale.
             </>
           )}
+        </p>
+      ) : null}
+      {unlikelyRefused ? (
+        <p className={s.inlineNote} data-testid="estimate-unlikely-refused">
+          {unlikelyRefused}
         </p>
       ) : null}
       {reason && view.candidates.length > 0 ? (
