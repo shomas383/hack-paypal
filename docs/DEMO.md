@@ -13,16 +13,20 @@ Rules:
   - no AI model or vendor names on screen or in captions; say "the AI";
   - no marketplace names.
 
-Timing: 25 + 35 + 40 + 35 + 15 + 20 = 170 s = 2:50. 324 spoken words ≈ 114 wpm.
+Timing: 25 + 33 + 38 + 34 + 20 + 20 = 170 s = 2:50. 331 spoken words ≈ 117 wpm (counted 2026-10-13; scene 3 gained a
+sentence and scene 5 gained 5 s, taken from scenes 2–4).
 
 ## 1 · The problem — 0:00–0:25 (25 s, 55 words)
-- **Screen:** `/listings`: four diver watches, generic titles, Sandbox badge. Slow scroll.
+- **Screen:** `/listings`: nine listings on one screen (no scroll) — four automatic diver watches (Japan ×2, China,
+  Germany), a chef's knife, an anime disc box set, men's denim jeans and two collectible figures — generic titles,
+  Sandbox badge. Hold, and move the cursor slowly down the rows.
 - **Say:** "The US ended duty-free entry for small parcels from every country. Every cross-border order now owes import duty,
   and most checkouts don't show it. One major marketplace now requires sellers in Japan to ship US orders duty-paid, but
   leaves them to work out the duty. Landed shows the delivered price, duty included, before anyone pays."
-- **Must be true:** generic names only; Sandbox badge visible.
+- **Must be true:** generic names only, no trademark in any title (L-P12 still says "Blu-ray" until it is renamed);
+  Sandbox badge visible.
 
-## 2 · Buyer checkout with duty — 0:25–1:00 (35 s, 64 words)
+## 2 · Buyer checkout with duty — 0:25–0:58 (33 s, 57 words)
 - **Screen:** `/listings` → *Get landed cost* on the Japanese watch (L-P03) → `/checkout/<quoteId>` → PayPal popup (3 s or
   less; cut the login) → back on checkout.
 - **Inputs:** *Get landed cost* → *Approve $362.50 purchase* → PayPal button → approve.
@@ -36,34 +40,49 @@ Timing: 25 + 35 + 40 + 35 + 15 + 20 = 170 s = 2:50. 324 spoken words ≈ 114 wpm
   - After paying: "Payment CAPTURED · $362.50", "PayPal order <id> · Capture <id>", "Policy: all checks passed." Note the
     order id for scene 3.
 
-## 3 · The agent: compare, then order status — 1:00–1:40 (40 s, 59 words)
+## 3 · The agent: compare, then order status — 0:58–1:36 (38 s, 69 words)
 - **Screen:** `/agent`, in the same browser session as scene 2.
-- **Inputs:**
-  1. Message `automatic diver watch under $400 delivered`; budget `400.00` confirmed → *Run comparison*.
+- **Inputs** (budget `400.00`, confirmed, for both runs):
+  1. Message `automatic diver watch under $400 delivered` → *Run comparison*.
   2. Message `What is the status of my order <id>?` → *Run comparison*.
-  - Cut the waiting time.
+  - Cut the waiting time. Measured on production (dry run 2026-10-13): the compare run took 5 steps in 10.7 s; the
+    order-status run took 2 steps in 5.0 s.
 - **Say:** "The AI decides what to search and explains; code computes every amount and enforces the budget. China has the
-  lowest sticker price but not the lowest delivered price. The agent can only propose — it has no tool to approve or pay.
-  It also reads an order's status through PayPal's Agent Toolkit, read-only: status and amounts, never the payer's details."
-- **Must be true:**
-  - Quotes: DE **$344.00** · JP $362.50 · CN $377.09 · JP-B $452.50 ✗ over budget.
+  lowest sticker price but not the lowest delivered price. Listings that try to give the AI instructions are withheld. The
+  agent can only propose — it has no tool to approve or pay. It also reads an order's status through PayPal's Agent
+  Toolkit, read-only: status and amounts, never the payer's details."
+- **Must be true** (dry run 2026-10-13):
+  - The quotes table has 5 rows:
+
+    | Listing | Delivered |
+    |---|---|
+    | DE L-P14 | **$344.00** |
+    | JP L-P03 | $362.50 |
+    | JP L-C-bce3add4 (Japanese-language seller listing, "Matched on official HTS description (9102.21.70)") | $362.50 |
+    | CN L-P13 | $377.09 |
+    | JP L-P03-B | $452.50 ✗ over by $52.50 |
+  - "1 listing contained seller instructions; withheld." is shown.
+  - The banner reads "Lowest goods price: L-P13 (CN) $280.00 → delivered $377.09 · Lowest delivered: L-P14 (DE) $344.00".
+    Hold on it for 1 s.
   - The proposal is DE L-P14 at $344.00, PENDING. The final message is at most 4 sentences.
   - Order status: COMPLETED, $362.50 = $300.00 + $25.00 + $37.50 in US import duty (est.). No payer details, no links.
 
-## 4 · Estimate mode — 1:40–2:15 (35 s, 65 words)
+## 4 · Estimate mode — 1:36–2:10 (34 s, 65 words)
 - **Form:** *Product description (any language)* (one box) · *Where was it made?* · *Selling price to the US buyer (USD)*
   · *Shipping to the buyer (USD), optional* → submit.
 - **Main take:**
   - (a) Description `Men's jeans, straight leg, 14 oz cotton denim.`, origin Japan, price `200.00`, shipping left
     empty. Proven on production 2026-10-12.
   - (b) Refusal: `Stainless steel stovetop kettle, 1.5 L`, Japan, `90.00`.
+- **Action during (a):** while saying "Other likely lines are automated estimates…", click *Other likely lines (same duty)*
+  so the "Automated estimate (2026-rev21-e4)" labels appear.
 - **Say:** "For sellers deciding what to source: describe any product made in Japan, Germany or China. Where a
   human-verified rate row exists, it's used first and labelled. Other likely lines are automated estimates from the official
   schedule, labelled with their data version. And when an official note names a duty we don't model, it refuses and cites
   the note instead of guessing. Estimates are never charged."
 - **Must be true:**
-  - (a) 6203.42.4511 "Verified rate row (2026-rev21-v2)" **$33.20**; the other lines are labelled "Automated estimate
-    (2026-rev21-e4)".
+  - (a) 6203.42.4511 "Verified rate row (2026-rev21-v2)" **$33.20**; after the click, the other lines are labelled
+    "Automated estimate (2026-rev21-e4)".
   - (b) "Can't estimate this product yet", citing heading 9903.82.03 and U.S. note 16(c)(vii).
 - **Optional extra, only if a rehearsal shows it:** `Men's jeans, straight leg, 14 oz denim. Fabric content not stated by
   the maker.` → range "$33.20 to $55.80 on a $200.00 sale", "What decides it: Fiber content." Production stopped this input
@@ -74,15 +93,19 @@ Timing: 25 + 35 + 40 + 35 + 15 + 20 = 170 s = 2:50. 324 spoken words ≈ 114 wpm
     row", $29.00.
   - Refusal: `Men's leather oxford shoes, leather soles`, Japan, `220.00` → cites heading 9903.41.10.
 
-## 5 · Seller ledger in AG Grid — 2:15–2:30 (15 s, 31 words)
-- **Screen:** `/seller`, signed in before the take (never show the passcode) → *Orders and duty* → 3 s of *Review queue*.
-- **Inputs:** Status filter = CAPTURED → hover a row tooltip → *Export CSV* → open the review queue.
-- **Say:** "Sellers get every order in AG Grid: duty, HTS line and rate version, with filters, a duty total and CSV export.
-  Uncertain classifications wait in a review queue for a human."
-- **Must be true:**
-  - The scene-2 order is the top row: CAPTURED, duty $37.50, `2026-rev21-v2`.
+## 5 · Seller ledger in AG Grid — 2:10–2:30 (20 s, 35 words)
+- **Screen:** `/seller`, signed in before the take (never show the passcode) → *Orders and duty* → *Review queue*.
+- **Inputs:**
+  1. Filter the *Listing* column with `L-P14` (4 rows) → hover a row (tooltip) → *Export CSV* (the export follows the
+     filter).
+  2. *Review queue* → click "Men’s leather oxford shoes".
+  - **Never click *Accept* or *Publish* on camera.**
+- **Say:** "Sellers get every order in AG Grid, with filters, a duty total and CSV export. Every order keeps the rate version
+  it was quoted under. Uncertain classifications wait in a review queue for a human."
+- **Must be true** (dry run 2026-10-13):
+  - The L-P14 filter leaves 4 rows, each with its duty, HTS line and rate version.
   - The pinned captured-duty total shows.
-  - The queue has rows with a confidence value and "Needs review".
+  - The shoes item shows "Needs review", confidence 0.50, its review reasons and its questions.
 
 ## 6 · Trust — end card — 2:30–2:50 (20 s, 50 words ≈ 150 wpm, the fastest scene; rehearse the pace)
 - **Screen:** our own end-card slide: **"15 golden cases to the cent · 0 of 33 wrong codes auto-accepted · 989 tests
@@ -97,12 +120,12 @@ Timing: 25 + 35 + 40 + 35 + 15 + 20 = 170 s = 2:50. 324 spoken words ≈ 114 wpm
   - Re-check all three before the final take.
 
 ## Before recording
-1. **Review queue on production:** probably empty, because `pnpm seller:seed` never ran there and there is no Render
-   shell. Classify the two seller samples in `/seller` once (live AI calls).
-2. **Ledger on production:** it holds old test orders (voids, older rate versions). Check that the top rows and the pinned
-   total read cleanly.
-3. **A published Japanese seller listing**, if any, appears in scene 3. Decide whether to keep it (at most 2 Japanese
-   watches; the compare cap is 6).
+1. **Review queue on production:** has rows since the 2026-10-13 dry run, including "Men’s leather oxford shoes" (Needs
+   review, 0.50). Check it is still there and unaccepted.
+2. **Ledger on production:** it holds old test orders (voids, older rate versions); the `L-P14` filter in scene 5 shows 4
+   rows. Check they and the pinned total read cleanly.
+3. **Catalog for scene 3:** keep it as in the dry run: 5 quoted rows (incl. the Japanese-language seller listing
+   L-C-bce3add4) and 1 withheld listing. Publish no other matching listing before recording; the compare cap is 6.
 4. **Rehearse scene 4** (a) and (b) on production; switch to the fallbacks if a result differs.
 5. **Limits:**
    - Agent: 5 runs per session per hour and 30 per day. A take uses 2, so rehearse in another session.

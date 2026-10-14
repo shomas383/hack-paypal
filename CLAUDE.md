@@ -226,6 +226,10 @@ Polish backlog (Wk5, before the Nov 4 freeze):
   20(www)(14), so it segments as 20(www)(21); today exclusionOf() keeps it out of the 20(www) exclusion (items naming other
   Ch. 99 headings), and a second "21." (infant formula, 9903.19.23) follows — a proper fix needs a duplicate-note-number
   scheme. Also: 9903.05.87 (52(c)) drafted as unconditional twice → blocked; CN refuses its 16 items.
+- Review queue (production dry run 2026-10-13): (a) questions the evidence already answers are still asked — the watch
+  asks "automatic winding?" though the listing says automatic; (b) every question carries the same heading "Which
+  description matches the item?"; (c) the oldest ledger row shows a 10-digit HTS (9102.21.7000) where the others show
+  the 8-digit 9102.21.70.
 - Estimator: rebuild after 2026-11-09 (exclusion notices end; note 31 headings 9903.91.12–.16 start Nov 10, lines already
   refused); EU members beyond DE; note 31 and 20(s)(ii) not modeled.
 
