@@ -32,6 +32,8 @@ export interface ServerEnv {
   estimateLimits: { perSessionPerHour: number; perIpPerHour: number; dailyCeiling: number };
   /** Shared seller-console passcode (≥ 12 chars). Optional: without it /seller and /api/seller/* are 404. */
   sellerConsolePasscode?: string;
+  /** SELLER_PUBLIC_VIEW=1: the public read-only seller view (/seller/demo, GET /api/seller/public/*). Off by default. */
+  sellerPublicView: boolean;
 }
 
 type RawEnv = Record<string, string | undefined>;
@@ -61,6 +63,14 @@ function unitInterval(raw: RawEnv, name: string, fallback: number): number {
   if (!v) return fallback;
   if (!/^(0(\.\d+)?|1(\.0+)?)$/.test(v)) throw new Error(`${name} must be a decimal between 0 and 1`);
   return Number(v);
+}
+
+/** Optional on/off switch: unset, empty or "0" → off; "1" → on; anything else refuses to boot. */
+function flag(raw: RawEnv, name: string): boolean {
+  const v = raw[name]?.trim();
+  if (!v || v === '0') return false;
+  if (v === '1') return true;
+  throw new Error(`${name} must be 0 or 1`);
 }
 
 function publicBaseUrl(raw: RawEnv): string | undefined {
@@ -113,6 +123,7 @@ export function parseServerEnv(raw: RawEnv): ServerEnv {
       perIpPerHour: positiveIntOr(raw, 'ESTIMATE_LIMIT_PER_IP_PER_HOUR', 10),
       dailyCeiling: positiveIntOr(raw, 'ESTIMATE_DAILY_CEILING', 100),
     },
+    sellerPublicView: flag(raw, 'SELLER_PUBLIC_VIEW'),
     ...(email ? { sandboxBuyerEmail: email } : {}),
     ...(webhookId ? { paypalWebhookId: webhookId } : {}),
     ...(baseUrl ? { publicBaseUrl: baseUrl } : {}),

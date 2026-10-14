@@ -162,3 +162,20 @@ describe('parseServerEnv', () => {
     expect(message).not.toContain(SECRET);
   });
 });
+
+describe('parseServerEnv — SELLER_PUBLIC_VIEW', () => {
+  it('is off unless exactly "1" (unset, empty and "0" → off)', () => {
+    expect(parseServerEnv(valid).sellerPublicView).toBe(false);
+    expect(parseServerEnv({ ...valid, SELLER_PUBLIC_VIEW: '' }).sellerPublicView).toBe(false);
+    expect(parseServerEnv({ ...valid, SELLER_PUBLIC_VIEW: '0' }).sellerPublicView).toBe(false);
+    expect(parseServerEnv({ ...valid, SELLER_PUBLIC_VIEW: '1' }).sellerPublicView).toBe(true);
+  });
+
+  it('any other value refuses to boot', () => {
+    for (const bad of ['yes', 'true', '2', 'on']) expect(() => parseServerEnv({ ...valid, SELLER_PUBLIC_VIEW: bad })).toThrow(/SELLER_PUBLIC_VIEW must be 0 or 1/);
+  });
+
+  it('is independent of the seller passcode', () => {
+    expect(parseServerEnv({ ...valid, SELLER_PUBLIC_VIEW: '1' }).sellerConsolePasscode).toBeUndefined();
+  });
+});

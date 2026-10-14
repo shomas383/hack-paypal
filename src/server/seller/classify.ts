@@ -91,9 +91,10 @@ export interface ClassificationView {
 
 /**
  * The seller's view of one classification. Any signed-in seller session may read it (one shop, one shared passcode).
- * Closes out a run that was interrupted (e.g. a restart).
+ * Closes out a run that was interrupted (e.g. a restart); with `closeInterrupted: false` (the public read-only view) it
+ * reports the same FAILED state without writing.
  */
-export async function getClassificationView(id: string, now = new Date()): Promise<ClassificationView> {
+export async function getClassificationView(id: string, now = new Date(), opts: { closeInterrupted?: boolean } = {}): Promise<ClassificationView> {
   if (!/^[0-9a-f-]{36}$/.test(id)) throw new CheckoutError(404, 'classification not found');
   const [row] = await db.select().from(classifications).where(eq(classifications.id, id));
   if (!row || row.kind !== 'grounded') throw new CheckoutError(404, 'classification not found');
@@ -104,7 +105,9 @@ export async function getClassificationView(id: string, now = new Date()): Promi
   const progress = progressView({ status: row.status, stage: row.stage ?? null, createdAt: row.createdAt, top: ranked[0] ? { hts10: ranked[0].hts10, confidence: ranked[0].confidence } : null }, now);
 
   let status = row.status;
-  if (progress.state === 'interrupted') {
+  if (progress.state === 'interrupted' && opts.closeInterrupted === false) {
+    status = 'FAILED';
+  } else if (progress.state === 'interrupted') {
     const closed = await db
       .update(classifications)
       .set({ status: 'FAILED', error: 'interrupted', updatedAt: now })

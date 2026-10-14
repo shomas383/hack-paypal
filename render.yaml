@@ -67,6 +67,8 @@ services:
         value: "30"
       - key: SELLER_CONSOLE_PASSCODE # /seller passcode (>= 12 chars); set in the dashboard; unset = console disabled (404)
         sync: false
+      - key: SELLER_PUBLIC_VIEW # 1 = public read-only /seller/demo; set in the dashboard; unset or 0 = off (404)
+        sync: false
       - key: PUBLIC_BASE_URL # public https origin; required in production (boot refuses without it). Not a secret.
         value: https://landed-hd19.onrender.com
       - key: TRUSTED_PROXY_HOPS # Render: one Cloudflare edge hop appended after the client (verified 2026-10-07)

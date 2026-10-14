@@ -102,9 +102,10 @@ export interface ReviewDetail extends ClassificationView {
   quote: { quotable: true; dutyMinor: string; deliveredMinor: string } | { quotable: false; reason: string } | null;
 }
 
-export async function reviewDetail(id: string): Promise<ReviewDetail> {
+/** `readOnly` (the public view): no write at all, not even the interrupted-run close-out. */
+export async function reviewDetail(id: string, opts: { readOnly?: boolean } = {}): Promise<ReviewDetail> {
   const row = await loadRow(id);
-  const view = await getClassificationView(id);
+  const view = await getClassificationView(id, new Date(), { closeInterrupted: !opts.readOnly });
   const stmts = await db.select().from(sellerStatements).where(eq(sellerStatements.classificationId, id)).orderBy(sellerStatements.at);
   const acts = await db.select().from(classificationActions).where(eq(classificationActions.classificationId, id)).orderBy(classificationActions.at);
   const qs = questionsOf(row);
