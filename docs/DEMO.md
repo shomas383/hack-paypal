@@ -13,8 +13,9 @@ Rules:
   - no AI model or vendor names on screen or in captions; say "the AI";
   - no marketplace names.
 
-Timing: 25 + 33 + 38 + 34 + 20 + 20 = 170 s = 2:50. 331 spoken words ≈ 117 wpm (counted 2026-10-13; scene 3 gained a
-sentence and scene 5 gained 5 s, taken from scenes 2–4).
+Timing: 25 + 31 + 37 + 37 + 20 + 20 = 170 s = 2:50. 338 spoken words ≈ 119 wpm (counted 2026-10-14; scene 4 gained the
+duty-included checkout clause, net +7 words, and 3 s taken from scenes 2 and 3; earlier: scene 3 gained a sentence and
+scene 5 gained 5 s, taken from scenes 2–4).
 
 ## 1 · The problem — 0:00–0:25 (25 s, 55 words)
 - **Screen:** `/listings`: nine listings on one screen (no scroll) — five automatic diver watches (three from Japan,
@@ -26,7 +27,7 @@ sentence and scene 5 gained 5 s, taken from scenes 2–4).
   leaves them to work out the duty. Landed shows the delivered price, duty included, before anyone pays."
 - **Must be true:** generic names only, no trademark in any title; Sandbox badge visible.
 
-## 2 · Buyer checkout with duty — 0:25–0:58 (33 s, 57 words)
+## 2 · Buyer checkout with duty — 0:25–0:56 (31 s, 57 words)
 - **Screen:** `/listings` → *Get landed cost* on the Japanese watch (L-P03) → `/checkout/<quoteId>` → PayPal popup (3 s or
   less; cut the login) → back on checkout.
 - **Inputs:** *Get landed cost* → *Approve $362.50 purchase* → PayPal button → approve.
@@ -40,7 +41,7 @@ sentence and scene 5 gained 5 s, taken from scenes 2–4).
   - After paying: "Payment CAPTURED · $362.50", "PayPal order <id> · Capture <id>", "Policy: all checks passed." Note the
     order id for scene 3.
 
-## 3 · The agent: compare, then order status — 0:58–1:36 (38 s, 69 words)
+## 3 · The agent: compare, then order status — 0:56–1:33 (37 s, 69 words)
 - **Screen:** `/agent`, in the same browser session as scene 2.
 - **Inputs** (budget `400.00`, confirmed, for both runs):
   1. Message `automatic diver watch under $400 delivered` → *Run comparison*.
@@ -67,7 +68,7 @@ sentence and scene 5 gained 5 s, taken from scenes 2–4).
   - The proposal is DE L-P14 at $344.00, PENDING. The final message is at most 4 sentences.
   - Order status: COMPLETED, $362.50 = $300.00 + $25.00 + $37.50 in US import duty (est.). No payer details, no links.
 
-## 4 · Estimate mode — 1:36–2:10 (34 s, 65 words)
+## 4 · Estimate mode — 1:33–2:10 (37 s, 72 words)
 - **Form:** *Product description (any language)* (one box) · *Where was it made?* · *Selling price to the US buyer (USD)*
   · *Shipping to the buyer (USD), optional* → submit.
 - **Main take:**
@@ -78,8 +79,9 @@ sentence and scene 5 gained 5 s, taken from scenes 2–4).
   so the "Automated estimate (2026-rev21-e4)" labels appear.
 - **Say:** "For sellers deciding what to source: describe any product made in Japan, Germany or China. Where a
   human-verified rate row exists, it's used first and labelled. Other likely lines are automated estimates from the official
-  schedule, labelled with their data version. And when an official note names a duty we don't model, it refuses and cites
-  the note instead of guessing. Estimates are never charged."
+  schedule. And when an official note names a duty we don't model, it refuses and cites
+  the note instead of guessing. Estimates are never charged, so sellers can price duty in before listing with
+  duty-included PayPal checkout."
 - **Must be true:**
   - (a) 6203.42.4511 "Verified rate row (2026-rev21-v2)" **$33.20**; after the click, the other lines are labelled
     "Automated estimate (2026-rev21-e4)".
