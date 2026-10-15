@@ -170,7 +170,7 @@ export const classifierCalls = pgTable(
     kind: text('kind').notNull().default('classifier'),
     sessionId: text('session_id').notNull(),
     ip: text('ip').notNull(),
-    outcome: text('outcome').notNull(), // RESERVED | OK | ERROR | REFUSED_DAILY | REFUSED_SESSION | REFUSED_IP
+    outcome: text('outcome').notNull(), // RESERVED | OK | ERROR | ERROR_UNAVAILABLE | REFUSED_DAILY | REFUSED_SESSION | REFUSED_IP
   },
   (t) => [index('classifier_calls_at_idx').on(t.at)],
 );

@@ -1,6 +1,7 @@
 // The estimates service against a stubbed database (no Postgres): validation, the 24 h cache (no model call, no reservation),
 // the 'estimate' rate limit, owner-only reads, and answers recomputed by code from the committed estimator data.
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { APICallError } from 'ai';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CheckoutError } from './checkout';
 
 const db = vi.hoisted(() => {
@@ -29,7 +30,7 @@ vi.mock('./limits/classifierCalls', () => limits);
 vi.mock('@/domain/classifier/classifyGrounded', () => classifier);
 vi.mock('./env', () => ({ serverEnv: () => ({ classifierReviewThreshold: 0.8 }) }));
 
-const { answerEstimate, getEstimate, startEstimate } = await import('./estimates');
+const { answerEstimate, getEstimate, runEstimate, startEstimate } = await import('./estimates');
 const { descriptionKey, toInputRecord } = await import('@/domain/estimator/request');
 const { loadEstimator } = await import('./estimator');
 
@@ -156,5 +157,36 @@ describe('valid_until of the committed estimator data', () => {
     } finally {
       data.validUntil = kept;
     }
+  });
+});
+
+describe('runEstimate: a failed model call stores a code, never the provider text', () => {
+  const RAW = 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing.';
+  const estimating = () => readyRow({ status: 'ESTIMATING', classification: null });
+  beforeEach(() => vi.spyOn(console, 'error').mockImplementation(() => undefined));
+  afterEach(() => vi.restoreAllMocks());
+
+  it('no credit: FAILED with error AI_UNAVAILABLE; the call is finished as ERROR_UNAVAILABLE (not counted)', async () => {
+    db.state.selectResults = [[estimating()]];
+    classifier.classifyListingGrounded.mockRejectedValueOnce(new APICallError({ message: RAW, url: 'https://api.anthropic.com/v1/messages', requestBodyValues: {}, statusCode: 400, isRetryable: false }));
+    await runEstimate(estimating().id);
+    expect(db.state.updates).toEqual([expect.objectContaining({ status: 'FAILED', error: 'AI_UNAVAILABLE' })]);
+    expect(JSON.stringify(db.state.updates)).not.toContain('credit balance');
+    expect(limits.finishClassifierCall).toHaveBeenCalledWith(7n, 'ERROR_UNAVAILABLE');
+  });
+
+  it('another error: FAILED with error FAILED; finished as ERROR', async () => {
+    db.state.selectResults = [[estimating()]];
+    classifier.classifyListingGrounded.mockRejectedValueOnce(new Error('connection terminated unexpectedly'));
+    await runEstimate(estimating().id);
+    expect(db.state.updates).toEqual([expect.objectContaining({ status: 'FAILED', error: 'FAILED' })]);
+    expect(limits.finishClassifierCall).toHaveBeenCalledWith(7n, 'ERROR');
+  });
+
+  it('an older row that stored raw text is returned as FAILED (no provider text in the response)', async () => {
+    db.state.selectResults = [[readyRow({ status: 'FAILED', classification: null, error: RAW })]];
+    const v = await getEstimate(readyRow().id, 'sess-1', NOW);
+    expect(v.error).toBe('FAILED');
+    expect(JSON.stringify(v)).not.toContain('credit balance');
   });
 });

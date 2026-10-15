@@ -222,6 +222,27 @@ test('rate limited and server error states', async ({ page }) => {
   await expect(page.getByTestId('estimate-error')).toContainText('Something went wrong on our side.');
 });
 
+test('AI service unavailable (no credit, bad key, outage): the fixed copy, never provider text', async ({ page }) => {
+  const id = '0e2e0000-0000-4000-8000-0000000000e1';
+  await page.route('**/api/estimates', (r) => r.fulfill({ status: 202, json: { id, cached: false } }));
+  await page.route(`**/api/estimates/${id}`, (r) =>
+    r.fulfill({
+      status: 200,
+      json: {
+        id, status: 'FAILED', product: { title: 'Acoustic guitar' }, origin: 'JP', sellingPriceMinor: 40000, shippingMinor: 0, quantity: 1, cached: false,
+        reasons: [], separating: [], candidates: [], stopped: null, headline: null, answeredFacts: {}, estimatorVersion: '2026-rev21-e4',
+        rateVersion: '2026-rev21-v2', notice: 'Estimate — not a customs ruling.', error: 'AI_UNAVAILABLE',
+      },
+    }),
+  );
+  await page.goto('/estimate');
+  await page.getByTestId('estimate-description').fill('Acoustic guitar');
+  await page.getByTestId('estimate-price').fill('400.00');
+  await page.getByTestId('estimate-submit').click();
+  await expect(page.getByTestId('estimate-failed')).toContainText("The AI service isn't available right now. Nothing was charged or bought. Please try again later.");
+  await check(page, 'ai-unavailable');
+});
+
 test('too broad (production report, jeans without fabric): the stopped reason names where the lines differ; no empty candidate', async ({ page }) => {
   await run(page, 'jeans-broad');
   await expect(page.getByRole('heading', { name: 'Too many possible HTS lines' })).toBeVisible();

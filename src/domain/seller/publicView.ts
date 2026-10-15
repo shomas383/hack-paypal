@@ -1,6 +1,7 @@
 // The public read-only seller view (SPEC §4.5, SELLER_PUBLIC_VIEW=1): what anyone may see of the review queue, one
 // classification and the orders ledger. Allowlist projections: each key is copied by name (never spread), so a field
-// added to the server rows later stays private until it is listed here. The audit trail drops "by" (the seller session).
+// added to the server rows later stays private until it is listed here. The audit trail drops "by" (the seller session),
+// and a failed run's error never leaves the server.
 import type { ProgressView } from '../classifier/progress';
 import type { ClassificationStatus } from '../classifier/publish';
 import type { SellerQuestions } from '../classifier/questions';
@@ -53,7 +54,6 @@ export interface PublicDetail {
   status: ClassificationStatus | string;
   progress: ProgressView;
   input: { title: string; description?: string | undefined; origin: string | null };
-  error: string | null;
   reasons: string[];
   threshold: number;
   top: { hts10: string; confidence: number; rationale: string; evidence: string[]; chain: string[]; componentReporting: boolean } | null;
@@ -98,13 +98,15 @@ export function toPublicLedgerRow(r: PublicLedgerRow): PublicLedgerRow {
 
 const toPublicAction = (a: PublicAction): PublicAction => ({ id: a.id, action: a.action, fromStatus: a.fromStatus, toStatus: a.toStatus, fromHts10: a.fromHts10, toHts10: a.toHts10, reason: a.reason, at: a.at, undone: a.undone });
 
-export function toPublicDetail(d: PublicDetail): PublicDetail {
+/** The server's review detail as the projection receives it: the public fields plus the stored error (dropped). */
+export type PublicDetailInput = PublicDetail & { error: string | null };
+
+export function toPublicDetail(d: PublicDetailInput): PublicDetail {
   return {
     id: d.id,
     status: d.status,
     progress: d.progress,
     input: { title: d.input.title, description: d.input.description, origin: d.input.origin },
-    error: d.error,
     reasons: d.reasons,
     threshold: d.threshold,
     top: d.top,
@@ -126,8 +128,8 @@ export function toPublicDetail(d: PublicDetail): PublicDetail {
   };
 }
 
-/** Keys that must never appear in a public payload (sessions, network and buyer details). */
-export const FORBIDDEN_KEYS = ['by', 'sellerSession', 'sessionId', 'ip', 'email', 'email_address', 'payer', 'callId', 'passcode'] as const;
+/** Keys that must never appear in a public payload (sessions, network and buyer details, failed runs' errors). */
+export const FORBIDDEN_KEYS = ['by', 'sellerSession', 'sessionId', 'ip', 'email', 'email_address', 'payer', 'callId', 'passcode', 'error'] as const;
 const FORBIDDEN = new Set<string>(FORBIDDEN_KEYS);
 
 /** Dotted paths of every forbidden key at any depth (empty = clean). */

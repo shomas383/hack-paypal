@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { agentDeps } from '@/agent/deps';
 import { AGENT_MODEL, runAgent, type AgentEvent } from '@/agent/run';
 import { parseBudgetField } from '@/domain/agent/checks';
+import { failureOutcome, logAiError } from '@/server/aiError';
 import { toJsonError } from '@/server/http';
 import { clientIp } from '@/server/limits/clientIp';
 import { finishClassifierCall, reserveCall } from '@/server/limits/classifierCalls';
@@ -34,11 +35,14 @@ export async function POST(req: Request) {
       async start(controller) {
         const send = (e: AgentEvent) => controller.enqueue(encoder.encode(JSON.stringify(e) + '\n'));
         try {
-          await runAgent({ message: parsed.data.message, budgetMinor: BigInt(budgetMinor), sessionId, model: anthropic(AGENT_MODEL), deps: agentDeps(), onEvent: send });
-          await finishClassifierCall(callId, 'OK');
+          const done = await runAgent({ message: parsed.data.message, budgetMinor: BigInt(budgetMinor), sessionId, model: anthropic(AGENT_MODEL), deps: agentDeps(), onEvent: send });
+          // A provider outage (no credit, bad key, overload) is recorded but not counted against the limits.
+          await finishClassifierCall(callId, done.failure ? failureOutcome(done.failure) : 'OK');
         } catch (e) {
-          send({ type: 'error', message: e instanceof Error ? e.message.slice(0, 300) : 'agent failed' });
-          await finishClassifierCall(callId, 'ERROR').catch(() => undefined);
+          // A code only: the provider's message goes to the server log, never into the stream.
+          const code = logAiError('agent', e);
+          send({ type: 'error', code });
+          await finishClassifierCall(callId, failureOutcome(code)).catch(() => undefined);
         } finally {
           controller.close();
         }

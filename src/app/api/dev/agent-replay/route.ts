@@ -7,7 +7,8 @@
 // catalog (10 listings) has exactly one seller-published Japanese watch (L-C-469846d7), found through its official HTS
 // description — like production after the video. The excluded listing is the second local Japanese watch.
 // Production → 404 (devToolsEnabled). Query: ?delay=<ms between events, default 30> &hold=<emit N events, then keep the
-// stream open: a frozen "streaming" state> &fail=<emit N events, then an error event and close> &fixture=<default | ja>.
+// stream open: a frozen "streaming" state> &fail=<emit N events, then an error event and close> &failCode=<AI_UNAVAILABLE:
+// the error is a provider outage; otherwise FAILED> &fixture=<default | ja>.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { devToolsEnabled } from '@/server/devOnly';
@@ -28,6 +29,7 @@ export async function POST(req: Request): Promise<Response> {
   const delay = Math.min(int(url.searchParams.get('delay'), 30), 2000);
   const hold = url.searchParams.has('hold') ? int(url.searchParams.get('hold'), 0) : null;
   const fail = url.searchParams.has('fail') ? int(url.searchParams.get('fail'), 0) : null;
+  const failCode = url.searchParams.get('failCode') === 'AI_UNAVAILABLE' ? 'AI_UNAVAILABLE' : 'FAILED';
   const read = FIXTURES[url.searchParams.get('fixture') ?? 'default'];
   if (!read) return new Response('Unknown fixture', { status: 400 });
   const lines = read().split('\n').filter((l) => l.trim());
@@ -37,7 +39,7 @@ export async function POST(req: Request): Promise<Response> {
       for (let i = 0; i < lines.length; i++) {
         if (hold !== null && i >= hold) return; // keep open until the client goes away
         if (fail !== null && i >= fail) {
-          controller.enqueue(enc.encode(`${JSON.stringify({ type: 'error', message: 'the model call failed (replayed error)' })}\n`));
+          controller.enqueue(enc.encode(`${JSON.stringify({ type: 'error', code: failCode })}\n`));
           controller.close();
           return;
         }

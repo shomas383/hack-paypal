@@ -4,7 +4,9 @@
 // (budget, caps, usability) runs in code inside propose_purchase. Events are our own (NDJSON in the API route).
 import { isStepCount, streamText, type LanguageModel } from 'ai';
 import { formatDisplay } from '@/domain/money/format';
+import type { AiErrorCode } from '@/domain/aiErrorText';
 import { usd } from '@/domain/money/money';
+import { logAiError } from '@/server/aiError';
 import { buildAgentTools, type AgentDeps } from './tools';
 
 export const AGENT_MODEL = 'claude-opus-5-5';
@@ -16,8 +18,9 @@ export type AgentEvent =
   | { type: 'tool-call'; id: string; name: string; input: unknown }
   | { type: 'tool-result'; id: string; name: string; output: unknown }
   | { type: 'tool-error'; id: string; name: string; error: string }
-  | { type: 'error'; message: string }
-  | { type: 'done'; steps: number; usage: { input: number; output: number }; ms: number; proposal: Record<string, unknown> | null };
+  /** A failed model call: a code only (the provider's message goes to the server log, never to the browser). */
+  | { type: 'error'; code: AiErrorCode }
+  | { type: 'done'; steps: number; usage: { input: number; output: number }; ms: number; proposal: Record<string, unknown> | null; failure: AiErrorCode | null };
 
 export function systemPrompt(budget: string): string {
   return `You are a shopping agent for a US buyer on a cross-border marketplace. Help the buyer find the best item that matches
@@ -81,6 +84,7 @@ export async function runAgent(args: {
   const usage = { input: 0, output: 0 };
   let steps = 0;
   let proposal: Record<string, unknown> | null = null;
+  let failure: AiErrorCode | null = null;
   const result = streamText({
     model: args.model,
     system: systemPrompt(budget),
@@ -113,13 +117,14 @@ export async function runAgent(args: {
         usage.output += part.usage.outputTokens ?? 0;
         break;
       case 'error':
-        await args.onEvent({ type: 'error', message: part.error instanceof Error ? part.error.message.slice(0, 300) : String(part.error).slice(0, 300) });
+        failure = logAiError('agent', part.error);
+        await args.onEvent({ type: 'error', code: failure });
         break;
       default:
         break;
     }
   }
-  const done = { type: 'done' as const, steps, usage, ms: Date.now() - started, proposal };
+  const done = { type: 'done' as const, steps, usage, ms: Date.now() - started, proposal, failure };
   await args.onEvent(done);
   return done;
 }

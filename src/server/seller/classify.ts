@@ -16,6 +16,8 @@ import { db } from '../db/client';
 import { auditLog, classifications, type GroundedResult } from '../db/schema';
 import { serverEnv } from '../env';
 import { currentHtsIndex } from '../hts';
+import { storedErrorCode } from '@/domain/aiErrorText';
+import { failureOutcome, logAiError } from '../aiError';
 import { finishClassifierCall, reserveClassifierCall } from '../limits/classifierCalls';
 
 export async function startGroundedClassification(raw: unknown, sellerSession: string, ip: string): Promise<{ id: string }> {
@@ -60,18 +62,21 @@ export async function runGroundedClassification(id: string, model: LanguageModel
     );
     const choice = r.kind === 'OK' ? r.choice : null;
     const top = choice ? [...choice.candidates].sort((a, b) => b.confidence - a.confidence)[0] : undefined;
+    // An answer that failed its schema stays in review; its parser text goes to the server log, the row stores a code.
+    if (r.kind === 'INVALID_OUTPUT') console.error(`[ai] seller classify: INVALID_OUTPUT stage=${r.stage} ${r.error.replace(/\s+/g, ' ').slice(0, 200)}`);
     const status = initialStatus(r.review);
     const grounded: GroundedResult = { outcome: r.kind, choice, candidates: r.kind === 'OK' ? r.candidates : [], meta: r.meta };
     await db
       .update(classifications)
-      .set({ status, grounded, needsReview: r.review.needsReview, reasons: r.review.reasons, baseReasons: r.review.reasons, updatedAt: new Date(), hts10: status === 'AUTO_ACCEPTED' ? (top?.hts10 ?? null) : null, error: r.kind === 'INVALID_OUTPUT' ? r.error : null })
+      .set({ status, grounded, needsReview: r.review.needsReview, reasons: r.review.reasons, baseReasons: r.review.reasons, updatedAt: new Date(), hts10: status === 'AUTO_ACCEPTED' ? (top?.hts10 ?? null) : null, error: r.kind === 'INVALID_OUTPUT' ? 'FAILED' : null })
       .where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')));
     if (row.callId !== null) await finishClassifierCall(row.callId, 'OK');
     await db.insert(auditLog).values({ event: 'classification.created', entity: 'classification', entityId: id, sessionId: row.sessionId, data: { kind: 'grounded', status, reasons: r.review.reasons, hts10: top?.hts10 ?? null } });
   } catch (e) {
-    const message = e instanceof Error ? e.message.slice(0, 300) : 'classification failed';
-    await db.update(classifications).set({ status: 'FAILED', error: message, updatedAt: new Date() }).where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')));
-    if (row.callId !== null) await finishClassifierCall(row.callId, 'ERROR');
+    // A code only (AI_UNAVAILABLE / FAILED): the provider's message goes to the server log, never to the row or a response.
+    const code = logAiError('seller classify', e);
+    await db.update(classifications).set({ status: 'FAILED', error: code, updatedAt: new Date() }).where(and(eq(classifications.id, id), eq(classifications.status, 'CLASSIFYING')));
+    if (row.callId !== null) await finishClassifierCall(row.callId, failureOutcome(code));
   }
 }
 
@@ -80,7 +85,7 @@ export interface ClassificationView {
   status: ClassificationStatus;
   progress: ProgressView;
   input: { title: string; description?: string | undefined; origin: string | null };
-  error: string | null;
+  error: 'AI_UNAVAILABLE' | 'FAILED' | 'interrupted' | null;
   reasons: string[];
   /** The review threshold the routing used (for "Confidence 0.62 is below the 0.80 threshold."). */
   threshold: number;
@@ -123,7 +128,7 @@ export async function getClassificationView(id: string, now = new Date(), opts: 
     status,
     progress,
     input: { title: row.input.title, description: row.input.description, origin: row.input.origin },
-    error: row.error,
+    error: storedErrorCode(row.error), // a code only; older rows that kept raw text read as FAILED
     reasons: row.reasons,
     threshold: serverEnv().classifierReviewThreshold,
     top: top

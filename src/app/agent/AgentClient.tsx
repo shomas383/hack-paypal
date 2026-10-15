@@ -6,6 +6,7 @@
 // (withheldNotice over the whole catalog), never by the model. The agent can only PREPARE a purchase: approving and paying happen at checkout.
 import { Fragment, useState } from 'react';
 import { parseBudgetField, parseDeliveredBudget } from '@/domain/agent/checks';
+import { AI_UNAVAILABLE_TEXT } from '@/domain/aiErrorText';
 import { runSummary, type QuoteView } from '@/domain/agent/insight';
 import { uncheckedScriptNotice, withheldNotice } from '@/domain/agent/instructionNotice';
 import { deepestLevels } from '@/domain/agent/search';
@@ -25,6 +26,9 @@ import { ProposalSummary } from '@/ui/patterns/ProposalSummary';
 import { QuotesTable, type QuoteRow } from '@/ui/patterns/QuotesTable';
 import { ToolCallStep } from '@/ui/patterns/ToolCallStep';
 import s from './agent.module.css';
+
+/** Our own server's refusal (429, 400) or a browser network failure, as one sentence. */
+const stoppedText = (why: string) => `The comparison stopped: ${why.replace(/[.\s]+$/, '')}. Run it again; nothing was bought.`;
 
 type Json = Record<string, unknown>;
 type HtsMatch = { hts: string; terms: string[]; official_levels: string[]; official_chain: string[] };
@@ -198,7 +202,8 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
           break;
         }
         case 'error':
-          setError(String(e.message));
+          // The stream carries a code only; a provider outage gets the fixed copy, anything else the generic line.
+          setError(e.code === 'AI_UNAVAILABLE' ? AI_UNAVAILABLE_TEXT : 'The comparison stopped. Run it again; nothing was bought.');
           return markStopped(next);
         case 'done':
           setDone(e as unknown as Done);
@@ -220,7 +225,7 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
       const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ message, budget }) });
       if (!res.ok || !res.body) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(res.status === 429 ? `Run limit reached: ${j.error ?? 'try again later'}.` : (j.error ?? `the server answered ${res.status}`));
+        setError(stoppedText(res.status === 429 ? `Run limit reached: ${j.error ?? 'try again later'}` : (j.error ?? `the server answered ${res.status}`)));
         return;
       }
       const reader = res.body.getReader();
@@ -238,7 +243,7 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
         }
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(stoppedText(e instanceof Error ? e.message : String(e)));
       setItems(markStopped);
     } finally {
       setRunning(false);
@@ -314,7 +319,7 @@ export function AgentClient({ endpoint = '/api/agent' }: { endpoint?: string }) 
       {error ? (
         <div className={s.error} role="alert">
           <Icon name="x-circle" />
-          <span>The comparison stopped: {error.replace(/[.\s]+$/, '')}. Run it again; nothing was bought.</span>
+          <span>{error}</span>
         </div>
       ) : null}
 

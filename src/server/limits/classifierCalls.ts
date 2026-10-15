@@ -2,16 +2,16 @@
 // this kind's calls today (UTC), refuse with 429 over budget, otherwise insert a RESERVED row. One transaction under an
 // advisory lock, so concurrent requests cannot both slip under a limit. Kinds: 'classifier' (SPEC §4.1), 'agent'
 // (SPEC §4.4, one row per agent run) and 'estimate' (one row per public estimate); each kind has its own limits (env).
+// Refusals and provider outages (ERROR_UNAVAILABLE) are recorded but not counted (./outcomes.ts).
 import { and, count, eq, gte, sql as dsql, type SQL } from 'drizzle-orm';
 import { CheckoutError } from '../checkout';
 import { db } from '../db/client';
 import { classifierCalls } from '../db/schema';
 import { serverEnv } from '../env';
 import { checkClassifierBudget } from './classifierBudget';
+import { countedOutcomes, type CallOutcome } from './outcomes';
 
 export type CallKind = 'classifier' | 'agent' | 'estimate';
-
-const notRefused = () => dsql`${classifierCalls.outcome} not like 'REFUSED%'`;
 
 export async function reserveCall(kind: CallKind, sessionId: string, ip: string, now = new Date()): Promise<bigint> {
   const env = serverEnv();
@@ -22,7 +22,7 @@ export async function reserveCall(kind: CallKind, sessionId: string, ip: string,
   const result = await db.transaction(async (tx) => {
     await tx.execute(dsql`select pg_advisory_xact_lock(hashtext('classifier_calls'))`);
     const n = async (...conds: SQL[]) =>
-      (await tx.select({ n: count() }).from(classifierCalls).where(and(notRefused(), eq(classifierCalls.kind, kind), ...conds)))[0]?.n ?? 0;
+      (await tx.select({ n: count() }).from(classifierCalls).where(and(countedOutcomes(classifierCalls.outcome), eq(classifierCalls.kind, kind), ...conds)))[0]?.n ?? 0;
     const decision = checkClassifierBudget(
       {
         sessionLastHour: await n(eq(classifierCalls.sessionId, sessionId), gte(classifierCalls.at, hourAgo)),
@@ -47,6 +47,6 @@ export async function reserveCall(kind: CallKind, sessionId: string, ip: string,
 
 export const reserveClassifierCall = (sessionId: string, ip: string, now = new Date()) => reserveCall('classifier', sessionId, ip, now);
 
-export async function finishClassifierCall(id: bigint, outcome: 'OK' | 'ERROR'): Promise<void> {
+export async function finishClassifierCall(id: bigint, outcome: CallOutcome): Promise<void> {
   await db.update(classifierCalls).set({ outcome }).where(eq(classifierCalls.id, id));
 }

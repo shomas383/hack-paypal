@@ -51,6 +51,12 @@ describe('dev-only agent replay', () => {
   it('fail=N ends with an error event after N events', async () => {
     const events = (await (await POST(req('?delay=0&fail=3'))).text()).trim().split('\n').map((l) => JSON.parse(l) as { type: string });
     expect(events).toHaveLength(4);
-    expect(events.at(-1)!.type).toBe('error');
+    expect(events.at(-1)).toEqual({ type: 'error', code: 'FAILED' });
+  });
+
+  it('failCode=AI_UNAVAILABLE replays a provider outage; any other value is FAILED (codes only, never text)', async () => {
+    const last = async (q: string) => JSON.parse((await (await POST(req(q))).text()).trim().split('\n').at(-1)!) as unknown;
+    expect(await last('?delay=0&fail=2&failCode=AI_UNAVAILABLE')).toEqual({ type: 'error', code: 'AI_UNAVAILABLE' });
+    expect(await last('?delay=0&fail=2&failCode=%3Cscript%3E')).toEqual({ type: 'error', code: 'FAILED' });
   });
 });

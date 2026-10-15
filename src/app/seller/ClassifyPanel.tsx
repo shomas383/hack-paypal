@@ -4,6 +4,7 @@
 // entries, parsed to integer minor units (never from the model).
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
+import { AI_UNAVAILABLE_TEXT } from '@/domain/aiErrorText';
 import { parseUsdInput } from '@/domain/seller/form';
 import { SELLER_SAMPLES } from '@/domain/seller/samples';
 import { Button } from '@/ui/Button';
@@ -201,7 +202,7 @@ export function ClassifyPanel() {
           {view?.progress.state === 'interrupted' || view?.progress.state === 'failed' ? (
             <p role="alert" className={s.error}>
               <Icon name="x-circle" />
-              <span>{view.progress.state === 'interrupted' ? 'Classification was interrupted. Run it again.' : `Classification failed: ${view.error ?? 'unknown error'}. Run it again.`}</span>
+              <span>{view.progress.state === 'interrupted' ? 'Classification was interrupted. Run it again.' : view.error === 'AI_UNAVAILABLE' ? AI_UNAVAILABLE_TEXT : 'Classification failed. Run it again.'}</span>
             </p>
           ) : null}
 

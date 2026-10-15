@@ -20,6 +20,7 @@ import { auditLog, estimates, type EstimateClassification } from './db/schema';
 import { serverEnv } from './env';
 import { loadEstimator } from './estimator';
 import { currentHtsIndex } from './hts';
+import { failureOutcome, logAiError } from './aiError';
 import { finishClassifierCall, reserveCall } from './limits/classifierCalls';
 import { currentRateTable } from './rates';
 
@@ -85,9 +86,10 @@ export async function runEstimate(id: string, model: LanguageModel = anthropic(C
     if (row.callId !== null) await finishClassifierCall(row.callId, 'OK');
     await db.insert(auditLog).values({ event: 'estimate.classified', entity: 'estimate', entityId: id, sessionId: row.sessionId, data: { outcome: r.kind, candidates: classification.candidates.map((c) => c.code) } });
   } catch (e) {
-    const message = e instanceof Error ? e.message.slice(0, 300) : 'estimate failed';
-    await db.update(estimates).set({ status: 'FAILED', error: message, updatedAt: new Date() }).where(and(eq(estimates.id, id), eq(estimates.status, 'ESTIMATING')));
-    if (row.callId !== null) await finishClassifierCall(row.callId, 'ERROR');
+    // A code only (AI_UNAVAILABLE / FAILED): the provider's message goes to the server log, never to the row or a response.
+    const code = logAiError('estimate', e);
+    await db.update(estimates).set({ status: 'FAILED', error: code, updatedAt: new Date() }).where(and(eq(estimates.id, id), eq(estimates.status, 'ESTIMATING')));
+    if (row.callId !== null) await finishClassifierCall(row.callId, failureOutcome(code));
   }
 }
 

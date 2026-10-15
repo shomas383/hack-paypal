@@ -3,6 +3,7 @@
 // data each time, so an answer or a new data version needs no model call.
 import { usd } from '@/domain/money/money';
 import type { RateFile } from '@/domain/rates/schema';
+import { storedErrorCode, type AiErrorCode } from '../aiErrorText';
 import type { EstimatorData } from './data';
 import type { HeadingTable } from './headings';
 import { DISCLOSURE_TEXT, estimateVerifiedFirst, sourceLabel, type CantReason, type Estimate, type VerifiedFact } from './estimate';
@@ -135,7 +136,8 @@ export interface EstimateView {
   estimatorVersion: string;
   rateVersion: string;
   notice: string;
-  error?: string;
+  /** FAILED estimates: a code only (AI_UNAVAILABLE / FAILED), never the provider's message. */
+  error?: AiErrorCode | 'interrupted';
 }
 
 export interface StoppedView {
@@ -183,7 +185,7 @@ export function estimateViewOf(row: EstimateRowIn, data: EstimatorData, verified
     estimatorVersion: data.version,
     rateVersion: verified.version,
     notice: DISCLOSURE_TEXT.NOT_A_RULING,
-    ...(row.error ? { error: row.error } : {}),
+    ...(row.error ? { error: storedErrorCode(row.error)! } : {}),
   };
 }
 

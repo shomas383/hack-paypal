@@ -5,6 +5,7 @@
 // only formats integer cents. Never charged; nothing here creates a quote or an order.
 import { useEffect, useRef, useState } from 'react';
 import type { ProgressView } from '@/domain/classifier/progress';
+import { AI_UNAVAILABLE_TEXT } from '@/domain/aiErrorText';
 import { CURRENT_HTS_REVISION } from '@/domain/rates/current';
 import { cantText, exclusionText, isUncertain, lineDifferences, NOT_INCLUDED, resultNote, stoppedText, plainBasis, refText, separatingLevels } from '@/domain/estimator/explain';
 import { formatUsd } from '@/lib/money';
@@ -213,7 +214,7 @@ export function EstimateClient({ fixture, initial }: { fixture: string | null; i
         {view?.status === 'ESTIMATING' && view.progress ? <ClassificationProgress steps={view.progress.steps} /> : null}
         {view?.status === 'FAILED' ? (
           <p className={s.error} role="alert" data-testid="estimate-failed">
-            <StatusBadge tone="danger">Failed</StatusBadge> The classification didn’t finish. Try again.
+            <StatusBadge tone="danger">Failed</StatusBadge> {view.error === 'AI_UNAVAILABLE' ? AI_UNAVAILABLE_TEXT : 'The classification didn’t finish. Try again.'}
           </p>
         ) : null}
         {view?.status === 'READY' ? <Result view={view} answers={answers} answering={answering} onAnswer={answer} headingRef={resultRef} /> : null}

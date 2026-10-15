@@ -65,7 +65,8 @@ describe('public seller API', () => {
     expect(bodies[0]).toEqual([queueRow]);
     expect(bodies[1]).toEqual([ledgerRow]);
     const action = Object.fromEntries(Object.entries(detailRow.actions[0]!).filter(([k]) => k !== 'by'));
-    expect(bodies[2]).toEqual({ ...detailRow, actions: [action] });
+    const publicRow = Object.fromEntries(Object.entries(detailRow).filter(([k]) => k !== 'error'));
+    expect(bodies[2]).toEqual({ ...publicRow, actions: [action] });
   });
 
   it('the detail is read with readOnly (no interrupted-run close-out write)', async () => {

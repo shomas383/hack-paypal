@@ -100,6 +100,7 @@ Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 
     - Never run the scanner with its output redirected to a file that gets committed.
 14. Do not accept or merge outside code contributions into this repo; all code must come from the owner or the owner's own
     AI-assisted sessions.
+15. Test fixtures must never use values shaped like real secrets, and fixture constants must not have secret-like names (SECRET, TOKEN, API_KEY, PASSWORD, PASSCODE…); use obviously fake values such as ‘not-a-real-key’.
 
 ## Workflow
 - Non-trivial change (multi-file, unclear approach, PayPal/rates/policy code): use plan mode first; show me the plan.
