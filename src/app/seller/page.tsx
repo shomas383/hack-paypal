@@ -30,7 +30,7 @@ export default async function SellerPage({ searchParams }: { searchParams: Promi
   if (!session) {
     const demo = demoLinkFor(sellerPublicViewEnabled());
     return (
-      <AppShell>
+      <AppShell current="seller">
         <div className={s.signIn}>
           <PageHeader title="Seller console" lead={`Classify listings against the official HTS ${CURRENT_HTS_REVISION} schedule and publish them for landed-cost quotes.`} />
           <SellerSignIn />
@@ -48,7 +48,7 @@ export default async function SellerPage({ searchParams }: { searchParams: Promi
   const raw = (await searchParams).tab;
   const tab: Tab = TABS.some((t) => t.id === raw) ? (raw as Tab) : 'classify';
   return (
-    <AppShell seller current="seller">
+    <AppShell current="seller">
       <PageHeader
         title="Seller console"
         lead={`Classify listings against the official HTS ${CURRENT_HTS_REVISION} schedule, review them and publish. Codes come only from the schedule; duty comes only from verified rate rows.`}

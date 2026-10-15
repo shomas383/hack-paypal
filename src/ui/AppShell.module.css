@@ -72,6 +72,21 @@
   font-weight: var(--weight-medium);
 }
 
+/* Four sections next to the wordmark and the Sandbox label: tighter spacing on phones so the bar never scrolls. */
+@media (max-width: 767px) {
+  .bar {
+    gap: var(--space-2);
+  }
+
+  .nav {
+    gap: 0;
+  }
+
+  .nav a {
+    padding: 0 var(--space-1);
+  }
+}
+
 .main {
   max-width: var(--w-app);
   margin: 0 auto;

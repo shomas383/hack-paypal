@@ -9,6 +9,14 @@ const WIDTHS = [375, 1280] as const;
 const FIXTURE_ID = '0e2e0000-0000-4000-8000-000000000001';
 const FIXTURE_TITLE = 'E2E fixture: automatic diver watch (read-only view)';
 
+/** The top navigation shows Seller on every page; it is the current section on /seller and /seller/demo only. */
+async function sellerNav(page: Page, current: boolean) {
+  const link = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Seller' });
+  await expect(link).toHaveAttribute('href', '/seller');
+  if (current) await expect(link).toHaveAttribute('aria-current', 'page');
+  else await expect(link).not.toHaveAttribute('aria-current', 'page');
+}
+
 async function axe(page: Page, name: string) {
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 900 });
@@ -49,6 +57,7 @@ test('/seller/demo: queue, read-only panel and ledger; axe clean', async ({ page
   await expect(page.getByRole('heading', { name: 'Seller console (read-only demo)' })).toBeVisible();
   await expect(page.getByTestId('read-only-note')).toContainText('Read-only.');
   await expect(page.getByTestId('tab-classify')).toHaveCount(0);
+  await sellerNav(page, true);
   await expect(page.getByTestId('queue-grid').getByText(FIXTURE_TITLE)).toBeVisible();
   await axe(page, 'queue');
 
@@ -75,10 +84,24 @@ test('/seller sign-in links to the read-only demo while SELLER_PUBLIC_VIEW is on
   test.skip(seller.status() === 404, 'the seller console is off locally (no SELLER_CONSOLE_PASSCODE), so there is no sign-in page');
   await page.context().clearCookies();
   await page.goto('/seller');
+  await sellerNav(page, true);
   const link = page.getByTestId('seller-demo-link');
   await expect(link).toHaveText('No passcode? See the read-only demo →');
   await axe(page, 'sign-in');
   await link.click();
   await expect(page).toHaveURL(/\/seller\/demo$/);
   await expect(page.getByRole('heading', { name: 'Seller console (read-only demo)' })).toBeVisible();
+  await sellerNav(page, true);
+});
+
+test('the Seller nav link is on every buyer page, not current there, and opens /seller', async ({ page }) => {
+  for (const path of ['/', '/listings', '/agent', '/estimate']) {
+    await page.goto(path);
+    await sellerNav(page, false);
+  }
+  await page.goto('/listings');
+  await axe(page, 'listings-nav');
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Seller' }).click();
+  await expect(page).toHaveURL(/\/seller$/);
+  await sellerNav(page, true);
 });

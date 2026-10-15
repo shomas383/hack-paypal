@@ -26,7 +26,7 @@ export default async function SellerDemoPage({ searchParams }: { searchParams: P
   const raw = (await searchParams).tab;
   const tab: Tab = TABS.some((t) => t.id === raw) ? (raw as Tab) : 'review';
   return (
-    <AppShell>
+    <AppShell current="seller">
       <PageHeader
         title="Seller console (read-only demo)"
         lead={`The seller's review queue and orders and duty ledger. Codes come only from the official HTS ${CURRENT_HTS_REVISION} schedule; duty comes only from verified rate rows.`}

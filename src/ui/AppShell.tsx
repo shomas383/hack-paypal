@@ -1,10 +1,10 @@
 // Shared frame: a 48 px top bar (wordmark, "Sandbox" label, nav) and a left-aligned main column.
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { MAIN_NAV, ariaCurrent, type NavId } from './nav';
 import s from './AppShell.module.css';
 
-// `seller`: show the Seller link (the seller pages pass it while a seller session is active).
-export function AppShell({ children, width = 'app', current, seller = false }: { children: ReactNode; width?: 'app' | 'checkout'; current?: 'listings' | 'agent' | 'estimate' | 'seller'; seller?: boolean }) {
+export function AppShell({ children, width = 'app', current }: { children: ReactNode; width?: 'app' | 'checkout'; current?: NavId }) {
   return (
     <>
       <a href="#main" className={s.skip}>
@@ -17,20 +17,11 @@ export function AppShell({ children, width = 'app', current, seller = false }: {
           </Link>
           <span className={s.sandbox}>Sandbox</span>
           <nav aria-label="Main" className={s.nav}>
-            <Link href="/listings" aria-current={current === 'listings' ? 'page' : undefined}>
-              Listings
-            </Link>
-            <Link href="/agent" aria-current={current === 'agent' ? 'page' : undefined}>
-              Agent
-            </Link>
-            <Link href="/estimate" aria-current={current === 'estimate' ? 'page' : undefined}>
-              Estimate
-            </Link>
-            {seller ? (
-              <Link href="/seller" aria-current={current === 'seller' ? 'page' : undefined}>
-                Seller
+            {MAIN_NAV.map((item) => (
+              <Link key={item.id} href={item.href} aria-current={ariaCurrent(item.id, current)}>
+                {item.label}
               </Link>
-            ) : null}
+            ))}
           </nav>
         </div>
       </header>
