@@ -198,8 +198,17 @@ flowchart LR
 - **Order reads return only status and amounts.** The agent's order tool passes on an allow-list (order id, status, quote
   reference, amount and breakdown, authorization and capture statuses); no payer or payee details or PayPal links reach the
   model or the browser.
-- **Rate limits** before any model call (per session, IP and day); the seller console locks sign-in after 5 wrong passcodes
-  per IP for 15 minutes.
+- **Rate limits** before any model call (per session and per IP over a rolling hour, and a global ceiling per UTC day);
+  over a limit the request gets a 429 and no model call is made. Production during judging (Nov 10 – Dec 21):
+
+  | AI call | Per session | Per IP | Per day (all visitors) |
+  |---|---|---|---|
+  | Shopping agent run (`/agent`) | 5 / hour | 10 / hour | 60 |
+  | Estimate (`/estimate`) | 8 / hour | 16 / hour | 150 |
+  | Seller classify (`/seller`, owner only) | 10 / hour | 20 / hour | 50 |
+
+  An identical estimate within 24 hours reuses the stored result and isn't counted. The seller console locks sign-in after
+  5 wrong passcodes per IP for 15 minutes.
 - **The public seller view is read-only on the server.** `/seller/demo` reads through GET-only routes whose payloads are
   allowlisted field by field (no seller session, IP, email or payer field). Every write route still needs the owner's
   session. It is off unless `SELLER_PUBLIC_VIEW=1`.
@@ -252,7 +261,7 @@ pnpm dev                    # http://localhost:3000
 | `SPEND_CAP_PER_ORDER_USD_MINOR`, `SPEND_CAP_PER_SESSION_USD_MINOR` | Spend caps enforced by the capture policy and the agent |
 | `QUOTE_TTL_SECONDS` | Quote lifetime |
 | `CLASSIFIER_REVIEW_THRESHOLD` | Confidence below which items go to review |
-| `CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR`, `CLASSIFIER_LIMIT_PER_IP_PER_HOUR`, `CLASSIFIER_DAILY_CEILING` | Classifier call budget |
+| `CLASSIFIER_LIMIT_PER_SESSION_PER_HOUR`, `CLASSIFIER_LIMIT_PER_IP_PER_HOUR`, `CLASSIFIER_DAILY_CEILING` | Seller-console classify budget (owner only) |
 | `AGENT_LIMIT_PER_SESSION_PER_HOUR`, `AGENT_DAILY_CEILING` | Agent run budget |
 | `ESTIMATE_LIMIT_PER_SESSION_PER_HOUR`, `ESTIMATE_LIMIT_PER_IP_PER_HOUR`, `ESTIMATE_DAILY_CEILING` | Public estimate budget |
 | `SELLER_CONSOLE_PASSCODE` | Enables `/seller` (≥ 12 characters); unset → 404 |

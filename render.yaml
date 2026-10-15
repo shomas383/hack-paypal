@@ -63,8 +63,14 @@ services:
         sync: false
       - key: AGENT_LIMIT_PER_SESSION_PER_HOUR # buyer-agent runs per session per hour (IP: 2x)
         value: "5"
-      - key: AGENT_DAILY_CEILING # buyer-agent runs per UTC day
-        value: "30"
+      - key: AGENT_DAILY_CEILING # buyer-agent runs per UTC day (judging window Nov 10 – Dec 21: 60)
+        value: "60"
+      - key: ESTIMATE_LIMIT_PER_SESSION_PER_HOUR # public /estimate per session per hour; set in the dashboard (judging: 8)
+        sync: false
+      - key: ESTIMATE_LIMIT_PER_IP_PER_HOUR # public /estimate per client IP per hour; set in the dashboard (judging: 16)
+        sync: false
+      - key: ESTIMATE_DAILY_CEILING # public /estimates per UTC day, global; set in the dashboard (judging: 150)
+        sync: false
       - key: SELLER_CONSOLE_PASSCODE # /seller passcode (>= 12 chars); set in the dashboard; unset = console disabled (404)
         sync: false
       - key: SELLER_PUBLIC_VIEW # 1 = public read-only /seller/demo; set in the dashboard; unset or 0 = off (404)
