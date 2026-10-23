@@ -15,7 +15,8 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
   license file, not a specific one — confirmed against the Devpost rules 2026-10-13).
 - Include test credentials/sandbox login details judges need (sandbox buyer account only — never API secrets).
 - Video: < 3 minutes (judges need not watch beyond 3:00), shows project running, public on YouTube, no third-party trademarks or
-  copyrighted music without permission → use generic product names on screen; royalty-free/no music.
+  copyrighted music without permission → use generic product names on screen; royalty-free/no music, or the owner's own
+  original track (used in the final cut).
 - English (or translations provided).
 - Third-party APIs/data must be used per their terms.
 
@@ -53,7 +54,12 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
   result in docs/PAYPAL.md
 - [ ] VERIFY (owner, by hand): who can see Devpost's testing-instructions field (judges/managers only, or public)
 - [ ] After Dec 21, 2026: rotate or delete the judge sandbox buyers
-- [ ] YouTube video public, < 2:55, captions on
+- [ ] YouTube video public, < 3:00 (official rule; final cut 2:56), captions on
+- [x] Demo video recorded and edited (2:56, under the 3:00 limit), uploaded to YouTube as Unlisted
+- [x] YouTube title, description, chapters, custom thumbnail and corrected English captions done
+- [x] Background music: original track by me (credited in the YouTube description)
+- [ ] Switch video to Public on Nov 10
+- [ ] Add the GitHub link to the YouTube description on Nov 10
 - [ ] Devpost form: description, tools list (PayPal Orders v2, Payments v2, Invoicing v2, Webhooks, JS SDK v6, Agent Toolkit, Claude, AG Grid, Render), repo + video links
 - [ ] Submit by **Nov 10**; never submit on deadline day
 
