@@ -46,9 +46,9 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - [ ] Hosted demo works from a fresh browser; seeded data present; stays up until winners are announced, Dec 21, 2026 (not on a
   free tier that sleeps/expires)
 - [ ] `SELLER_PUBLIC_VIEW=1` on Render after the deploy that contains `/seller/demo`; open it from a fresh browser
-- [ ] Owner: create a judge sandbox **personal** buyer and a spare (not the `.env` buyer, which stays the invoice recipient
+- [x] Owner: create a judge sandbox **personal** buyer and a spare (not the `.env` buyer, which stays the invoice recipient
   and e2e login); fund them; one production checkout with each. Credentials go only in the Devpost testing field, never in
-  the repo
+  the repo. Done 2026-11-01: judge buyer PASS (Test A), spare created and one production checkout PASS.
 - [x] Judge-login check on production (Test A, 2026-11-01, owner by hand): PASS. Clean private browser, logged out of the
   PayPal developer site, signed in as the judge buyer. Checkout showed the duty before payment; authorize → check → capture
   succeeded; the success page showed the order and capture IDs; the agent answered for its own order and refused another

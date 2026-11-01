@@ -247,6 +247,7 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   stored quote, the approval, the authorization and the caps), so any sandbox personal account that can log in can pay.
 - Checks are recorded as date + PASS/FAIL only (no order IDs, no credentials):
   - 2026-11-01, Test A (judge buyer on production, clean private browser): PASS.
+  - 2026-11-01, spare judge buyer (one production checkout): PASS.
   - Test B (a buyer from a *different* developer account): skipped 2026-11-01, still unverified. The README no longer
     offers judges their own sandbox account; it points only to the judge login in the Devpost testing instructions.
 - Keep both judge accounts working until winners are announced (Dec 21, 2026), then rotate or delete them.
