@@ -4,6 +4,8 @@
 the buyer, or their shopping agent, sees the delivered price before paying.
 
 **Live demo:** https://landed-hd19.onrender.com
+**Video:** _link added at submission_
+**Seller console, read-only (no passcode):** https://landed-hd19.onrender.com/seller/demo
 
 > **Sandbox only.** The server refuses to boot unless `PAYPAL_ENV=sandbox`; every payment is a PayPal sandbox payment.
 > Duty figures are estimates, **not customs rulings**. Seeded listings charge a flat $25.00 demo shipping rate (not a
@@ -48,7 +50,7 @@ anyone pays.
   settled code (no translation, no model keywords). The page shows which official levels matched.
 - `get_order_status` checks in the local database that a PayPal order belongs to this buyer session, then reads it from the
   PayPal Orders API through the Agent Toolkit's read-only `get_order`, which passed sandbox spike (d) on 2026-10-05 and
-  a live run on production on 2026-10-13 ([docs/PAYPAL.md](docs/PAYPAL.md)); not part of the demo flow.
+  a live run on production on 2026-10-13 ([docs/PAYPAL.md](docs/PAYPAL.md)).
 
 ![Agent run: get_order_status reports a COMPLETED order, $362.50 = $300.00 goods + $25.00 shipping + $37.50 US import duty (est.)](docs/images/agent-order-status.png)
 *The agent reads an order’s status and amounts, never the payer’s details.*
@@ -115,6 +117,24 @@ flowchart LR
 - **Estimator data** (`data/estimator/`): base rates parsed from the official General column, Chapter 99 notes extracted from
   the official PDF, and rules accepted by an automated gate (next section).
 
+## How we use AI
+- **Model:** Claude `claude-opus-5-5` (Anthropic) through the Vercel AI SDK (`ai` + `@ai-sdk/anthropic`), with structured
+  output validated by zod. The model id is set in code (`CLASSIFIER_MODEL`, `AGENT_MODEL`, `DRAFT_MODEL`).
+- **Three uses, each checked by code:**
+  - **Classifier** (seller console and `/estimate`): the model names HTS headings, code expands them into real lines of the
+    official index, and the model picks among those lines, citing evidence that code checks appears in the listing.
+    Uncertain items go to human review.
+  - **Shopping agent** (`/agent`): the model chooses searches and explains; it has only read and prepare tools. Every amount
+    it shows comes from stored quotes, and quoting a listing no search returned is refused.
+  - **Rule drafting** (`estimator:build --draft`, offline): the model drafts Chapter 99 rules from the official text; the
+    build gate accepts only rules whose quotes are verbatim and whose numbers code re-derives (it blocked one, below).
+- **The model never sets a duty, price, budget or payment.** Duty comes from the rate engine on verified rows or gated
+  estimator data; the budget comes from a field the buyer confirms; capture needs a recorded human approval and a passing
+  `decideCapture()`.
+- **When the AI service fails** (no credit, bad key, overload), the page shows a fixed message; the provider's text stays in
+  server logs, and such failures don't count against rate limits.
+- **Development:** built with Claude Code as the coding assistant (see How it was built).
+
 ## Why you can trust the numbers
 **AI drafts, code checks, people verify what gets charged.**
 - **Verified from the official HTS.** Every chargeable rate row was verified against the official HTS and Chapter 99 text
@@ -161,6 +181,8 @@ flowchart LR
   change to any rate, heading or note text our rows use; the data moved to `2026-rev21` with identical figures.
 
 ## PayPal integration
+- **Sandbox only:** the server refuses to boot unless `PAYPAL_ENV=sandbox` and the API base is the sandbox URL.
+- **PayPal JS SDK v6** renders the PayPal button on checkout, for the server-created order.
 - **Orders v2, intent `AUTHORIZE`.** The order amount must equal its breakdown sum (asserted locally before the call). Every
   POST sends a unique `PayPal-Request-Id`; retries reuse it.
 - **Capture is gated by a deterministic policy** (`decideCapture`), the only way to obtain a capture grant: a recorded human
@@ -168,11 +190,14 @@ flowchart LR
   current rate version. Any failure voids the authorization.
 - **Invoicing v2**: one DDP invoice per quote with the duty itemized; in production it always goes to the sandbox buyer.
 - **Webhooks**: each delivery is verified with PayPal and stored once per event id (for reconciliation only).
+- **Agent Toolkit** (`@paypal/agent-toolkit/ai-sdk`): read-only `get_order` only, for the agent's order-status tool; its result
+  passes an allow-list (id, status, amounts and breakdown, authorization and capture statuses), so no payer or payee
+  details or links reach the model or the browser. Money-moving calls never go through the toolkit.
 - Sandbox spikes (`scripts/spike/`) settled the details, e.g. invoice create is **not** idempotent by
   `PayPal-Request-Id`, so it is never retried.
 
 ## AG Grid
-- **Screens:** the seller review queue and the orders and duty ledger (`/seller`).
+- **Screens:** the seller review queue and the orders and duty ledger (`/seller`, and read-only at `/seller/demo`).
 - **Features:** text, number and date column filters; a quick-filter search on the queue; a **pinned bottom row** with the
   captured-duty total; **CSV export** of the ledger; row styling for the selected item; status cells with icons; tooltips with
   goods, shipping and PayPal order details.
@@ -196,7 +221,8 @@ flowchart LR
   reference, amount and breakdown, authorization and capture statuses); no payer or payee details or PayPal links reach the
   model or the browser.
 - **Rate limits** before any model call (per session and per IP over a rolling hour, and a global ceiling per UTC day);
-  over a limit the request gets a 429 and no model call is made. Production during judging (Nov 10 – Dec 21):
+  over a limit the request gets a 429 and no model call is made. Production values from submission until winners are
+  announced (Dec 21, 2026):
 
   | AI call | Per session | Per IP | Per day (all visitors) |
   |---|---|---|---|
@@ -215,9 +241,19 @@ TypeScript (strict) · Next.js App Router · Node 24 LTS · pnpm · Postgres + D
 (`claude-opus-5-5`) and zod structured output · PayPal REST (own thin client) + PayPal JS SDK v6 · AG Grid Community ·
 Vitest + fast-check · Playwright + axe · Render (web service + Postgres).
 
+**Sponsor integrations:** AG Grid Community (seller review queue and ledger) and Render (hosting via `render.yaml`).
+
 ## Run it locally
-**Prerequisites:** Node 24 LTS, pnpm 10, Docker (local Postgres), a PayPal developer sandbox app and a sandbox buyer account.
-`pdftotext` (xpdf 4.06) only for `estimator:build`.
+**Prerequisites:** Node 24 LTS, pnpm 10, Docker (runs Postgres 17 via `docker compose`).
+
+**Accounts and keys** (all free; values go only in your local `.env`):
+1. **PayPal sandbox:** sign in at https://developer.paypal.com → Apps & Credentials (Sandbox) → create an app → copy its
+   client id and secret into `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` and `NEXT_PUBLIC_PAYPAL_CLIENT_ID`. Under Sandbox
+   accounts, use a **Personal** account to log in to the PayPal popup at checkout. `PAYPAL_WEBHOOK_ID` is optional (the
+   webhook route answers 503 without it).
+2. **Anthropic API key:** create one in the Anthropic Console (https://console.anthropic.com) → `ANTHROPIC_API_KEY`. Only
+   the AI features (`/estimate`, `/agent`, seller classify) need it; listings and checkout work without it.
+3. Optional: `SELLER_CONSOLE_PASSCODE` (≥ 12 characters) to open `/seller`; `SELLER_PUBLIC_VIEW=1` for `/seller/demo`.
 
 ```sh
 cp .env.example .env        # fill in sandbox values
@@ -227,6 +263,15 @@ pnpm db:migrate
 pnpm db:seed                # demo listings (each must quote from the verified data)
 pnpm dev                    # http://localhost:3000
 ```
+
+**Data:** the HTS index, the verified rate rows and the estimator data are committed (`data/hts`, `data/rates`,
+`data/estimator`), so no import or build step is needed to run locally. `rates:import` needs the private verification
+sheet (not in the repo); `hts:download` / `hts:import` and `estimator:build` only rebuild the data for a new HTS revision
+(`estimator:build` also needs `pdftotext`, xpdf 4.06).
+
+**Tests:** `pnpm test` needs no database or network. `pnpm test:e2e` starts the dev server and needs Postgres with the seeded
+listings. Its checkout test logs in with `PAYPAL_SANDBOX_BUYER_EMAIL` / `PAYPAL_SANDBOX_BUYER_PASSWORD`, or pauses for a
+manual login with `PW_HEADED=1`.
 
 | Command | What it does |
 |---|---|
@@ -250,9 +295,9 @@ pnpm dev                    # http://localhost:3000
 | `PAYPAL_ENV`, `PAYPAL_API_BASE` | Must be sandbox; the server refuses to boot otherwise |
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Sandbox REST app credentials |
 | `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | Client id for the PayPal button (baked into the build) |
-| `PAYPAL_WEBHOOK_ID` | Webhook id used to verify deliveries |
-| `PAYPAL_SANDBOX_BUYER_EMAIL`, `PAYPAL_SANDBOX_BUYER_PASSWORD` | Sandbox buyer (invoice recipient; optional e2e login) |
-| `ANTHROPIC_API_KEY` | Classifier, agent and rule drafting |
+| `PAYPAL_WEBHOOK_ID` | Webhook id used to verify deliveries (optional; without it the webhook route answers 503) |
+| `PAYPAL_SANDBOX_BUYER_EMAIL`, `PAYPAL_SANDBOX_BUYER_PASSWORD` | Sandbox buyer (invoice recipient; e2e login). Optional |
+| `ANTHROPIC_API_KEY` | Classifier, agent and rule drafting (AI features only) |
 | `DATABASE_URL` | Postgres |
 | `PUBLIC_BASE_URL` | Public https origin (production) |
 | `SPEND_CAP_PER_ORDER_USD_MINOR`, `SPEND_CAP_PER_SESSION_USD_MINOR` | Spend caps enforced by the capture policy and the agent |
@@ -271,9 +316,10 @@ a listing can't be quoted); health check `/api/health`. Every step runs through 
 allow `corepack enable`). Register the sandbox webhook at `/api/webhooks/paypal`.
 
 ## Tests
-- **989 unit tests** in 93 files (Vitest), incl. fast-check properties for money and rates, the capture policy, the gate with
+- **1,034 unit tests** in 104 files (Vitest), incl. fast-check properties for money and rates, the capture policy, the gate with
   deliberately broken rules, and CN/JP/DE estimates over the committed data.
-- **14 Playwright tests**: the sandbox demo path, the agent replay and the estimate page (with axe accessibility checks).
+- **19 Playwright tests** in 4 files: the sandbox demo path, the agent replay, the estimate page and the read-only seller
+  demo (with axe accessibility checks).
 - **Golden tests** prove the engine reproduces each verified row's reviewed duty exactly (15 cases, P01–P14) and that the
   estimator reproduces every verified case from official text alone, or refuses on the regime the row records.
 - **Classifier eval** (11 verified products, 3 runs, 2026-10-08; [SPEC §4.1](docs/SPEC.md)): wrong code auto-accepted 0 of 33
@@ -285,15 +331,17 @@ allow `corepack enable`). Register the sandbox webhook at `/api/webhooks/paypal`
 - **Unmodeled duties refuse:** steel, aluminum, copper and auto-type duties, U.S. note 31, and some China list items described
   in words. Roadmap: model them.
 - **Origin research:** AI suggestions of country of origin from photos and model numbers, confirmed by the seller.
-- **Sourcing mode:** profit per item and marketplace price comparison.
+- **Seller tools:** the full landed cost per item before listing.
 - **Scheduled revision runs:** rebuild the data automatically when a new HTS revision is published.
 
 ## How it was built
 Built solo for the PayPal AI Hackathon with AI-assisted development (Claude Code): code, tests and drafts were written
 with the assistant, and a human reviewed every rate that touches a payment against the official HTS and Chapter 99 text
-before it entered the verified data.
+before it entered the verified data. All code in this repository was written during the submission period (first commit
+Oct 5, 2026). The product verification sheet and an earlier classifier test began as prior research and are used here as
+data.
 
 ## License & disclaimer
-AGPL-3.0 — see [LICENSE](LICENSE). Copyright (C) 2026 Shoma Sawa. Sandbox only; no real payments. Duty figures are estimates from the official HTS, not customs
+AGPL-3.0-only — see [LICENSE](LICENSE). Copyright (C) 2026 Shoma Sawa. Sandbox only; no real payments. Duty figures are estimates from the official HTS, not customs
 rulings, and exclude antidumping/countervailing duties, merchandise and harbor maintenance fees, and carrier or brokerage
 fees.

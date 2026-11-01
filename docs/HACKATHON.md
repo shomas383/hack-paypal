@@ -28,9 +28,6 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 ## Prizes & stacking
 - Grand: $12,000 / $8,000 / $5,000.
 - Honorable Mentions ($5,000 each): Most Creative, Most Impactful, Best Demo Delivery, Best Use of PayPal + AI, Best Use of Agentic Commerce.
-- Sponsor: AG Grid $5,000 / $2,000 / $1,000 (×3); Render $1,000 / $750 / $500 in credits; APIMatic $1,000 + 6-month business subscription (×3); Bryntum $1,000 (×3); Channel3 $1,500.
-- Max: one Grand OR one Honorable Mention, plus one Sponsor prize.
-- Our targets: Grand (primary) / Best Use of Agentic Commerce (fallback) + Best Use of AG Grid.
 - AG Grid prize rules (checked by the user on https://paypalaihackathon.devpost.com/rules, 2026-10-08): "Best Use of AG Grid"
   ($5,000 / $2,000 / 3 × $1,000) is open to submissions "that use any AG Grid tools". No edition, licence or AG Studio
   requirement; general judging criteria; stacks with one Grand Prize or Honorable Mention. (Devpost returns 403 to automated
@@ -90,10 +87,3 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - Wk4 Oct 26–Nov 1: buyer agent + approval gate + seller console (AG Grid).
 - Wk5 Nov 2–7: polish, README, LICENSE, deploy. **Feature freeze Wed Nov 4 EOD.**
 - Nov 8–11: final video, Devpost submission (target Nov 10), buffer.
-
-## Winning playbook
-- Walking skeleton first: an ugly but real end-to-end demo path (listing → classify → quote → approve → sandbox authorize/capture) before any polish.
-- Cut ruthlessly: if it's not in docs/DEMO.md, it's roadmap. Origins beyond JP are "shown" with fewer SKUs, not breadth.
-- One unforgettable moment: the "trust moment" (LLM said 15%, verified table says 12.5%, citation on screen).
-- Record the video early (rough cut wk3), re-record after freeze. Script it to 2:45.
-- Demo reliability > features: seed deterministic data, cache LLM outputs for the recorded run (show live run once), have a fallback recording.
