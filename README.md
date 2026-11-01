@@ -113,7 +113,8 @@ flowchart LR
   cover. Rates are data, never code.
 - **Verified rows** (`data/rates/`, 12 rows): 12 rate rows cover 13 verified products (P01 and P02 are the same line
   at two prices; P07, a chapter 98 case, is expected to refuse). Each row was verified by hand against the official HTS and
-  Chapter 99 text with sources, revision and dates; they are the only rows that can be charged.
+  Chapter 99 text with sources, revision and dates; they are the only rows that can be charged. Verified against HTS 2026
+  Rev. 21. Rev. 22 (in force Oct 30, 2026) was reviewed on Nov 1: no changes to any line, heading or note Landed uses.
 - **Estimator data** (`data/estimator/`): base rates parsed from the official General column, Chapter 99 notes extracted from
   the official PDF, and rules accepted by an automated gate (next section).
 

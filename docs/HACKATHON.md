@@ -93,4 +93,6 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - Nov 4: **feature freeze**; make the repo public (check AGPL-3.0 shows in About); tag `v1.0-submission`; video Public; fill
   the Devpost links and testing instructions; **submit**.
 - Nov 5–12: respond to any eligibility flags (edits allowed until Nov 12 12:00 PM PT).
-- Weekly until Dec 21: site, judge login and credit checks.
+- Nov 10–11: estimator:build on Rev. 21 (removes the China exclusion disclosures that end Nov 9); run tests, deploy, check
+  /estimate.
+- Weekly until Dec 21: site, judge login and credit checks; check reststop/currentRelease for a new HTS revision.

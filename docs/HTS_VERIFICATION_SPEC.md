@@ -335,3 +335,64 @@ re-verified on 2026 Rev. 21 with `effective_from` 2026-10-09, and their numbers 
 
 Note text for column W of each VERIFIED row (appended; keep the existing text):
 > Re-verified against 2026 Rev. 21 by full text comparison; no change to rate, heading or note text; see HTS_VERIFICATION_SPEC §8.
+
+## 9. Review on a new revision: Rev 21 → Rev 22 (reviewed 2026-11-01; no migration)
+2026-11-01: Rev. 22 (in force 10/30/2026) reviewed against Rev. 21. Change record: note 51(b)(3) only (Canada, PP 11076).
+Full Chapter 99 diff: no change to any heading or note we use. Base rates of the 12 verified lines: unchanged. Decision:
+stay on Rev. 21 data; figures identical.
+
+### 9.1 Release facts (`https://hts.usitc.gov/reststop/releaseList`, read 2026-11-01)
+| Release | Status | Created | In effect |
+|---|---|---|---|
+| 2026HTSRev22 | current | 10/26/2026 | from **10/30/2026**, open-ended |
+| 2026HTSRev21 | archive | 10/07/2026 | 10/09/2026 – 10/30/2026 |
+
+### 9.2 Sources (hts.usitc.gov; downloaded to a scratch folder, not committed, nothing written under `data/`)
+| File | URL | sha256 |
+|---|---|---|
+| Change Record, Rev 22 | `https://hts.usitc.gov/reststop/file?release=2026HTSRev22&filename=Change%20Record` | `2684027ebb4d14ad6380bd5f561266958e37e07a3693a5be2a6095326684239c` |
+| Ch. 99, Rev 21 | `https://hts.usitc.gov/reststop/file?release=2026HTSRev21&filename=Chapter%2099` | `07911877d541dce23ddef3f89aa05503faa5acb03fd95715f4ee1ba9ea2a53ad` (= §8.2) |
+| Ch. 99, Rev 22 | `https://hts.usitc.gov/reststop/file?release=2026HTSRev22&filename=Chapter%2099` | `290eee3d064837a003c8ee7daffebb8f5c44cdd96af4349fed40851f5c317fc2` |
+| Full schedule, Rev 21 | `https://hts.usitc.gov/reststop/file?release=2026HTSRev21&filename=finalCopy` | `6eb8af206472da27052ee85e2b75add42731f17fb04c3ce7c96c3e478f7f54d4` (= §8.2) |
+| Full schedule, Rev 22 | `https://hts.usitc.gov/reststop/file?release=2026HTSRev22&filename=finalCopy` | `eeb749588472a59862be97307dd72929351a429f9eac9ad23cc241328356ef51` |
+
+Method as in §8.4: `pdftotext -layout` (xpdf 4.06) for both revisions, whitespace folded, the "Revision 21/22" running
+footer normalised, then a line diff.
+
+### 9.3 Change Record (Rev 22, October 30, 2026; "The following chapter is affected: 99")
+| Item | Nature | Effective | Source |
+|---|---|---|---|
+| U.S. note 51(b)(3), subch. III, ch. 99 | Modified | October 30, 2026 | PP 11076 |
+
+PP 11076, as named in Rev 22's own list of instruments: Presidential Proclamation 11076 of October 23, 2026, "Further
+Modifying the Scope of Products of Canada Subject to the Additional Duties Imposed to Offset Canadian Discrimination Against
+the Commerce of the United States with Respect to Motor Vehicles" (91 Fed. Reg. 68861 of October 30, 2026), effective
+October 30, 2026. Note 51(b)(3) is the product list for heading 9903.03.14 ("Articles the product of Canada as provided in
+subdivision (b)(3) of U.S. note 51").
+
+### 9.4 Result
+**Full-schedule diff, every chapter** (22 hunks):
+- front matter (publication number 5802 → 5808, staff, date, list of instruments: PP 11076 replaces PP 10326 and the
+  91 FR 64211 notice);
+- a general note: the NP preference subdivision (e) gains "[Compiler's note: Preferential treatment provided for in this
+  subdivision terminated effective January 1, 2026. …]" (Special column only; not one of our origins);
+- ch. 68: a mineral-wool note's chemical formulas and "borix" → "boric" (typography);
+- ch. 99: the note 51(b)(3) list (lines added, page breaks moved);
+- ch. 99: heading 9903.01.63's own "[Compiler's note: provision suspended. See 90 Fed. Reg. 50729.]" is dropped. The
+  note-wide compiler's note in note 2(v)(xviii), unchanged, still says "Subdivision (v)(xvii)(10) and heading 9903.01.63 are
+  suspended", and the estimator's out-of-force check reads that sentence (`headings.ts`, STATUS_VERB). Format change only;
+- the embedded Change Record.
+
+| Checked item | Rev 21 = Rev 22 |
+|---|---|
+| Base lines of the 12 verified rows: 9504.40.00 (P01, P02), 9102.21.70 (P03, P13, P14), 9006.53.02 (P04), 9503.00.00 (P05), 9507.30.60 (P06), 6203.42.45 (P08), 9504.50.00 (P09), 9506.31.00 (P10), 8211.92.90 (P11), 8523.49.40 (P12): description, stat suffixes, General rate, footnotes | identical (no hunk in chs. 62, 82, 85, 90, 91, 95) |
+| Ch. 91 notes incl. statistical note 1 (component reporting for 9102.21.70) | identical |
+| Ch. 99 headings used: 9903.05.31, .38, .39, .48, .49, .85–.92, .97; 9903.88.15, .16; 9903.82.x | identical |
+| Notes 16, 20 (lists used for China), 31 and 52 | identical |
+| Dated texts: 9903.88.69/.70 "through November 9, 2026"; 9903.91.12–.16 "on or after November 10, 2026" | identical |
+| Base-rate changes, all chapters | **0** |
+
+**Conclusion.** Every rate, heading and note text the verified rows and the estimator depend on is unchanged in Rev 22;
+the only legal change is a Canada-only product list. Decision (2026-11-01): stay on Rev 21 data (`2026-rev21-v2`,
+estimator `2026-rev21-e4`) for the submission; no rate version or data change. The Nov 9/10 dated provisions are handled by
+an `estimator:build` on Rev 21 on or after Nov 10 (docs/HACKATHON.md timeline).
