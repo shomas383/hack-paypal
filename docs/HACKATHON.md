@@ -49,9 +49,15 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - [ ] Owner: create a judge sandbox **personal** buyer and a spare (not the `.env` buyer, which stays the invoice recipient
   and e2e login); fund them; one production checkout with each. Credentials go only in the Devpost testing field, never in
   the repo
+- [x] Judge-login check on production (Test A, 2026-11-01, owner by hand): PASS. Clean private browser, logged out of the
+  PayPal developer site, signed in as the judge buyer. Checkout showed the duty before payment; authorize → check → capture
+  succeeded; the success page showed the order and capture IDs; the agent answered for its own order and refused another
+  session's; /estimate gave the knife figure and refused the kettle; the /seller/demo ledger worked; the payment arrived in
+  the sandbox business account. (No credentials or order IDs recorded here.)
 - [ ] VERIFY (owner, by hand): a sandbox personal account created under a *different* developer account can pay our
   sandbox merchant (the README fallback relies on it; if it fails, remove that fallback from the README). Record the
-  result in docs/PAYPAL.md
+  result in docs/PAYPAL.md. Test B, 2026-11-01: **skipped**; the Devpost testing instructions direct judges to the
+  provided judge login, so this stays unverified.
 - [ ] VERIFY (owner, by hand): who can see Devpost's testing-instructions field (judges/managers only, or public)
 - [ ] After Dec 21, 2026: rotate or delete the judge sandbox buyers
 - [ ] YouTube video public, < 3:00 (official rule; final cut 2:56), captions on
