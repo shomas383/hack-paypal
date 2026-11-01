@@ -6,6 +6,8 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - Judging: Dec 1, 2026 (2:00 pm PT) – Dec 15, 2026 (8:00 am PT). Winners announced on or around Dec 21, 2026 (2:00 pm PT), per the official rules.
 - Project must remain available free for testing until judging ends → keep the hosted app, the sandbox app and the judge
   sandbox buyers working until winners are announced (**Dec 21, 2026**); then rotate or delete the judge sandbox buyers.
+- Early eligibility review: the organizers review submissions made by **Thu Nov 5**; edits are allowed until the Nov 12
+  12:00 PM PT deadline. We submit on **Nov 4**.
 
 ## Requirements
 - Build/update an app integrating the PayPal developer platform (free sandbox) + any AI tool. PayPal must be central.
@@ -61,10 +63,11 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - [x] Demo video recorded and edited (2:56, under the 3:00 limit), uploaded to YouTube as Unlisted
 - [x] YouTube title, description, chapters, custom thumbnail and corrected English captions done
 - [x] Background music: original track by me (credited in the YouTube description)
-- [ ] Switch video to Public on Nov 10
-- [ ] Add the GitHub link to the YouTube description on Nov 10
+- [ ] Switch video to Public on Nov 4
+- [ ] Add the GitHub link to the YouTube description on Nov 4
 - [ ] Devpost form: description, tools list (PayPal Orders v2, Payments v2, Invoicing v2, Webhooks, JS SDK v6, Agent Toolkit, Claude, AG Grid, Render), repo + video links
-- [ ] Submit by **Nov 10**; never submit on deadline day
+- [ ] Submit on **Nov 4** (early eligibility review for submissions by Nov 5; edits allowed until the Nov 12 deadline);
+  never submit on deadline day
 
 ## Devpost testing instructions (draft — fill the placeholders on the form only, never here)
 > Live app: https://landed-hd19.onrender.com (PayPal **sandbox** only; no real money moves).
@@ -85,5 +88,9 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - Wk2 Oct 12–18 (can start now): rate engine (tests first) + HTS Rev. 20 re-verification + 12-product import.
 - Wk3 Oct 19–25: classifier + eval; checkout + invoice end-to-end in sandbox. **Walking skeleton of full demo path by Oct 25; record rough-cut video.**
 - Wk4 Oct 26–Nov 1: buyer agent + approval gate + seller console (AG Grid).
-- Wk5 Nov 2–7: polish, README, LICENSE, deploy. **Feature freeze Wed Nov 4 EOD.**
-- Nov 8–11: final video, Devpost submission (target Nov 10), buffer.
+- Nov 2: README audit and fixes (done, 998ca9d); Devpost fields complete.
+- Nov 3: full-history secret scan (all commits); `pnpm estimator:build` if still needed; final production check.
+- Nov 4: **feature freeze**; make the repo public (check AGPL-3.0 shows in About); tag `v1.0-submission`; video Public; fill
+  the Devpost links and testing instructions; **submit**.
+- Nov 5–12: respond to any eligibility flags (edits allowed until Nov 12 12:00 PM PT).
+- Weekly until Dec 21: site, judge login and credit checks.

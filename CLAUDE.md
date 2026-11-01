@@ -3,7 +3,8 @@
 Pitch: AI classifies the product (HTS code + confidence), a verified rate table computes the true
 landed cost, and the US buyer — or their AI agent — sees the full price, duties included, before
 approving a PayPal payment. Hackathon entry: PayPal AI Hackathon (Devpost). Solo developer.
-Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit by Nov 10.**
+Deadline: **Nov 12, 2026 12:00 PM PT (PST) = Nov 13 05:00 JST. We submit on Nov 4** (early eligibility review for submissions by Nov 5;
+edits allowed until the deadline).
 
 ## Read these on demand (not auto-imported, to save context)
 - `docs/SPEC.md` — requirements, data model, rate-engine rules, acceptance criteria. Read before any feature work.

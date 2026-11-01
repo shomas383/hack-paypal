@@ -63,7 +63,7 @@ services:
         sync: false
       - key: AGENT_LIMIT_PER_SESSION_PER_HOUR # buyer-agent runs per session per hour (IP: 2x)
         value: "5"
-      - key: AGENT_DAILY_CEILING # buyer-agent runs per UTC day (judging window Nov 10 – Dec 21: 60)
+      - key: AGENT_DAILY_CEILING # buyer-agent runs per UTC day (60 from submission until winners are announced, Dec 21)
         value: "60"
       - key: ESTIMATE_LIMIT_PER_SESSION_PER_HOUR # public /estimate per session per hour; set in the dashboard (judging: 8)
         sync: false
