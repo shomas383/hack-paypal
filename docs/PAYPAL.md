@@ -245,9 +245,10 @@ where sandbox behavior differed, "Week 1 spike results" below wins and the item 
   dashboard. It is not the `.env` buyer (`PAYPAL_SANDBOX_BUYER_EMAIL` stays the invoice recipient and the e2e login).
   Credentials go only in Devpost's testing field. Capture doesn't check who the payer is (`decideCapture` checks the
   stored quote, the approval, the authorization and the caps), so any sandbox personal account that can log in can pay.
-- VERIFY (owner, by hand): a sandbox personal account created under a *different* developer account can approve and pay
-  an order from our sandbox app (the README's "use your own sandbox account" fallback relies on it). Record the date and
-  the PayPal order id here.
+- Checks are recorded as date + PASS/FAIL only (no order IDs, no credentials):
+  - 2026-11-01, Test A (judge buyer on production, clean private browser): PASS.
+  - Test B (a buyer from a *different* developer account): skipped 2026-11-01, still unverified. The README no longer
+    offers judges their own sandbox account; it points only to the judge login in the Devpost testing instructions.
 - Keep both judge accounts working until winners are announced (Dec 21, 2026), then rotate or delete them.
 
 ## Agent Toolkit `get_order` — live run on production (2026-10-13)

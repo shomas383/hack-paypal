@@ -160,7 +160,8 @@ name their origin. G8 green JP/DE/CN (P13 $72.09). Refused of 19,926: JP 4,532 /
 Pushed to main 2026-10-12. After 2026-11-09 the 20(vvv)/(www) exclusion notices are stale (they state their end date): rebuild.
 Judge access (2026-10-14, estimate-mode, not pushed): public read-only `/seller/demo` behind `SELLER_PUBLIC_VIEW=1` (off
 by default; GET-only allowlisted `/api/seller/public/*`; owner write routes unchanged), with a link from the /seller
-sign-in page. README "Try it" covers the sandbox buyer (Devpost testing field) and an own-sandbox-account fallback. Owner
+sign-in page. README "Try it" points judges only to the sandbox buyer in the Devpost testing field (the own-account fallback was
+removed 2026-11-01; Test A judge-login check PASS that day). Owner
 to do: set the Render variable after deploy; create the judge and spare sandbox buyers; two VERIFYs by hand (docs/HACKATHON.md).
 Keep everything working until winners are announced, Dec 21, 2026.
 Rate coverage decision (2026-10-09): add the EU row now; auto-importing base rates is deferred (README roadmap: base rates from

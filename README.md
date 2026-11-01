@@ -11,10 +11,7 @@ the buyer, or their shopping agent, sees the delivered price before paying.
 
 ## Try it
 - **Buyer checkout** (`/listings` → **Get landed cost** → **Approve purchase**): the PayPal sandbox popup needs a sandbox
-  **personal** account. Judges can use the sandbox buyer login in the Devpost testing instructions. Or use your own: in the
-  [PayPal developer dashboard](https://developer.paypal.com/dashboard/), open Sandbox accounts (under Testing tools), create
-  a **Personal** account, and log in to the popup with its email and password (shown in the account's details). No real
-  money moves.
+  **personal** account. Judges: use the sandbox buyer login in the Devpost testing instructions. No real money moves.
 - **Shopping agent** (`/agent`): try "automatic diver watch under $400 delivered".
 - **Estimate** (`/estimate`): any product description, made in Japan, Germany or China.
 - **Seller console:** [Seller console (read-only demo)](https://landed-hd19.onrender.com/seller/demo). The review queue and

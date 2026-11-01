@@ -55,8 +55,8 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
   session's; /estimate gave the knife figure and refused the kettle; the /seller/demo ledger worked; the payment arrived in
   the sandbox business account. (No credentials or order IDs recorded here.)
 - [ ] VERIFY (owner, by hand): a sandbox personal account created under a *different* developer account can pay our
-  sandbox merchant (the README fallback relies on it; if it fails, remove that fallback from the README). Record the
-  result in docs/PAYPAL.md. Test B, 2026-11-01: **skipped**; the Devpost testing instructions direct judges to the
+  sandbox merchant. Nothing relies on it now: the README's own-account fallback was removed on 2026-11-01. Record the
+  result in docs/PAYPAL.md (date + PASS/FAIL only). Test B, 2026-11-01: **skipped**; the Devpost testing instructions direct judges to the
   provided judge login, so this stays unverified.
 - [ ] VERIFY (owner, by hand): who can see Devpost's testing-instructions field (judges/managers only, or public)
 - [ ] After Dec 21, 2026: rotate or delete the judge sandbox buyers
@@ -75,7 +75,6 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 >    → **Approve purchase** → PayPal popup → log in with the sandbox buyer below. The server captures only if its policy
 >    check passes; the order then appears in the seller ledger (step 4).
 >    Sandbox buyer (test account, sandbox only): `<judge buyer email>` / `<judge buyer password>`.
->    Or use your own sandbox personal account (README → Try it).
 > 2. Shopping agent: /agent → "automatic diver watch under $400 delivered" → confirm the budget → it compares delivered
 >    prices and prepares the checkout; you approve and pay there.
 > 3. Estimate: /estimate → any product description, made in Japan, Germany or China (live AI, rate-limited).
