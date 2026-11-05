@@ -3,9 +3,9 @@
 **Duty-aware DDP checkout on PayPal.** AI classifies the product, verified official rates compute the US import duty, and
 the buyer, or their shopping agent, sees the delivered price before paying.
 
-**Live demo:** https://landed-hd19.onrender.com
-**Video:** _link added at submission_
-**Seller console, read-only (no passcode):** https://landed-hd19.onrender.com/seller/demo
+- **Live demo:** https://landed-hd19.onrender.com
+- **Video:** https://youtu.be/p4_h-LAcSnw
+- **Seller console, read-only (no passcode):** https://landed-hd19.onrender.com/seller/demo
 
 > **Sandbox only.** The server refuses to boot unless `PAYPAL_ENV=sandbox`; every payment is a PayPal sandbox payment.
 > Duty figures are estimates, **not customs rulings**. Seeded listings charge a flat $25.00 demo shipping rate (not a
