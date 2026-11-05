@@ -54,7 +54,8 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 - [x] Sandbox webhook URL points at the live Render URL (not a dead quick tunnel) — live deliveries verified 2026-10-07
 - [ ] Hosted demo works from a fresh browser; seeded data present; stays up until winners are announced, Dec 21, 2026 (not on a
   free tier that sleeps/expires)
-- [ ] `SELLER_PUBLIC_VIEW=1` on Render after the deploy that contains `/seller/demo`; open it from a fresh browser
+- [x] `SELLER_PUBLIC_VIEW=1` on Render after the deploy that contains `/seller/demo`; open it from a fresh browser.
+  Verified on production 2026-11-01 (/seller/demo returned 200) and again 2026-11-04 in the final live check.
 - [x] Owner: create a judge sandbox **personal** buyer and a spare (not the `.env` buyer, which stays the invoice recipient
   and e2e login); fund them; one production checkout with each. Credentials go only in the Devpost testing field, never in
   the repo. Done 2026-11-01: judge buyer PASS (Test A), spare created and one production checkout PASS.
