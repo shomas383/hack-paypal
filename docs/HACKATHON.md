@@ -39,7 +39,7 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
   checking current ag-grid-community / ag-grid-react versions and React 19 support on npm.
 
 ## Submission checklist
-- [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); AGPL-3.0 LICENSE visible in About (any open source license meets the rule); README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1
+- [x] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); AGPL-3.0 LICENSE visible in About (any open source license meets the rule); README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1. Done 2026-11-04: public, About set (description, website, topics); GitHub detects the AGPL-3.0 license.
 - [x] `.env.example` complete; no secrets in git history (run a secret scan BEFORE making the repo public).
   2026-11-04: full-history secret scan, 285/285 commits (6 branch tips, no tags). 14 findings, all reviewed: fake test
   fixtures (6985716 env.test.ts, 2bb94a1 boot.test.ts, c58d51d env.test.ts) and the local docker DATABASE_URL in
@@ -69,15 +69,15 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
   provided judge login, so this stays unverified.
 - [ ] VERIFY (owner, by hand): who can see Devpost's testing-instructions field (judges/managers only, or public)
 - [ ] After Dec 21, 2026: rotate or delete the judge sandbox buyers
-- [ ] YouTube video public, < 3:00 (official rule; final cut 2:56), captions on
+- [x] YouTube video public, < 3:00 (official rule; final cut 2:56), captions on (2026-11-04)
 - [x] Demo video recorded and edited (2:56, under the 3:00 limit), uploaded to YouTube as Unlisted
 - [x] YouTube title, description, chapters, custom thumbnail and corrected English captions done
 - [x] Background music: original track by me (credited in the YouTube description)
-- [ ] Switch video to Public on Nov 4
-- [ ] Add the GitHub link to the YouTube description on Nov 4
-- [ ] Devpost form: description, tools list (PayPal Orders v2, Payments v2, Invoicing v2, Webhooks, JS SDK v6, Agent Toolkit, Claude, AG Grid, Render), repo + video links
-- [ ] Submit on **Nov 4** (early eligibility review for submissions by Nov 5; edits allowed until the Nov 12 deadline);
-  never submit on deadline day
+- [x] Switch video to Public on Nov 4
+- [x] Add the GitHub link to the YouTube description on Nov 4
+- [x] Devpost form: description, tools list (PayPal Orders v2, Payments v2, Invoicing v2, Webhooks, JS SDK v6, Agent Toolkit, Claude, AG Grid, Render), repo + video links
+- [x] Submit on **Nov 4** (early eligibility review for submissions by Nov 5; edits allowed until the Nov 12 deadline);
+  never submit on deadline day. Submitted 2026-11-04 with the repo and video links.
 
 ## Devpost testing instructions (draft — fill the placeholders on the form only, never here)
 > Live app: https://landed-hd19.onrender.com (PayPal **sandbox** only; no real money moves).
