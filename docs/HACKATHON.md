@@ -40,7 +40,17 @@ Source of truth: https://paypalaihackathon.devpost.com/rules (re-check weekly; r
 
 ## Submission checklist
 - [ ] Flip https://github.com/shomas383/hack-paypal from private to PUBLIC before submitting (it is private during development); AGPL-3.0 LICENSE visible in About (any open source license meets the rule); README: pitch, architecture diagram, setup (≤5 commands), hosted URL, sandbox test buyer login, tools used list, what was built after Oct 1
-- [ ] `.env.example` complete; no secrets in git history (run a secret scan BEFORE making the repo public)
+- [x] `.env.example` complete; no secrets in git history (run a secret scan BEFORE making the repo public).
+  2026-11-04: full-history secret scan, 285/285 commits (6 branch tips, no tags). 14 findings, all reviewed: fake test
+  fixtures (6985716 env.test.ts, 2bb94a1 boot.test.ts, c58d51d env.test.ts) and the local docker DATABASE_URL in
+  .env.example (2cdd913). No real secrets. No .env, data/source, key files or sandbox emails in history. Decision: no history
+  rewrite, no scanner change. Findings (commit:file:line:rule):
+  - 2cdd913:.env.example:9:2, 2cdd913:.env.example:9:3
+  - 6985716:src/server/env.test.ts:4:2, 6985716:src/server/env.test.ts:8:2, 6985716:src/server/env.test.ts:10:2,
+    6985716:src/server/env.test.ts:11:2, 6985716:src/server/env.test.ts:11:3
+  - 2bb94a1:src/server/boot.test.ts:4:2, 2bb94a1:src/server/boot.test.ts:7:2, 2bb94a1:src/server/boot.test.ts:9:2,
+    2bb94a1:src/server/boot.test.ts:10:2, 2bb94a1:src/server/boot.test.ts:10:3
+  - c58d51d:src/server/env.test.ts:35:2, c58d51d:src/server/env.test.ts:38:2
 - [x] Sandbox webhook URL points at the live Render URL (not a dead quick tunnel) — live deliveries verified 2026-10-07
 - [ ] Hosted demo works from a fresh browser; seeded data present; stays up until winners are announced, Dec 21, 2026 (not on a
   free tier that sleeps/expires)
